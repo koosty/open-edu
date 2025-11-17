@@ -46,7 +46,30 @@
 
 			// Load user enrollments
 			const userEnrollments = await EnrollmentService.getUserEnrollments(authState.user.id)
-			enrollments = userEnrollments
+			
+			// Load course details for each enrollment
+			const coursePromises = userEnrollments.map(enrollment => 
+				CourseService.getCourse(enrollment.courseId)
+			)
+			const courseResults = await Promise.allSettled(coursePromises)
+			
+			// Combine enrollment data with course details
+			const enrollmentsWithCourses = userEnrollments.map((enrollment, index) => {
+				const courseResult = courseResults[index]
+				const courseData = courseResult.status === 'fulfilled' ? courseResult.value : null
+				
+				return {
+					...enrollment,
+					title: courseData?.title || 'Unknown Course',
+					description: courseData?.description || '',
+					level: courseData?.level || 'beginner',
+					duration: courseData?.duration || 0,
+					thumbnail: courseData?.thumbnail || null,
+					category: courseData?.category || 'General'
+				}
+			})
+			
+			enrollments = enrollmentsWithCourses
 
 			// Load progress data for enrolled courses
 			const progressPromises = userEnrollments.map(enrollment => 
@@ -88,7 +111,13 @@
 		}
 	}
 
-	onMount(loadDashboardData)
+	// React to auth state changes instead of just onMount
+	$effect(() => {
+		// Only load data when auth is resolved and user exists
+		if (!authState.loading && authState.user) {
+			loadDashboardData()
+		}
+	})
 </script>
 
 <svelte:head>
@@ -201,6 +230,10 @@
 												<p class="text-sm font-medium">{course.title}</p>
 												<div class="flex items-center space-x-2 mt-1">
 													<p class="text-xs text-muted-foreground">{course.progress}% complete</p>
+													{#if course.category}
+														<span class="text-xs text-muted-foreground">•</span>
+														<span class="text-xs text-muted-foreground capitalize">{course.category}</span>
+													{/if}
 													<div class="w-16 h-1 bg-muted rounded-full">
 														<div 
 															class="h-1 bg-primary rounded-full transition-all"

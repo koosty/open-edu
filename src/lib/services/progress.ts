@@ -6,6 +6,7 @@ import {
 	doc,
 	getDoc,
 	getDocs,
+	addDoc,
 	updateDoc,
 	query,
 	where,
@@ -63,10 +64,24 @@ export class ProgressService {
 	 */
 	static async startLesson(userId: string, courseId: string, lessonId: string): Promise<void> {
 		try {
-			const progress = await this.getCourseProgress(userId, courseId)
+			let progress = await this.getCourseProgress(userId, courseId)
 			
 			if (!progress) {
-				throw new Error('User not enrolled in course')
+				// Check if user is enrolled but has no progress record
+				const { EnrollmentService } = await import('./enrollment')
+				const isEnrolled = await EnrollmentService.hasAccess(userId, courseId)
+				
+				if (!isEnrolled) {
+					throw new Error('User not enrolled in course')
+				}
+				
+				// Create progress record for enrolled user
+				await this.createInitialProgressRecord(userId, courseId)
+				progress = await this.getCourseProgress(userId, courseId)
+				
+				if (!progress) {
+					throw new Error('Failed to create progress record')
+				}
 			}
 			
 			const updates: any = {
@@ -98,10 +113,24 @@ export class ProgressService {
 		quizScore?: number
 	): Promise<void> {
 		try {
-			const progress = await this.getCourseProgress(userId, courseId)
+			let progress = await this.getCourseProgress(userId, courseId)
 			
 			if (!progress) {
-				throw new Error('User not enrolled in course')
+				// Check if user is enrolled but has no progress record
+				const { EnrollmentService } = await import('./enrollment')
+				const isEnrolled = await EnrollmentService.hasAccess(userId, courseId)
+				
+				if (!isEnrolled) {
+					throw new Error('User not enrolled in course')
+				}
+				
+				// Create progress record for enrolled user
+				await this.createInitialProgressRecord(userId, courseId)
+				progress = await this.getCourseProgress(userId, courseId)
+				
+				if (!progress) {
+					throw new Error('Failed to create progress record')
+				}
 			}
 			
 			// Check if lesson is already completed
@@ -181,10 +210,24 @@ export class ProgressService {
 		timeSpent: number
 	): Promise<void> {
 		try {
-			const progress = await this.getCourseProgress(userId, courseId)
+			let progress = await this.getCourseProgress(userId, courseId)
 			
 			if (!progress) {
-				throw new Error('User not enrolled in course')
+				// Check if user is enrolled but has no progress record
+				const { EnrollmentService } = await import('./enrollment')
+				const isEnrolled = await EnrollmentService.hasAccess(userId, courseId)
+				
+				if (!isEnrolled) {
+					throw new Error('User not enrolled in course')
+				}
+				
+				// Create progress record for enrolled user
+				await this.createInitialProgressRecord(userId, courseId)
+				progress = await this.getCourseProgress(userId, courseId)
+				
+				if (!progress) {
+					throw new Error('Failed to create progress record')
+				}
 			}
 			
 			const currentAttempts = progress.quizAttempts?.[lessonId] || 0
@@ -333,6 +376,45 @@ export class ProgressService {
 		} catch (error) {
 			console.error('Error updating activity streak:', error)
 			// Non-critical error, don't throw
+		}
+	}
+
+	/**
+	 * Create initial progress record for a user and course
+	 */
+	static async createInitialProgressRecord(userId: string, courseId: string): Promise<void> {
+		try {
+			const progressData = {
+				userId,
+				courseId,
+				enrolledAt: serverTimestamp(),
+				startedAt: null,
+				completedAt: null,
+				lastAccessedAt: serverTimestamp(),
+				completedLessons: [],
+				currentChapter: null,
+				currentLesson: null,
+				progressPercentage: 0,
+				overallProgress: 0,
+				totalTimeSpent: 0,
+				sessionCount: 0,
+				averageSessionTime: 0,
+				quizScores: {},
+				quizAttempts: {},
+				averageQuizScore: 0,
+				achievements: [],
+				totalPoints: 0,
+				streakDays: 0,
+				lastActiveDate: new Date().toISOString()
+			}
+			
+			const docRef = await addDoc(collection(db, COLLECTIONS.COURSE_PROGRESS), progressData)
+			
+			// Update progress ID
+			await updateDoc(docRef, { id: docRef.id })
+		} catch (error) {
+			console.error('Error creating initial progress record:', error)
+			throw error
 		}
 	}
 }

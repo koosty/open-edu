@@ -189,9 +189,9 @@
 						>
 							{submitting ? 'Creating...' : 'Create Course'}
 						</Button>
-					</div>
-				</div>
-			</div>
+								</div>
+								</div>
+							</div>
 		</div>
 
 		<div class="container mx-auto px-4 py-8">
@@ -369,8 +369,8 @@ Familiarity with command line"
 							<CardTitle>Pricing & Settings</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
-							<div>
-								<label class="block text-sm font-medium text-gray-700 mb-3">Course Type</label>
+							<fieldset>
+								<legend class="block text-sm font-medium text-gray-700 mb-3">Course Type</legend>
 								<div class="flex gap-4">
 									<label class="flex items-center gap-2">
 										<input
@@ -391,7 +391,7 @@ Familiarity with command line"
 										<span>Premium Course</span>
 									</label>
 								</div>
-							</div>
+							</fieldset>
 
 							{#if form.level === 'premium'}
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">

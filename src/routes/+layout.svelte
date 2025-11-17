@@ -10,9 +10,8 @@
 	let { children } = $props()
 	let mobileMenuOpen = $state(false)
 
-	onMount(() => {
-		initializeAuth()
-	})
+	// Initialize auth immediately when script runs
+	initializeAuth()
 
 	async function handleLogout() {
 		try {
