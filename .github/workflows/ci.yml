@@ -37,6 +37,28 @@ jobs:
           PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "123456789"
           PUBLIC_FIREBASE_APP_ID: "1:123456789:web:abcdef"
           PUBLIC_FIREBASE_MEASUREMENT_ID: "G-ABCDEFGHIJ"
+          
+      - name: Generate coverage report
+        run: npx vitest run --coverage --project server
+        env:
+          # Use dummy values for coverage generation
+          PUBLIC_FIREBASE_API_KEY: "dummy"
+          PUBLIC_FIREBASE_AUTH_DOMAIN: "dummy.firebaseapp.com"
+          PUBLIC_FIREBASE_PROJECT_ID: "dummy"
+          PUBLIC_FIREBASE_STORAGE_BUCKET: "dummy.appspot.com"
+          PUBLIC_FIREBASE_MESSAGING_SENDER_ID: "123456789"
+          PUBLIC_FIREBASE_APP_ID: "1:123456789:web:abcdef"
+          PUBLIC_FIREBASE_MEASUREMENT_ID: "G-ABCDEFGHIJ"
+          
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage/lcov.info
+          flags: unittests
+          name: open-edu-coverage
+          fail_ci_if_error: false  # Don't fail CI if Codecov upload fails
+          verbose: true
         
       - name: Build application
         run: npm run build

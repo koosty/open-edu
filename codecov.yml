@@ -1,0 +1,72 @@
+# Codecov configuration for Open-EDU
+# https://docs.codecov.com/docs/codecov-yaml
+
+coverage:
+  status:
+    project:
+      default:
+        target: 80%  # Aim for 80% overall coverage
+        threshold: 5% # Allow 5% drop
+        if_ci_failed: error # Fail if CI fails
+    patch:
+      default:
+        target: 70%  # New code should have 70% coverage
+        threshold: 10% # Allow larger threshold for patches
+
+comment:
+  layout: "reach, diff, flags, tree"
+  behavior: default
+  require_changes: false
+  require_base: false # Don't require base commit for first uploads
+
+# Ignore files that shouldn't affect coverage
+ignore:
+  - "src/**/*.spec.ts"
+  - "src/**/*.svelte.spec.ts"
+  - "src/**/*.test.ts"
+  - "src/**/*.svelte.test.ts" 
+  - "scripts/"
+  - "sample-templates/"
+  - "static/"
+  - "vite.config.ts"
+  - "svelte.config.js"
+  - "roadmap/"
+  - "coverage/"
+  - "node_modules/"
+  - ".env.*"
+  - "build/"
+  - "dist/"
+
+# Define flags for different areas of the codebase
+flag_management:
+  default_rules:
+    carryforward: true
+    statuses:
+      - name: default
+        type: project
+        target: 80%
+        threshold: 5%
+
+flags:
+  # Frontend code coverage
+  frontend:
+    paths:
+      - src/routes/
+      - src/lib/components/
+    carryforward: true
+    
+  # Backend/Service code coverage  
+  backend:
+    paths:
+      - src/lib/services/
+      - src/lib/firebase/
+      - src/lib/utils/
+    carryforward: true
+    
+  # Core business logic
+  core:
+    paths:
+      - src/lib/services/
+      - src/lib/firebase/
+      - src/lib/validation/
+    carryforward: true

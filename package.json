@@ -12,10 +12,14 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
+		"test:coverage": "vitest run --coverage",
+		"test:coverage:watch": "vitest --coverage",
+		"test:coverage:ui": "vitest --ui --coverage",
 		"validate:firebase": "node scripts/validate-firebase-config.mjs",
 		"validate:all": "npm run check && npm run validate:firebase"
 	},
 	"devDependencies": {
+		"@codecov/sveltekit-plugin": "^1.9.1",
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.47.1",
@@ -24,6 +28,7 @@
 		"@tailwindcss/typography": "^0.5.19",
 		"@tailwindcss/vite": "^4.1.14",
 		"@vitest/browser-playwright": "^4.0.5",
+		"@vitest/coverage-v8": "^4.0.9",
 		"playwright": "^1.56.1",
 		"svelte": "^5.41.0",
 		"svelte-check": "^4.3.3",
