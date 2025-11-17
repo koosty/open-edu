@@ -4,8 +4,9 @@
 	import { onMount } from 'svelte'
 	import { initializeAuth, authState, logout } from '$lib/auth.svelte'
 	import { Button } from '$lib/components/ui'
-	import { LogOut, BookOpen, Menu } from 'lucide-svelte'
+	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
 	import { base } from '$app/paths'
+	import { isAdmin } from '$lib/utils/admin'
 	
 	let { children } = $props()
 	let mobileMenuOpen = $state(false)
@@ -52,6 +53,12 @@
 					<a href="{base}/dashboard" class="transition-colors hover:text-foreground/80 text-foreground/60">
 						Dashboard
 					</a>
+					{#if isAdmin(authState.user)}
+						<a href="{base}/admin" class="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center space-x-1">
+							<Settings class="h-3 w-3" />
+							<span>Admin</span>
+						</a>
+					{/if}
 				{/if}
 			</nav>
 
@@ -97,6 +104,12 @@
 						<a href="{base}/dashboard" class="block py-2 text-sm font-medium text-muted-foreground">
 							Dashboard
 						</a>
+						{#if isAdmin(authState.user)}
+							<a href="{base}/admin" class="block py-2 text-sm font-medium text-muted-foreground flex items-center space-x-1">
+								<Settings class="h-3 w-3" />
+								<span>Admin</span>
+							</a>
+						{/if}
 					{/if}
 				</nav>
 			</div>
