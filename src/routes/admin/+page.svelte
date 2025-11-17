@@ -30,18 +30,27 @@
 	let hasAccess = $derived(authState.user && canManageCourses(authState.user))
 	let isFullAdmin = $derived(authState.user && isAdmin(authState.user))
 
-	onMount(async () => {
+	// Reactive effect for authentication and access control
+	$effect(() => {
+		// Wait for auth to finish loading before making navigation decisions
+		if (authState.loading) {
+			return
+		}
+
+		// If no user after loading is complete, redirect to login
 		if (!authState.user) {
 			goto('/auth/login')
 			return
 		}
 
+		// If user doesn't have admin/instructor access, redirect to dashboard
 		if (!hasAccess) {
 			goto('/dashboard')
 			return
 		}
 
-		await loadDashboardData()
+		// If we reach here, user has proper access - load the dashboard
+		loadDashboardData()
 	})
 
 	async function loadDashboardData() {
@@ -156,7 +165,7 @@
 	<meta name="description" content="Course management dashboard for Open-EDU" />
 </svelte:head>
 
-{#if loading}
+{#if authState.loading || loading}
 	<div class="flex justify-center items-center min-h-[50vh]">
 		<Loading />
 	</div>
