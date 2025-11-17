@@ -59,6 +59,15 @@
         { "fieldPath": "userId", "mode": "ASCENDING" },
         { "fieldPath": "courseId", "mode": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "courses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "isPublished", "mode": "ASCENDING" },
+        { "fieldPath": "enrolled", "mode": "DESCENDING" },
+        { "fieldPath": "__name__", "mode": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
