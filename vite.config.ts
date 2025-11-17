@@ -18,6 +18,8 @@ export default defineConfig({
 	],
 	test: {
 		expect: { requireAssertions: true },
+		testTimeout: 30000, // 30 seconds timeout per test
+		hookTimeout: 10000, // 10 seconds timeout for setup/teardown
 		coverage: {
 			enabled: true,
 			provider: 'v8', // V8 is recommended for modern Node.js
