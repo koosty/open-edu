@@ -12,7 +12,7 @@
 
 <!-- Hero Section -->
 <section class="py-20 px-4 text-center bg-gradient-to-b from-background to-muted/20">
-	<div class="container max-w-4xl">
+	<div class="container mx-auto max-w-4xl">
 		<h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6">
 			Transform Your Learning 
 			<span class="text-primary">Journey</span>
@@ -20,9 +20,9 @@
 		<p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
 			Discover world-class courses taught by industry experts. Learn at your own pace with interactive lessons, quizzes, and real-world projects.
 		</p>
-		<div class="flex flex-col sm:flex-row gap-4 justify-center">
+		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
 		{#if authState.user}
-			<div class="space-x-4">
+			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
 					<a href="{base}/dashboard">Go to Dashboard</a>
 				</Button>
@@ -31,7 +31,7 @@
 				</Button>
 			</div>
 		{:else}
-			<div class="space-x-4">
+			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
 					<a href="{base}/auth/login">Start Learning Today</a>
 				</Button>
@@ -46,7 +46,7 @@
 
 <!-- Features Section -->
 <section class="py-20 px-4">
-	<div class="container">
+	<div class="container mx-auto max-w-7xl">
 		<div class="text-center mb-16">
 			<h2 class="text-3xl font-bold mb-4">Why Choose Open-EDU?</h2>
 			<p class="text-xl text-muted-foreground max-w-2xl mx-auto">
@@ -96,7 +96,7 @@
 
 <!-- Stats Section -->
 <section class="py-20 px-4 bg-muted/50">
-	<div class="container">
+	<div class="container mx-auto max-w-7xl">
 		<div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
 			<div>
 				<div class="text-4xl font-bold text-primary mb-2">50+</div>
@@ -119,7 +119,7 @@
 
 <!-- CTA Section -->
 <section class="py-20 px-4">
-	<div class="container text-center">
+	<div class="container mx-auto max-w-4xl text-center">
 		<h2 class="text-3xl font-bold mb-4">Ready to Start Your Learning Journey?</h2>
 		<p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
 			Join thousands of learners who are already advancing their careers with Open-EDU

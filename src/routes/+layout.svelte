@@ -32,9 +32,9 @@
 <div class="min-h-screen bg-background">
 	<!-- Navigation Header -->
 	<header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-		<div class="container flex h-16 items-center justify-between">
+		<div class="container mx-auto px-4 flex h-16 items-center justify-between max-w-7xl">
 			<!-- Logo -->
-			<div class="flex items-center space-x-4">
+			<div class="flex items-center">
 				<a href="{base}/" class="flex items-center space-x-2">
 					<BookOpen class="h-6 w-6" />
 					<span class="font-bold text-xl">Open-EDU</span>
@@ -57,12 +57,12 @@
 			</nav>
 
 			<!-- User Menu -->
-			<div class="flex items-center space-x-4">
+			<div class="flex items-center space-x-3">
 				{#if authState.loading}
 					<div class="h-8 w-8 animate-spin rounded-full border-2 border-primary border-t-transparent"></div>
 				{:else if authState.user}
 					<!-- Authenticated User Menu -->
-					<div class="flex items-center space-x-2">
+					<div class="flex items-center space-x-3">
 						<span class="hidden sm:inline-block text-sm text-muted-foreground">
 							Welcome, {authState.user.displayName || authState.user.email}
 						</span>
@@ -72,11 +72,9 @@
 					</div>
 				{:else}
 					<!-- Guest User Menu -->
-					<div class="flex items-center space-x-2">
-						<Button size="sm">
-							<a href="{base}/auth/login">Sign In with Google</a>
-						</Button>
-					</div>
+					<Button size="sm">
+						<a href="{base}/auth/login">Sign In with Google</a>
+					</Button>
 				{/if}
 
 				<!-- Mobile Menu Button -->
@@ -89,7 +87,7 @@
 		<!-- Mobile Navigation Menu -->
 		{#if mobileMenuOpen}
 			<div class="border-t bg-background md:hidden">
-				<nav class="container py-4 space-y-3">
+				<nav class="container mx-auto px-4 py-4 space-y-3 max-w-7xl">
 					<a href="{base}/" class="block py-2 text-sm font-medium">
 						Home
 					</a>
@@ -113,7 +111,7 @@
 
 	<!-- Footer -->
 	<footer class="border-t bg-muted/50">
-		<div class="container py-8">
+		<div class="container mx-auto px-4 py-8 max-w-7xl">
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 				<div class="space-y-3">
 					<div class="flex items-center space-x-2">
@@ -149,8 +147,12 @@
 					</ul>
 				</div>
 			</div>
-			<div class="mt-8 pt-4 border-t text-center text-sm text-muted-foreground">
-				© {new Date().getFullYear()} Open-EDU. All rights reserved.
+		</div>
+		<div class="border-t bg-muted/30">
+			<div class="container mx-auto px-4 py-4 max-w-7xl">
+				<div class="text-center text-sm text-muted-foreground">
+					© {new Date().getFullYear()} Open-EDU. All rights reserved.
+				</div>
 			</div>
 		</div>
 	</footer>
