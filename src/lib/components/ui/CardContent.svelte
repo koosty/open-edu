@@ -1,0 +1,22 @@
+<script lang="ts">
+	import { cn } from '$lib/utils'
+	import type { HTMLAttributes } from 'svelte/elements'
+
+	type Props = HTMLAttributes<HTMLDivElement> & {
+		children?: import('svelte').Snippet
+	}
+
+	let { 
+		class: className,
+		children,
+		...restProps 
+	}: Props = $props()
+</script>
+
+<div
+	data-slot="card-content"
+	class={cn('px-6 [&:last-child]:pb-6', className)}
+	{...restProps}
+>
+	{@render children?.()}
+</div>
