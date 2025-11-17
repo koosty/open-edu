@@ -32,7 +32,7 @@ jobs:
         run: npm ci
         
       - name: Build application
-        run: npm run build -- --base=/open-edu/
+        run: npm run build
         env:
           # Firebase configuration for production
           PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
