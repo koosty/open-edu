@@ -66,14 +66,52 @@ PUBLIC_FIREBASE_APP_ID=your_app_id
 PUBLIC_FIREBASE_MEASUREMENT_ID=your_measurement_id
 ```
 
-### 3. Development
+### 3. Database Seeding
+After setting up Firebase, you need to seed the database with initial data (admin user and sample courses):
+
+#### **🚀 Automated Seeding (Recommended)**
+```bash
+# One command to seed everything automatically
+./seed-automated.sh
+```
+
+This automated script will:
+1. ✅ Temporarily deploy open security rules 
+2. ✅ Create admin user with your Google account
+3. ✅ Add sample courses (JavaScript & React)
+4. ✅ Restore production security rules
+
+#### **📋 Manual Seeding (Alternative)**
+If the automated script doesn't work, you can manually add data:
+
+1. **Get your User UID**:
+```bash
+firebase auth:export temp-users.json
+# Find your UID in the exported file, then:
+rm temp-users.json
+```
+
+2. **Open Firebase Console**: https://console.firebase.google.com/project/YOUR_PROJECT_ID/firestore/data
+
+3. **Create admin user**:
+   - Create collection: `users`
+   - Create document with your UID as document ID
+   - Add fields: `{ id, email, displayName: "Admin User", role: "admin", ... }`
+
+4. **Add sample courses**:
+   - Create collection: `courses` 
+   - Add sample course documents with lesson data
+
+For detailed JSON structures, see the automated seeding script: `scripts/automated-seed.mjs`
+
+### 4. Development
 ```bash
 npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) to see your app!
 
-### 4. Testing
+### 5. Testing
 ```bash
 # Run unit tests
 npm run test
@@ -85,7 +123,7 @@ npm run check
 npm run test:unit
 ```
 
-### 5. Production Build
+### 6. Production Build
 ```bash
 npm run build
 npm run preview
@@ -123,7 +161,12 @@ src/
 │   │   ├── login/          # Google OAuth login
 │   │   └── profile/        # User profile management
 │   └── dashboard/          # Protected user dashboard
-└── app.css                # Global styles
+├── app.css                # Global styles
+scripts/
+└── automated-seed.mjs     # Database seeding script
+seed-automated.sh          # Automated Firebase seeding
+firestore.rules            # Firebase security rules
+firestore.production.rules # Production security backup
 ```
 
 ### **Key Design Decisions**

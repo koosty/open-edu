@@ -11,7 +11,7 @@ import type { User } from './types'
 import { browser } from '$app/environment'
 
 // Convert Firebase User to our User type
-function mapFirebaseUser(firebaseUser: FirebaseUser): User {
+function mapFirebaseUser(firebaseUser: FirebaseUser, userData?: any): User {
 	return {
 		id: firebaseUser.uid,
 		email: firebaseUser.email!,
@@ -19,7 +19,20 @@ function mapFirebaseUser(firebaseUser: FirebaseUser): User {
 		photoURL: firebaseUser.photoURL,
 		emailVerified: firebaseUser.emailVerified,
 		createdAt: firebaseUser.metadata.creationTime || new Date().toISOString(),
-		lastLoginAt: firebaseUser.metadata.lastSignInTime || new Date().toISOString()
+		lastLoginAt: firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
+		
+		// v1.1.0 additions with defaults
+		role: userData?.role || 'student',
+		enrolledCourses: userData?.enrolledCourses || [],
+		completedCourses: userData?.completedCourses || [],
+		achievements: userData?.achievements || [],
+		totalPoints: userData?.totalPoints || 0,
+		streakDays: userData?.streakDays || 0,
+		preferences: userData?.preferences || {
+			notifications: true,
+			theme: 'system',
+			language: 'en'
+		}
 	}
 }
 
@@ -45,8 +58,7 @@ export function initializeAuth() {
 				const userData = userDoc.data()
 				
 				authState.user = {
-					...mapFirebaseUser(firebaseUser),
-					...userData
+					...mapFirebaseUser(firebaseUser, userData),
 				}
 			} catch (error) {
 				console.error('Error fetching user data:', error)
@@ -73,24 +85,38 @@ export async function signInWithGoogle(): Promise<User> {
 		provider.addScope('profile')
 		
 		const result = await signInWithPopup(auth, provider)
-		const user = mapFirebaseUser(result.user)
 		
-		// Check if user document exists
-		const userDocRef = doc(db, 'users', user.id)
+		// Check if user document exists and get user data
+		const userDocRef = doc(db, 'users', result.user.uid)
 		const userDoc = await getDoc(userDocRef)
 		const isNewUser = !userDoc.exists()
+		const existingUserData = userDoc.data()
+		const user = mapFirebaseUser(result.user, existingUserData)
 		
 		// Create or update user document in Firestore
-		await setDoc(userDocRef, {
+		const userUpdateData = {
 			email: user.email,
 			displayName: user.displayName,
 			photoURL: user.photoURL,
 			lastLoginAt: new Date().toISOString(),
-			// Only set createdAt if it's a new user
+			// v1.1.0 defaults for new users
 			...(isNewUser && {
-				createdAt: new Date().toISOString()
+				createdAt: new Date().toISOString(),
+				role: 'student',
+				enrolledCourses: [],
+				completedCourses: [],
+				achievements: [],
+				totalPoints: 0,
+				streakDays: 0,
+				preferences: {
+					notifications: true,
+					theme: 'system',
+					language: 'en'
+				}
 			})
-		}, { merge: true })
+		}
+		
+		await setDoc(userDocRef, userUpdateData, { merge: true })
 		
 		return user
 	} catch (error: any) {

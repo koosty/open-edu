@@ -1,0 +1,195 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+    
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+    
+    function isInstructor() {
+      return isAuthenticated() && (getUserRole() == 'instructor' || getUserRole() == 'admin');
+    }
+    
+    function isStudent() {
+      return isAuthenticated() && getUserRole() == 'student';
+    }
+
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // Course enrollments collection
+    match /enrollments/{enrollmentId} {
+      // Users can read their own enrollments, instructors can read enrollments for their courses, admins can read all
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Any authenticated user can enroll themselves in courses (simplified permission)
+      allow create: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.userId &&
+        exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId));
+      
+      // Users can update their own enrollment status, instructors can update for their courses
+      allow update: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Only admin can delete enrollments
+      allow delete: if isAdmin();
+    }
+
+    // Progress tracking collection (courseProgress)
+    match /courseProgress/{progressId} {
+      // Users can read their own progress, instructors can read progress for their courses
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Any authenticated user can create/update their own progress (simplified permission)
+      allow create, update: if isAuthenticated() && 
+        request.auth.uid == request.resource.data.userId;
+      
+      // Only admin can delete progress
+      allow delete: if isAdmin();
+    }
+
+    // Courses collection
+    match /courses/{courseId} {
+      // Anyone can read published courses, authenticated users can read all
+      allow read: if resource.data.isPublished == true || isAuthenticated();
+      
+      // Only instructors and admins can create courses
+      allow create: if isInstructor() && 
+        request.auth.uid == request.resource.data.instructorId;
+      
+      // Only course instructor or admin can update
+      allow update: if isAuthenticated() && 
+        (request.auth.uid == resource.data.instructorId || isAdmin());
+      
+      // Only admin can delete courses
+      allow delete: if isAdmin();
+    }
+
+    // Course enrollments collection
+    match /enrollments/{enrollmentId} {
+      // Users can read their own enrollments, instructors can read enrollments for their courses
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Any authenticated user can enroll themselves in courses (students, instructors, admins)
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId) &&
+        exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId));
+      
+      // Users can update their own enrollment status, instructors can update for their courses
+      allow update: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Only admin can delete enrollments
+      allow delete: if isAdmin();
+    }
+
+    // Progress tracking collection
+    match /progress/{progressId} {
+      // Users can read their own progress, instructors can read progress for their courses
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Any authenticated user can create/update their own progress
+      allow create, update: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      
+      // Only admin can delete progress
+      allow delete: if isAdmin();
+    }
+
+    // Quiz attempts collection
+    match /quiz-attempts/{attemptId} {
+      // Users can read their own attempts, instructors can read attempts for their courses
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Users can create their own attempts
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      
+      // No updates allowed to quiz attempts (immutable)
+      allow update: if false;
+      
+      // Only admin can delete attempts
+      allow delete: if isAdmin();
+    }
+
+    // User achievements collection
+    match /achievements/{achievementId} {
+      // Users can read their own achievements, admins can read all
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Only admin/system can create achievements
+      allow create: if isAdmin();
+      
+      // No updates to achievements (immutable)
+      allow update: if false;
+      
+      // Only admin can delete achievements
+      allow delete: if isAdmin();
+    }
+
+    // Analytics collection (admin only)
+    match /analytics/{document=**} {
+      allow read, write: if isAdmin();
+    }
+
+    // System notifications
+    match /notifications/{notificationId} {
+      // Users can read their own notifications
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Admin can create notifications
+      allow create: if isAdmin();
+      
+      // Users can mark as read, admin can do anything
+      allow update: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Only admin can delete
+      allow delete: if isAdmin();
+    }
+
+    // Catch-all: deny everything else
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

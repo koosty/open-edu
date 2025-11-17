@@ -1,0 +1,10 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Temporary open rules for initial data seeding
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}
