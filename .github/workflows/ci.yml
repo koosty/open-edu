@@ -26,8 +26,8 @@ jobs:
       - name: Run type checking
         run: npm run check
         
-      - name: Run unit tests only
-        run: npx vitest run src/**/*.{test,spec}.{js,ts} --exclude src/**/*.svelte.{test,spec}.{js,ts}
+      - name: Run fast tests
+        run: npm run test:fast
         env:
           # Use dummy values for CI build validation
           PUBLIC_FIREBASE_API_KEY: "dummy"
@@ -39,7 +39,7 @@ jobs:
           PUBLIC_FIREBASE_MEASUREMENT_ID: "G-ABCDEFGHIJ"
           
       - name: Generate coverage report
-        run: npx vitest run --coverage --project server
+        run: npm run test:coverage
         env:
           # Use dummy values for coverage generation
           PUBLIC_FIREBASE_API_KEY: "dummy"

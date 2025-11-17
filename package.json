@@ -13,9 +13,9 @@
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"test:fast": "vitest run --reporter=verbose --no-coverage",
-		"test:coverage": "vitest run --coverage",
-		"test:coverage:watch": "vitest --coverage",
-		"test:coverage:ui": "vitest --ui --coverage",
+		"test:coverage": "vitest run --config=vitest.coverage.config.ts",
+		"test:coverage:watch": "vitest --config=vitest.coverage.config.ts",
+		"test:coverage:ui": "vitest --ui --config=vitest.coverage.config.ts",
 		"validate:firebase": "node scripts/validate-firebase-config.mjs",
 		"validate:all": "npm run check && npm run validate:firebase"
 	},

@@ -75,8 +75,8 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Progress tracking collection
-    match /progress/{progressId} {
+    // Course Progress tracking collection
+    match /courseProgress/{progressId} {
       // Users can read their own progress, instructors can read progress for their courses
       allow read: if isAuthenticated() && 
         (isOwner(resource.data.userId) || 
