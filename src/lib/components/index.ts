@@ -1,2 +1,2 @@
-export { default as AuthGuard } from './AuthGuard.svelte'
-export { default as Loading } from './Loading.svelte'
+export { default as AuthGuard } from "./AuthGuard.svelte";
+export { default as Loading } from "./Loading.svelte";
