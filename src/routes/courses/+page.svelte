@@ -23,6 +23,7 @@
 	let courses: Course[] = $state([])
 	let loading = $state(false)
 	let error = $state<string | null>(null)
+	let isUserTyping = $state(false) // Flag to prevent URL sync from overriding user input
 	
 	// Search and filter state - initialized from URL params
 	let searchQuery = $state('')
@@ -146,11 +147,13 @@
 	// Handle search input with debounce
 	let searchTimeout: NodeJS.Timeout
 	function handleSearchInput() {
+		isUserTyping = true
 		clearTimeout(searchTimeout)
 		searchTimeout = setTimeout(() => {
 			currentPage = 1
 			updateURL()
 			loadCourses()
+			isUserTyping = false // Reset flag after update completes
 		}, 300)
 	}
 	
@@ -201,7 +204,7 @@
 	
 	// React to URL changes (e.g., browser back/forward)
 	$effect(() => {
-		if (browser) {
+		if (browser && !isUserTyping) { // Don't sync if user is actively typing
 			// Listen for changes to page.url to sync filters when URL changes
 			const searchParams = $page.url.searchParams
 			const urlSearch = searchParams.get('q') || ''
