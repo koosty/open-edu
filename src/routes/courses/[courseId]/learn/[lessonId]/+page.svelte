@@ -48,6 +48,10 @@
 	let hasAccess = $derived(
 		authState.user && progress !== null
 	)
+	// Sorted lessons to prevent mutation in template
+	let sortedLessons = $derived(
+		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
+	)
 
 	onMount(async () => {
 		await loadLessonData()
@@ -362,7 +366,7 @@
 						<CardContent class="p-0">
 							{#if course?.lessons}
 								<div class="space-y-1">
-									{#each course.lessons.sort((a, b) => a.order - b.order) as lesson, index (lesson.id)}
+									{#each sortedLessons as lesson, index (lesson.id)}
 										<button
 											class="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 {lesson.id === lessonId ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}"
 											onclick={() => handleNavigateToLesson(lesson)}

@@ -30,6 +30,10 @@
 		isEnrolled && 
 		course?.lessons && course.lessons.length > 0
 	)
+	// Sorted lessons to prevent mutation in template
+	let sortedLessons = $derived(
+		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
+	)
 
 	// Load course data and check enrollment status
 	onMount(async () => {
@@ -287,10 +291,10 @@
 						</CardHeader>
 						<CardContent>
 							<div class="space-y-3">
-							{#each course.lessons.sort((a, b) => a.order - b.order) as lesson (lesson.id)}
+							{#each sortedLessons as lesson (lesson.id)}
 								<div class="flex items-center gap-3 p-3 border rounded-lg">
 									<div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-medium">
-										{lesson.order || course.lessons.indexOf(lesson) + 1}
+										{lesson.order || sortedLessons.indexOf(lesson) + 1}
 									</div>
 									<div class="flex-1">
 										<h4 class="font-medium">{lesson.title}</h4>
