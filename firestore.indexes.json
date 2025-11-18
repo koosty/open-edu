@@ -68,6 +68,17 @@
         { "fieldPath": "enrolled", "mode": "DESCENDING" },
         { "fieldPath": "__name__", "mode": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "courses",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "difficulty", "mode": "ASCENDING" },
+        { "fieldPath": "isPublished", "mode": "ASCENDING" },
+        { "fieldPath": "level", "mode": "ASCENDING" },
+        { "fieldPath": "rating", "mode": "DESCENDING" },
+        { "fieldPath": "__name__", "mode": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
