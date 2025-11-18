@@ -5,6 +5,7 @@
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores'
 	import { goto } from '$app/navigation'
+	import { browser } from '$app/environment'
 	import { Search, Users, Clock, Star } from 'lucide-svelte'
 	
 	import Button from '$lib/components/ui/Button.svelte'
@@ -23,7 +24,7 @@
 	let loading = $state(false)
 	let error = $state<string | null>(null)
 	
-	// Search and filter state
+	// Search and filter state - initialized from URL params
 	let searchQuery = $state('')
 	let selectedCategory = $state('all')
 	let selectedDifficulty = $state('all')
@@ -42,6 +43,64 @@
 	
 	const difficulties = ['all', 'Beginner', 'Intermediate', 'Advanced']
 	const levels = ['all', 'free', 'premium']
+	
+	// Initialize filters from URL parameters
+	function initializeFiltersFromURL() {
+		if (!browser) return
+		
+		const searchParams = $page.url.searchParams
+		searchQuery = searchParams.get('q') || ''
+		selectedCategory = searchParams.get('category') || 'all'
+		selectedDifficulty = searchParams.get('difficulty') || 'all'
+		selectedLevel = searchParams.get('level') || 'all'
+		currentPage = parseInt(searchParams.get('page') || '1')
+	}
+	
+	// Update URL with current filter state
+	function updateURL() {
+		if (!browser) return
+		
+		const url = new URL($page.url)
+		const searchParams = url.searchParams
+		
+		// Update search params
+		if (searchQuery) {
+			searchParams.set('q', searchQuery)
+		} else {
+			searchParams.delete('q')
+		}
+		
+		if (selectedCategory !== 'all') {
+			searchParams.set('category', selectedCategory)
+		} else {
+			searchParams.delete('category')
+		}
+		
+		if (selectedDifficulty !== 'all') {
+			searchParams.set('difficulty', selectedDifficulty)
+		} else {
+			searchParams.delete('difficulty')
+		}
+		
+		if (selectedLevel !== 'all') {
+			searchParams.set('level', selectedLevel)
+		} else {
+			searchParams.delete('level')
+		}
+		
+		if (currentPage > 1) {
+			searchParams.set('page', currentPage.toString())
+		} else {
+			searchParams.delete('page')
+		}
+		
+		// Update URL without triggering a page reload
+		goto(url.pathname + url.search, { 
+			replaceState: true,
+			noScroll: true,
+			keepFocus: true
+		})
+	}
 	
 	// Load courses with current filters
 	async function loadCourses() {
@@ -80,6 +139,8 @@
 		selectedDifficulty = 'all'
 		selectedLevel = 'all'
 		currentPage = 1
+		updateURL()
+		loadCourses()
 	}
 	
 	// Handle search input with debounce
@@ -88,6 +149,7 @@
 		clearTimeout(searchTimeout)
 		searchTimeout = setTimeout(() => {
 			currentPage = 1
+			updateURL()
 			loadCourses()
 		}, 300)
 	}
@@ -95,6 +157,14 @@
 	// Handle filter changes
 	function handleFilterChange() {
 		currentPage = 1
+		updateURL()
+		loadCourses()
+	}
+	
+	// Handle page change
+	function handlePageChange(newPage: number) {
+		currentPage = newPage
+		updateURL()
 		loadCourses()
 	}
 	
@@ -123,9 +193,38 @@
 		goto(`/courses/${courseId}`)
 	}
 	
-	// Load courses on mount and when filters change
+	// Initialize from URL and load courses on mount
 	onMount(() => {
+		initializeFiltersFromURL()
 		loadCourses()
+	})
+	
+	// React to URL changes (e.g., browser back/forward)
+	$effect(() => {
+		if (browser) {
+			// Listen for changes to page.url to sync filters when URL changes
+			const searchParams = $page.url.searchParams
+			const urlSearch = searchParams.get('q') || ''
+			const urlCategory = searchParams.get('category') || 'all'
+			const urlDifficulty = searchParams.get('difficulty') || 'all'
+			const urlLevel = searchParams.get('level') || 'all'
+			const urlPage = parseInt(searchParams.get('page') || '1')
+			
+			// Only update if values have changed (to avoid infinite loops)
+			if (searchQuery !== urlSearch || 
+				selectedCategory !== urlCategory || 
+				selectedDifficulty !== urlDifficulty || 
+				selectedLevel !== urlLevel || 
+				currentPage !== urlPage) {
+				
+				searchQuery = urlSearch
+				selectedCategory = urlCategory
+				selectedDifficulty = urlDifficulty
+				selectedLevel = urlLevel
+				currentPage = urlPage
+				loadCourses()
+			}
+		}
 	})
 </script>
 
@@ -328,7 +427,7 @@
 		{#if hasMore}
 			<div class="text-center mt-8">
 				<Button 
-					onclick={() => { currentPage++; loadCourses(); }}
+					onclick={() => handlePageChange(currentPage + 1)}
 					disabled={loading}
 					class="px-8"
 				>
