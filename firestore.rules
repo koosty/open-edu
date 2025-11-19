@@ -148,6 +148,74 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Reading positions collection (auto-save scroll position)
+    match /readingPositions/{positionId} {
+      // Users can read their own reading positions
+      allow read: if isAuthenticated() && 
+        positionId.matches('^' + request.auth.uid + '_.*');
+      
+      // Users can create/update their own reading positions
+      allow create, update: if isAuthenticated() && 
+        positionId.matches('^' + request.auth.uid + '_.*');
+      
+      // Users can delete their own reading positions
+      allow delete: if isAuthenticated() && 
+        positionId.matches('^' + request.auth.uid + '_.*');
+    }
+
+    // Notes collection (lesson notes, bookmarks, highlights)
+    match /notes/{noteId} {
+      // Users can read their own notes
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Users can create their own notes
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      
+      // Users can update their own notes
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data.userId);
+      
+      // Users can delete their own notes
+      allow delete: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+    }
+
+    // Bookmarks collection (quick save positions)
+    match /bookmarks/{bookmarkId} {
+      // Users can read their own bookmarks
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Users can create their own bookmarks
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      
+      // Users can delete their own bookmarks
+      allow delete: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+    }
+
+    // Highlights collection (text highlights with optional notes)
+    match /highlights/{highlightId} {
+      // Users can read their own highlights
+      allow read: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+      
+      // Users can create their own highlights
+      allow create: if isAuthenticated() && 
+        isOwner(request.resource.data.userId);
+      
+      // Users can update their own highlights
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data.userId);
+      
+      // Users can delete their own highlights
+      allow delete: if isAuthenticated() && 
+        (isOwner(resource.data.userId) || isAdmin());
+    }
+
     // Catch-all: deny everything else
     match /{document=**} {
       allow read, write: if false;

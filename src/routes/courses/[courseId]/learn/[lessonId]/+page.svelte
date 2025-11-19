@@ -15,6 +15,7 @@
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import LessonNavigation from '$lib/components/LessonNavigation.svelte'
 	import NoteWidget from '$lib/components/NoteWidget.svelte'
+	import BookmarkButton from '$lib/components/BookmarkButton.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -543,6 +544,37 @@
 			<div class="px-6 py-12 max-w-4xl mx-auto">
 					{#if currentLesson}
 						<Card class="mb-6">
+							<!-- Lesson Header with Bookmark -->
+							<div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+								<div class="flex items-start justify-between gap-4">
+									<div class="flex-1">
+										<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
+											{currentLesson.title}
+										</h1>
+										{#if currentLesson.description}
+											<p class="text-gray-600 dark:text-gray-400 text-sm">
+												{currentLesson.description}
+											</p>
+										{/if}
+									</div>
+									<div class="flex items-center gap-3">
+										<BookmarkButton
+											{courseId}
+											{lessonId}
+											currentHeadingId={currentHeadingId}
+											scrollPosition={currentScrollPosition}
+											getCurrentContext={() => {
+												// Get current heading text for context
+												const heading = document.getElementById(currentHeadingId)
+												return heading?.textContent || ''
+											}}
+											onSuccess={(bookmarkId) => {
+												console.log('Bookmark saved:', bookmarkId)
+											}}
+										/>
+									</div>
+								</div>
+							</div>
 							
 							<CardContent>
 								{#if isQuizLesson && currentLesson.quiz}
