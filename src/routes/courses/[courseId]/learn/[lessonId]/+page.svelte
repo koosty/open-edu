@@ -27,7 +27,8 @@
 		deleteReadingPosition
 	} from '$lib/services/readingPosition'
 	import { ReadingProgressTracker } from '$lib/services/readingProgress'
-
+	import { createTouchGesture, type TouchGestureManager } from '$lib/services/touchGestures'
+	
 	let courseId = $derived($page.params.courseId as string)
 	let lessonId = $derived($page.params.lessonId as string)
 	
@@ -77,6 +78,12 @@
 	let currentHeadingId = $state<string>('')
 	let currentScrollPosition = $state(0)
 	
+	// Touch gesture state
+	let touchGestureManager: TouchGestureManager | null = null
+	let swipeOffset = $state(0) // Visual feedback during swipe
+	let isSwipeNavigating = $state(false)
+	let mainElement = $state<HTMLElement | null>(null)
+	
 	// Derived states
 	let isCompleted = $derived(
 		progress?.completedLessons.includes(lessonId) || false
@@ -118,6 +125,43 @@
 		}
 	})
 
+	// Initialize touch gestures for mobile navigation
+	$effect(() => {
+		if (!mainElement || !previousLesson && !nextLesson) return
+		
+		touchGestureManager = createTouchGesture(mainElement, {
+			minSwipeDistance: 80,
+			maxSwipeTime: 400,
+			minVelocity: 0.2,
+			maxVerticalDeviation: 150,
+			edgeThreshold: 30,
+			onSwipe: (event) => {
+				// Swipe right = go to previous lesson
+				// Swipe left = go to next lesson
+				if (event.direction === 'right' && previousLesson) {
+					handleSwipeNavigation('previous')
+				} else if (event.direction === 'left' && nextLesson && canNavigateNext) {
+					handleSwipeNavigation('next')
+				}
+			},
+			onSwipeMove: (deltaX, deltaY) => {
+				// Update visual feedback during swipe
+				// Limit the offset to provide resistance effect
+				const maxOffset = 100
+				swipeOffset = Math.max(-maxOffset, Math.min(maxOffset, deltaX * 0.3))
+			},
+			onSwipeEnd: () => {
+				// Reset visual feedback
+				swipeOffset = 0
+			}
+		})
+		
+		return () => {
+			touchGestureManager?.destroy()
+			touchGestureManager = null
+		}
+	})
+	
 	onDestroy(() => {
 		// Save session time when leaving (if not already saved by effect cleanup)
 		if (startTime && authState.user && currentLesson) {
@@ -126,6 +170,9 @@
 				ProgressService.startLesson(authState.user.id, courseId, lessonId)
 			}
 		}
+		
+		// Cleanup touch gestures
+		touchGestureManager?.destroy()
 	})
 
 	async function loadLessonData() {
@@ -422,6 +469,26 @@
 	}
 	
 	/**
+	 * Handle swipe navigation with visual feedback
+	 */
+	async function handleSwipeNavigation(direction: 'previous' | 'next') {
+		if (isSwipeNavigating) return
+		
+		const targetLesson = direction === 'previous' ? previousLesson : nextLesson
+		if (!targetLesson) return
+		
+		isSwipeNavigating = true
+		
+		// Navigate to the lesson
+		await goto(`/courses/${courseId}/learn/${targetLesson.id}`)
+		
+		// Reset state after navigation
+		setTimeout(() => {
+			isSwipeNavigating = false
+		}, 300)
+	}
+	
+	/**
 	 * Get font size class for content
 	 */
 	const fontSizeClass = $derived.by(() => {
@@ -494,7 +561,7 @@
 		{/if}
 
 		<!-- Fixed Sidebar - Course Navigation (below header) -->
-		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} {focusMode ? 'lg:-translate-x-full' : 'lg:translate-x-0'} lg:z-20 flex flex-col">
+		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : focusMode ? '-translate-x-full lg:-translate-x-full' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col">
 			<!-- Scrollable Content Area -->
 			<div class="flex-1 overflow-y-auto">
 				<div class="p-6 border-b bg-gradient-to-r from-blue-50 to-blue-100">
@@ -604,24 +671,41 @@
 		</aside>
 
 		<!-- Main Content (with left offset for sidebar) -->
-		<main class="transition-all duration-300 {focusMode ? 'lg:pl-0' : 'lg:pl-80'}">
+		<main 
+			bind:this={mainElement}
+			class="transition-all duration-300 {focusMode ? 'lg:pl-0' : 'lg:pl-80'} relative overflow-hidden"
+			style="transform: translateX({swipeOffset}px); transition: {swipeOffset === 0 ? 'transform 0.3s ease-out' : 'none'};"
+		>
+			<!-- Swipe Navigation Hints (Mobile Only) -->
+			{#if swipeOffset !== 0}
+				<div class="fixed inset-0 pointer-events-none z-10 lg:hidden">
+					{#if swipeOffset > 0 && previousLesson}
+						<div 
+							class="absolute left-0 top-1/2 -translate-y-1/2 bg-blue-500 text-white px-6 py-3 rounded-r-lg shadow-lg"
+							style="opacity: {Math.min(swipeOffset / 50, 1)}; transform: translateX({Math.max(-100, -100 + swipeOffset)}px) translateY(-50%);"
+						>
+							← Previous
+						</div>
+					{/if}
+					{#if swipeOffset < 0 && nextLesson && canNavigateNext}
+						<div 
+							class="absolute right-0 top-1/2 -translate-y-1/2 bg-blue-500 text-white px-6 py-3 rounded-l-lg shadow-lg"
+							style="opacity: {Math.min(Math.abs(swipeOffset) / 50, 1)}; transform: translateX({Math.min(100, 100 + swipeOffset)}px) translateY(-50%);"
+						>
+							Next →
+						</div>
+					{/if}
+				</div>
+			{/if}
+			
 			<!-- Lesson Content -->
 			<div class="px-6 py-12 {focusMode ? 'max-w-3xl' : 'max-w-4xl'} mx-auto {fontSizeClass}">
 					{#if currentLesson}
 						<Card class="mb-6">
 							<!-- Lesson Header with Bookmark -->
 							<div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
-								<div class="flex items-start justify-between gap-4">
-									<div class="flex-1">
-										<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
-											{currentLesson.title}
-										</h1>
-										{#if currentLesson.description}
-											<p class="text-gray-600 dark:text-gray-400 text-sm">
-												{currentLesson.description}
-											</p>
-										{/if}
-									</div>
+								<!-- Top Row: Controls -->
+								<div class="flex items-center justify-between gap-4 mb-4">
 									<div class="flex items-center gap-3">
 										<ReadingModeToggle
 											bind:focusMode
@@ -629,21 +713,33 @@
 											bind:theme
 											onThemeChange={handleThemeChange}
 										/>
-										<BookmarkButton
-											{courseId}
-											{lessonId}
-											currentHeadingId={currentHeadingId}
-											scrollPosition={currentScrollPosition}
-											getCurrentContext={() => {
-												// Get current heading text for context
-												const heading = document.getElementById(currentHeadingId)
-												return heading?.textContent || ''
-											}}
-											onSuccess={(bookmarkId) => {
-												console.log('Bookmark saved:', bookmarkId)
-											}}
-										/>
 									</div>
+									<BookmarkButton
+										{courseId}
+										{lessonId}
+										currentHeadingId={currentHeadingId}
+										scrollPosition={currentScrollPosition}
+										getCurrentContext={() => {
+											// Get current heading text for context
+											const heading = document.getElementById(currentHeadingId)
+											return heading?.textContent || ''
+										}}
+										onSuccess={(bookmarkId) => {
+											console.log('Bookmark saved:', bookmarkId)
+										}}
+									/>
+								</div>
+								
+								<!-- Bottom Row: Title and Description -->
+								<div class="space-y-2">
+									<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
+										{currentLesson.title}
+									</h1>
+									{#if currentLesson.description}
+										<p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-3xl">
+											{currentLesson.description}
+										</p>
+									{/if}
 								</div>
 							</div>
 							
