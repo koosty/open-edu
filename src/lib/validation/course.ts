@@ -241,6 +241,7 @@ export const createCourseSchema = courseSchema
 
 export const updateCourseSchema = createCourseSchema.partial().extend({
   id: z.string(), // ID required for updates
+  lessons: z.array(lessonSchema).optional(), // Allow updating lessons
 });
 
 export const createLessonSchema = lessonSchema

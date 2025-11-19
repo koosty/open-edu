@@ -275,9 +275,26 @@ export class CourseService {
         ...updates,
       });
 
+      // Recursively remove undefined values (Firestore doesn't accept them)
+      const cleanUndefined = (obj: any): any => {
+        if (Array.isArray(obj)) {
+          return obj.map(cleanUndefined);
+        }
+        if (obj !== null && typeof obj === 'object') {
+          return Object.fromEntries(
+            Object.entries(obj)
+              .filter(([_, value]) => value !== undefined)
+              .map(([key, value]) => [key, cleanUndefined(value)])
+          );
+        }
+        return obj;
+      };
+
+      const cleanedUpdates = cleanUndefined(validatedUpdates);
+
       const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
       await updateDoc(courseRef, {
-        ...validatedUpdates,
+        ...cleanedUpdates,
         updatedAt: serverTimestamp(),
       });
     } catch (error) {
