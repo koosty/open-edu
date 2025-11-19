@@ -1,2 +1,9 @@
 export { default as AuthGuard } from "./AuthGuard.svelte";
+export { default as CodeBlock } from "./CodeBlock.svelte";
+export { default as LessonHeader } from "./LessonHeader.svelte";
+export { default as LessonNavigation } from "./LessonNavigation.svelte";
 export { default as Loading } from "./Loading.svelte";
+export { default as MarkdownRenderer } from "./MarkdownRenderer.svelte";
+export { default as NoteWidget } from "./NoteWidget.svelte";
+export { default as ReadingProgress } from "./ReadingProgress.svelte";
+export { default as TableOfContents } from "./TableOfContents.svelte";

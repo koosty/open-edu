@@ -14,6 +14,7 @@
 	import TableOfContents from '$lib/components/TableOfContents.svelte'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import LessonNavigation from '$lib/components/LessonNavigation.svelte'
+	import NoteWidget from '$lib/components/NoteWidget.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -60,6 +61,10 @@
 	let hasRestoredPosition = $state(false)
 	let lastAccessedAt = $state<Date | null>(null)
 	let estimatedReadingMinutes = $state(0)
+	
+	// Note-taking state
+	let currentHeadingId = $state<string>('')
+	let currentScrollPosition = $state(0)
 	
 	// Derived states
 	let isCompleted = $derived(
@@ -206,6 +211,10 @@
 			onProgressChange: (state) => {
 				// Auto-save position when progress changes
 				positionManager?.scheduleSave(state)
+				
+				// Update current position and heading for note widget
+				currentScrollPosition = state.scrollPercentage
+				currentHeadingId = state.activeHeadingId || ''
 			},
 			throttleMs: 200
 		})
@@ -702,6 +711,20 @@
 						onCourseComplete={() => goto(`/courses/${courseId}?completed=true`)}
 						showMarkComplete={!isQuizLesson}
 					/>
+					{/if}
+					
+					<!-- Note Widget (only for regular lessons, not quizzes) -->
+					{#if !isQuizLesson && currentLesson}
+						<NoteWidget
+							{courseId}
+							{lessonId}
+							{currentHeadingId}
+							scrollPosition={currentScrollPosition}
+							onNoteCreated={(noteId) => {
+								console.log('Note created:', noteId)
+								// TODO: Optionally refresh notes list or show success message
+							}}
+						/>
 					{/if}
 
 					<!-- Error Display -->
