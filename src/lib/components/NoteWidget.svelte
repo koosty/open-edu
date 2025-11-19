@@ -149,13 +149,26 @@
 					courseId,
 					lessonId,
 					content: content.trim(),
-					title: title.trim() || undefined,
-					headingId: currentHeadingId || undefined,
-					anchorText: getCurrentContext(),
 					position: scrollPosition,
-					color: selectedColor,
-					tags: tags.length > 0 ? tags : undefined,
 					isPrivate
+				}
+				
+				// Only add optional fields if they have values
+				if (title.trim()) {
+					noteInput.title = title.trim()
+				}
+				if (currentHeadingId) {
+					noteInput.headingId = currentHeadingId
+				}
+				const contextText = getCurrentContext()
+				if (contextText) {
+					noteInput.anchorText = contextText
+				}
+				if (selectedColor) {
+					noteInput.color = selectedColor
+				}
+				if (tags.length > 0) {
+					noteInput.tags = tags
 				}
 				
 				const noteId = await NotesService.createNote(noteInput)
