@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
@@ -7,6 +6,7 @@
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import { Input } from '$lib/components/ui'
+	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import type { Course } from '$lib/types'
 
 	// Form state
@@ -32,9 +32,6 @@
 	let error = $state<string | null>(null)
 	let success = $state(false)
 
-	// Access control
-	let hasAccess = $derived(authState.user && canManageCourses(authState.user))
-
 	// Validation
 	let isValid = $derived(
 		form.title.trim().length > 0 &&
@@ -59,15 +56,12 @@
 		'Other'
 	]
 
-	onMount(() => {
-		if (!authState.user) {
-			goto('/auth/login')
-			return
-		}
-
-		if (!hasAccess) {
+	// Access control check
+	$effect(() => {
+		if (!authState.initialized) return
+		
+		if (!authState.user || !canManageCourses(authState.user)) {
 			goto('/dashboard')
-			return
 		}
 	})
 
@@ -156,19 +150,7 @@
 	<meta name="description" content="Create a new course on Open-EDU" />
 </svelte:head>
 
-{#if !hasAccess}
-	<div class="container mx-auto px-4 py-8">
-		<Card>
-			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
-				<p class="text-gray-600 mb-6">You don't have permission to create courses.</p>
-				<Button onclick={() => goto('/dashboard')}>
-					Go to Dashboard
-				</Button>
-			</CardContent>
-		</Card>
-	</div>
-{:else}
+<AuthGuard>
 	<div class="min-h-screen bg-gray-50">
 		<!-- Header -->
 		<div class="bg-white border-b">
@@ -512,4 +494,4 @@ Familiarity with command line"
 			</div>
 		</div>
 	</div>
-{/if}
+</AuthGuard>

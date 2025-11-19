@@ -41,6 +41,7 @@ function mapFirebaseUser(firebaseUser: FirebaseUser, userData?: any): User {
 export const authState = $state({
   user: null as User | null,
   loading: browser,
+  initialized: false, // Tracks if initial auth check is complete
   error: null as string | null,
 });
 
@@ -70,6 +71,7 @@ export function initializeAuth() {
     }
 
     authState.loading = false;
+    authState.initialized = true; // Mark as initialized after first auth check
   });
 }
 

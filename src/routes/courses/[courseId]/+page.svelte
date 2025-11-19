@@ -5,6 +5,7 @@
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { authState } from '$lib/auth.svelte'
+	import { canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
 	import type { Course, Enrollment } from '$lib/types'
@@ -30,14 +31,35 @@
 		isEnrolled && 
 		course?.lessons && course.lessons.length > 0
 	)
+	let canEditCourse = $derived(
+		authState.user && canManageCourses(authState.user)
+	)
 	// Sorted lessons to prevent mutation in template
 	let sortedLessons = $derived(
 		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
 	)
 
-	// Load course data and check enrollment status
-	onMount(async () => {
-		await loadCourseData()
+	// Load course data reactively when auth is initialized
+	$effect(() => {
+		if (!authState.initialized) {
+			return // Wait for auth to initialize
+		}
+		
+		loadCourseData()
+	})
+
+	// Separate effect for enrollment check - runs when auth state or course changes
+	$effect(() => {
+		if (!authState.initialized || !course) {
+			return
+		}
+		
+		if (authState.user) {
+			loadEnrollmentStatus()
+		} else {
+			// User not logged in - clear enrollment
+			enrollment = null
+		}
 	})
 
 	async function loadCourseData() {
@@ -45,24 +67,30 @@
 		error = null
 
 		try {
-			// Load course details
+			// Load course details (public data)
 			const courseData = await CourseService.getCourse(courseId)
 			if (!courseData) {
 				error = 'Course not found'
 				return
 			}
 			course = courseData
-
-			// Check enrollment status if user is logged in
-			if (authState.user) {
-				const enrollmentData = await EnrollmentService.getEnrollment(authState.user.id, courseId)
-				enrollment = enrollmentData
-			}
 		} catch (err: any) {
 			error = err.message || 'Failed to load course'
 			console.error('Error loading course:', err)
 		} finally {
 			loading = false
+		}
+	}
+
+	async function loadEnrollmentStatus() {
+		if (!authState.user) return
+		
+		try {
+			const enrollmentData = await EnrollmentService.getEnrollment(authState.user.id, courseId)
+			enrollment = enrollmentData
+		} catch (err: any) {
+			console.error('Error loading enrollment:', err)
+			// Don't set error - enrollment check failure shouldn't block viewing course
 		}
 	}
 
@@ -229,6 +257,17 @@
 						</div>
 						
 						<div class="flex gap-3">
+							{#if canEditCourse}
+								<Button 
+									variant="outline"
+									onclick={() => goto(`/admin/courses/${courseId}`)}
+								>
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+									</svg>
+									Edit Course
+								</Button>
+							{/if}
 							{#if !authState.user}
 								<Button onclick={() => goto('/auth/login')}>
 									Sign In to Enroll

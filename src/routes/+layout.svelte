@@ -2,14 +2,21 @@
 	import '../app.css'
 	import favicon from '$lib/assets/favicon.svg'
 	import { onMount } from 'svelte'
+	import { page } from '$app/stores'
 	import { initializeAuth, authState, logout } from '$lib/auth.svelte'
 	import { Button } from '$lib/components/ui'
 	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
 	import { base } from '$app/paths'
 	import { isAdmin } from '$lib/utils/admin'
-	
+
 	let { children } = $props()
 	let mobileMenuOpen = $state(false)
+
+	// Detect if we're on a lesson viewer page
+	let isLessonPage = $derived(
+		$page.url.pathname.includes('/courses/') &&
+		$page.url.pathname.includes('/learn/')
+	)
 
 	// Initialize auth immediately when script runs
 	initializeAuth()
@@ -121,7 +128,8 @@
 		{@render children()}
 	</main>
 
-	<!-- Footer -->
+	<!-- Footer (hidden on lesson pages) -->
+	{#if !isLessonPage}
 	<footer class="border-t bg-muted/50">
 		<div class="container mx-auto px-4 py-8 max-w-7xl">
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
@@ -168,4 +176,5 @@
 			</div>
 		</div>
 	</footer>
+	{/if}
 </div>

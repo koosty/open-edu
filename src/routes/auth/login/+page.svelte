@@ -1,8 +1,9 @@
 <script lang="ts">
 	import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui'
-	import { signInWithGoogle, authState } from '$lib/auth.svelte'
+	import { signInWithGoogle } from '$lib/auth.svelte'
 	import { goto } from '$app/navigation'
 	import { LogIn } from 'lucide-svelte'
+	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	
 	let loading = $state(false)
 	let error = $state<string | null>(null)
@@ -20,13 +21,6 @@
 			loading = false
 		}
 	}
-
-	// Redirect if already logged in
-	$effect(() => {
-		if (authState.user && !authState.loading) {
-			goto('/dashboard')
-		}
-	})
 </script>
 
 <svelte:head>
@@ -34,8 +28,9 @@
 	<meta name="description" content="Sign in to your Open-EDU account" />
 </svelte:head>
 
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-	<div class="max-w-md w-full space-y-8">
+<AuthGuard requireAuth={false}>
+	<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+		<div class="max-w-md w-full space-y-8">
 		<!-- Header -->
 		<div class="text-center">
 			<LogIn class="mx-auto h-12 w-12 text-primary" />
@@ -92,5 +87,6 @@
 				</div>
 			</CardContent>
 		</Card>
+		</div>
 	</div>
-</div>
+</AuthGuard>

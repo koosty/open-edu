@@ -1,5 +1,6 @@
 export { default as AuthGuard } from "./AuthGuard.svelte";
 export { default as BookmarkButton } from "./BookmarkButton.svelte";
+export { default as BottomSheet } from "./BottomSheet.svelte";
 export { default as CodeBlock } from "./CodeBlock.svelte";
 export { default as LessonHeader } from "./LessonHeader.svelte";
 export { default as LessonNavigation } from "./LessonNavigation.svelte";

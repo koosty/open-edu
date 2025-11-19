@@ -19,11 +19,9 @@ export default defineConfig({
 		expect: { requireAssertions: true },
 		testTimeout: 30000, // 30 seconds timeout per test
 		hookTimeout: 10000, // 10 seconds timeout for setup/teardown
-		// Simplified single-project configuration to avoid SSR conflicts
-		environment: 'node',
-		include: ['src/**/*.{test,spec}.{js,ts}'],
+		// Support both browser and node tests
+		include: ['src/**/*.{test,spec}.{js,ts}', 'src/**/*.svelte.{test,spec}.{js,ts}'],
 		exclude: [
-			'src/**/*.svelte.{test,spec}.{js,ts}',
 			'src/lib/server/**',
 			'node_modules/',
 			'static/',

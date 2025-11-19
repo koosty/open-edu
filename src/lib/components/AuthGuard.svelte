@@ -19,19 +19,23 @@
 
 	// Redirect logic
 	$effect(() => {
-		if (!authState.loading) {
-			if (requireAuth && !authState.user) {
-				goto(redirectTo)
-			} else if (!requireAuth && authState.user) {
-				// For login page when user is already logged in
-				goto('/dashboard')
-			}
+		// Wait for auth to be initialized before making navigation decisions
+		if (!authState.initialized) {
+			return
+		}
+		
+		if (requireAuth && !authState.user) {
+			goto(redirectTo)
+		} else if (!requireAuth && authState.user) {
+			// For login page when user is already logged in
+			goto('/dashboard')
 		}
 	})
 
 	// Determine what to show
 	const shouldShow = $derived.by(() => {
-		if (authState.loading) {
+		// Show loading until auth is initialized
+		if (!authState.initialized) {
 			return 'loading'
 		}
 		
