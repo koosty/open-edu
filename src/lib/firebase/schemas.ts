@@ -66,19 +66,97 @@ export const enrollmentSchema = z.object({
   updatedAt: timestampSchema,
 });
 
+// Quiz schemas
+export const questionOptionSchema = z.object({
+  id: idSchema,
+  text: z.string(),
+  isCorrect: z.boolean(),
+  explanation: z.string().optional(),
+});
+
+export const quizQuestionSchemaFirestore = z.object({
+  id: idSchema,
+  type: z.enum(['multiple_choice', 'multiple_select', 'true_false', 'short_answer', 'essay', 'fill_blank']),
+  question: z.string(),
+  options: z.array(questionOptionSchema).optional(),
+  correctAnswer: z.union([z.string(), z.number(), z.array(z.string())]),
+  explanation: z.string().optional(),
+  points: z.number().min(0),
+  order: z.number(),
+  image: z.string().optional(),
+  hint: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
+  caseSensitive: z.boolean().optional(),
+  acceptableAnswers: z.array(z.string()).optional(),
+  maxLength: z.number().optional(),
+  minLength: z.number().optional(),
+});
+
+export const quizSchemaFirestore = z.object({
+  id: idSchema,
+  lessonId: idSchema,
+  courseId: idSchema,
+  title: z.string(),
+  description: z.string().optional(),
+  instructions: z.string().optional(),
+  questions: z.array(quizQuestionSchemaFirestore),
+  
+  // Settings
+  timeLimit: z.number().optional(),
+  passingScore: z.number().min(0).max(100),
+  allowMultipleAttempts: z.boolean(),
+  maxAttempts: z.number().optional(),
+  showCorrectAnswers: z.boolean(),
+  showExplanations: z.boolean(),
+  randomizeQuestions: z.boolean(),
+  randomizeOptions: z.boolean(),
+  allowReview: z.boolean(),
+  
+  // Metadata
+  isPublished: z.boolean(),
+  createdBy: idSchema,
+  createdAt: timestampSchema,
+  updatedAt: timestampSchema,
+  publishedAt: timestampSchema.optional(),
+});
+
 // Quiz attempt schema
+export const quizAnswerSchema = z.object({
+  questionId: idSchema,
+  answer: z.union([z.string(), z.number(), z.array(z.string())]),
+  isCorrect: z.boolean(),
+  pointsAwarded: z.number(),
+  timeSpent: z.number().optional(),
+});
+
 export const quizAttemptSchema = z.object({
   id: idSchema,
   userId: idSchema,
   courseId: idSchema,
   lessonId: idSchema,
   quizId: idSchema,
-  score: z.number().min(0).max(100),
-  answers: z.record(z.string(), z.union([z.string(), z.number()])),
-  timeSpent: z.number().min(0),
-  submittedAt: timestampSchema,
-  passed: z.boolean(),
+  
+  // Attempt details
   attemptNumber: z.number().min(1),
+  status: z.enum(['in_progress', 'submitted', 'expired', 'abandoned']),
+  
+  // Answers and scoring
+  answers: z.array(quizAnswerSchema),
+  score: z.number().min(0).max(100),
+  pointsEarned: z.number().min(0),
+  totalPoints: z.number().min(0),
+  passed: z.boolean(),
+  
+  // Timing
+  startedAt: timestampSchema,
+  submittedAt: timestampSchema.optional(),
+  timeSpent: z.number().min(0), // seconds
+  timeLimitSeconds: z.number().optional(),
+  
+  // Metadata
+  createdAt: timestampSchema,
+  updatedAt: timestampSchema,
 });
 
 // Achievement schema
@@ -125,6 +203,10 @@ export {
 export type User = z.infer<typeof userSchema>;
 export type CourseProgress = z.infer<typeof courseProgressSchema>;
 export type Enrollment = z.infer<typeof enrollmentSchema>;
+export type Quiz = z.infer<typeof quizSchemaFirestore>;
+export type QuizQuestion = z.infer<typeof quizQuestionSchemaFirestore>;
+export type QuestionOption = z.infer<typeof questionOptionSchema>;
+export type QuizAnswer = z.infer<typeof quizAnswerSchema>;
 export type QuizAttempt = z.infer<typeof quizAttemptSchema>;
 export type Achievement = z.infer<typeof achievementSchema>;
 export type Notification = z.infer<typeof notificationSchema>;
@@ -134,6 +216,7 @@ export const COLLECTION_SCHEMAS = {
   [COLLECTIONS.USERS]: userSchema,
   [COLLECTIONS.COURSE_PROGRESS]: courseProgressSchema,
   [COLLECTIONS.ENROLLMENTS]: enrollmentSchema,
+  [COLLECTIONS.QUIZZES]: quizSchemaFirestore,
   [COLLECTIONS.QUIZ_ATTEMPTS]: quizAttemptSchema,
   [COLLECTIONS.ACHIEVEMENTS]: achievementSchema,
   [COLLECTIONS.NOTIFICATIONS]: notificationSchema,
@@ -145,6 +228,7 @@ export const SCHEMA_FIELDS = {
   [COLLECTIONS.USERS]: Object.keys(userSchema.shape),
   [COLLECTIONS.COURSE_PROGRESS]: Object.keys(courseProgressSchema.shape),
   [COLLECTIONS.ENROLLMENTS]: Object.keys(enrollmentSchema.shape),
+  [COLLECTIONS.QUIZZES]: Object.keys(quizSchemaFirestore.shape),
   [COLLECTIONS.QUIZ_ATTEMPTS]: Object.keys(quizAttemptSchema.shape),
   [COLLECTIONS.ACHIEVEMENTS]: Object.keys(achievementSchema.shape),
   [COLLECTIONS.NOTIFICATIONS]: Object.keys(notificationSchema.shape),
@@ -155,7 +239,8 @@ export const REQUIRED_FIELDS = {
   [COLLECTIONS.USERS]: ["id", "email", "role"],
   [COLLECTIONS.COURSE_PROGRESS]: ["userId", "courseId", "progressPercentage"],
   [COLLECTIONS.ENROLLMENTS]: ["userId", "courseId", "status"],
-  [COLLECTIONS.QUIZ_ATTEMPTS]: ["userId", "courseId", "lessonId", "score"],
+  [COLLECTIONS.QUIZZES]: ["id", "lessonId", "courseId", "title", "isPublished"],
+  [COLLECTIONS.QUIZ_ATTEMPTS]: ["userId", "courseId", "lessonId", "quizId", "score"],
   [COLLECTIONS.ACHIEVEMENTS]: ["userId", "type", "title"],
   [COLLECTIONS.NOTIFICATIONS]: ["userId", "type", "title", "message"],
 } as const;

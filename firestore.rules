@@ -91,6 +91,28 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      // Published quizzes can be read by enrolled students
+      // Unpublished quizzes can only be read by instructor/admin
+      allow read: if isAuthenticated() && 
+        (resource.data.isPublished == true ||
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Only instructors for the course can create quizzes
+      allow create: if isAuthenticated() && 
+        request.auth.uid == get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.instructorId &&
+        request.resource.data.createdBy == request.auth.uid;
+      
+      // Only quiz creator or admin can update
+      allow update: if isAuthenticated() && 
+        (resource.data.createdBy == request.auth.uid || isAdmin());
+      
+      // Only admin can delete quizzes
+      allow delete: if isAdmin();
+    }
+
     // Quiz attempts collection
     match /quiz-attempts/{attemptId} {
       // Users can read their own attempts, instructors can read attempts for their courses
@@ -103,8 +125,11 @@ service cloud.firestore {
       allow create: if isAuthenticated() && 
         isOwner(request.resource.data.userId);
       
-      // No updates allowed to quiz attempts (immutable)
-      allow update: if false;
+      // Users can update their own in-progress attempts only
+      // Once submitted, attempts are immutable
+      allow update: if isAuthenticated() && 
+        isOwner(resource.data.userId) &&
+        resource.data.status == 'in_progress';
       
       // Only admin can delete attempts
       allow delete: if isAdmin();

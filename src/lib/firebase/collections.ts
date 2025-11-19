@@ -12,6 +12,7 @@ export const COLLECTIONS = {
 
   // Learning content
   LESSONS: "lessons", // if stored separately from courses
+  QUIZZES: "quizzes",
   QUIZ_ATTEMPTS: "quiz-attempts",
 
   // System collections
