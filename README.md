@@ -1,7 +1,7 @@
 # 🎓 Open-EDU - Interactive Learning Platform
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-blue?style=for-the-badge)](https://koosty.github.io/open-edu/)
-[![Version](https://img.shields.io/badge/Version-v1.2.0-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.2.0)
+[![Version](https://img.shields.io/badge/Version-v1.2.1-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.2.1)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-89_Passing-success?style=for-the-badge)](package.json)
 
@@ -13,7 +13,17 @@ Built with SvelteKit, Firebase, and TypeScript. Transform your learning journey 
 
 ## 🌟 Features
 
-### ✅ **v1.2.0 - Enhanced Reading Experience (Current)**
+### ✅ **v1.2.1 - Design System & UI Polish (Current)**
+- 🎨 **Multi-Theme System** - 3 color variants (Progressive, Academic, Warm)
+- ♿ **WCAG AA Compliance** - 100% Lighthouse accessibility score
+- 📱 **Responsive Design** - Tested on mobile (375px), tablet (768px), desktop (1440px)
+- 🎯 **Professional UI** - Gradient buttons, micro-interactions, smooth transitions
+- 🔧 **Design System** - Consistent colors, typography, spacing across all pages
+- 🌈 **Light Mode Polish** - Complete color system with proper contrast ratios
+- 💎 **Updated Pages** - Landing, Catalog, Dashboard, Lesson Viewer with new design
+- 🐛 **Accessibility Fixes** - Fixed 12+ color contrast violations for WCAG compliance
+
+### ✅ **v1.2.0 - Enhanced Reading Experience**
 - 📝 **Rich Markdown Rendering** - GFM support with syntax highlighting (180+ languages)
 - 🧮 **LaTeX Math Support** - Inline and block math with KaTeX
 - 📊 **Reading Progress Tracking** - Scroll-based progress with time estimation
