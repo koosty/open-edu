@@ -515,6 +515,11 @@
     @apply text-primary-600 transition-colors hover:text-primary-700;
   }
 
+  /* Links inside buttons should inherit button color */
+  button a, [data-slot="button"] a {
+    @apply text-inherit no-underline;
+  }
+
   /* Selection */
   ::selection {
     @apply bg-primary-200 text-primary-900;
