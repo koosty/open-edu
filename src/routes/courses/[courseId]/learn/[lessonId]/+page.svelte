@@ -16,6 +16,7 @@
 	import LessonNavigation from '$lib/components/LessonNavigation.svelte'
 	import NoteWidget from '$lib/components/NoteWidget.svelte'
 	import BookmarkButton from '$lib/components/BookmarkButton.svelte'
+	import NotesPanel from '$lib/components/NotesPanel.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -53,6 +54,7 @@
 	
 	// UI state
 	let showTableOfContents = $state(false)
+	let showNotesPanel = $state(false)
 	let showMobileSidebar = $state(false)
 	let contentElement = $state<HTMLElement | null>(null)
 	
@@ -535,6 +537,32 @@
 						{/if}
 					</div>
 				{/if}
+				
+				<!-- Notes & Bookmarks Panel (in sidebar) -->
+				<div class="border-t">
+					<button
+						onclick={() => showNotesPanel = !showNotesPanel}
+						class="w-full flex items-center justify-between px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded"
+					>
+						<span>Notes & Bookmarks</span>
+						<svg 
+							class="w-4 h-4 transition-transform {showNotesPanel ? 'rotate-180' : ''}" 
+							fill="none" 
+							stroke="currentColor" 
+							viewBox="0 0 24 24"
+						>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+						</svg>
+					</button>
+					{#if showNotesPanel}
+						<div class="max-h-96 overflow-hidden">
+							<NotesPanel 
+								{courseId}
+								{lessonId}
+							/>
+						</div>
+					{/if}
+				</div>
 			</div>
 		</aside>
 
