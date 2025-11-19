@@ -136,47 +136,47 @@
 
 	<!-- Footer (hidden on lesson pages) -->
 	{#if !isLessonPage}
-	<footer class="border-t bg-muted/50">
+	<footer class="border-t bg-slate-100">
 		<div class="container mx-auto px-4 py-8 max-w-7xl">
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 				<div class="space-y-3">
-					<div class="flex items-center space-x-2">
+					<div class="flex items-center space-x-2 text-slate-900">
 						<BookOpen class="h-5 w-5" />
 						<span class="font-bold">Open-EDU</span>
 					</div>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-sm text-slate-700">
 						Empowering learners worldwide with accessible, high-quality online education.
 					</p>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold">Platform</h3>
-					<ul class="space-y-1 text-sm text-muted-foreground">
-						<li><a href="{base}/courses" class="hover:text-foreground">Browse Courses</a></li>
-						<li><a href="{base}/about" class="hover:text-foreground">About Us</a></li>
-						<li><a href="{base}/pricing" class="hover:text-foreground">Pricing</a></li>
+					<h3 class="text-sm font-semibold text-slate-900">Platform</h3>
+					<ul class="space-y-1 text-sm">
+						<li><a href="{base}/courses" class="text-slate-700 hover:text-primary-700 hover:underline">Browse Courses</a></li>
+						<li><a href="{base}/about" class="text-slate-700 hover:text-primary-700 hover:underline">About Us</a></li>
+						<li><a href="{base}/pricing" class="text-slate-700 hover:text-primary-700 hover:underline">Pricing</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold">Support</h3>
-					<ul class="space-y-1 text-sm text-muted-foreground">
-						<li><a href="{base}/help" class="hover:text-foreground">Help Center</a></li>
-						<li><a href="{base}/contact" class="hover:text-foreground">Contact</a></li>
-						<li><a href="{base}/community" class="hover:text-foreground">Community</a></li>
+					<h3 class="text-sm font-semibold text-slate-900">Support</h3>
+					<ul class="space-y-1 text-sm">
+						<li><a href="{base}/help" class="text-slate-700 hover:text-primary-700 hover:underline">Help Center</a></li>
+						<li><a href="{base}/contact" class="text-slate-700 hover:text-primary-700 hover:underline">Contact</a></li>
+						<li><a href="{base}/community" class="text-slate-700 hover:text-primary-700 hover:underline">Community</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold">Legal</h3>
-					<ul class="space-y-1 text-sm text-muted-foreground">
-						<li><a href="{base}/privacy" class="hover:text-foreground">Privacy Policy</a></li>
-						<li><a href="{base}/terms" class="hover:text-foreground">Terms of Service</a></li>
-						<li><a href="{base}/cookies" class="hover:text-foreground">Cookie Policy</a></li>
+					<h3 class="text-sm font-semibold text-slate-900">Legal</h3>
+					<ul class="space-y-1 text-sm">
+						<li><a href="{base}/privacy" class="text-slate-700 hover:text-primary-700 hover:underline">Privacy Policy</a></li>
+						<li><a href="{base}/terms" class="text-slate-700 hover:text-primary-700 hover:underline">Terms of Service</a></li>
+						<li><a href="{base}/cookies" class="text-slate-700 hover:text-primary-700 hover:underline">Cookie Policy</a></li>
 					</ul>
 				</div>
 			</div>
 		</div>
-		<div class="border-t bg-muted/30">
+		<div class="border-t bg-slate-50">
 			<div class="container mx-auto px-4 py-4 max-w-7xl">
-				<div class="text-center text-sm text-muted-foreground">
+				<div class="text-center text-sm text-slate-700">
 					© {new Date().getFullYear()} Open-EDU. All rights reserved.
 				</div>
 			</div>

@@ -118,10 +118,10 @@
 </section>
 
 <!-- CTA Section -->
-<section class="py-20 px-4">
+<section class="py-20 px-4 bg-white">
 	<div class="container mx-auto max-w-4xl text-center">
 		<h2 class="text-3xl font-bold text-slate-900 mb-4">Ready to Start Your Learning Journey?</h2>
-		<p class="text-xl text-slate-600 mb-8 max-w-2xl mx-auto">
+		<p class="text-xl text-slate-700 mb-8 max-w-2xl mx-auto">
 			Join thousands of learners who are already advancing their careers with Open-EDU
 		</p>
 		{#if !authState.user}
