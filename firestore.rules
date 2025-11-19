@@ -126,9 +126,13 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Analytics collection (admin only)
+    // Analytics collection
+    // Instructors can read analytics for their own courses
+    // Note: Analytics data is aggregated from other collections (progress, reading positions, notes)
+    // This is here for future caching/pre-aggregated analytics
     match /analytics/{document=**} {
-      allow read, write: if isAdmin();
+      allow read: if isInstructor();
+      allow write: if isAdmin();
     }
 
     // System notifications
@@ -151,8 +155,9 @@ service cloud.firestore {
     // Reading positions collection (auto-save scroll position)
     match /readingPositions/{positionId} {
       // Users can read their own reading positions
+      // Instructors can read all positions for analytics
       allow read: if isAuthenticated() && 
-        positionId.matches('^' + request.auth.uid + '_.*');
+        (positionId.matches('^' + request.auth.uid + '_.*') || isInstructor());
       
       // Users can create/update their own reading positions
       allow create, update: if isAuthenticated() && 
@@ -166,8 +171,9 @@ service cloud.firestore {
     // Notes collection (lesson notes, bookmarks, highlights)
     match /notes/{noteId} {
       // Users can read their own notes
+      // Instructors can read all notes for analytics
       allow read: if isAuthenticated() && 
-        (isOwner(resource.data.userId) || isAdmin());
+        (isOwner(resource.data.userId) || isInstructor() || isAdmin());
       
       // Users can create their own notes
       allow create: if isAuthenticated() && 
@@ -185,8 +191,9 @@ service cloud.firestore {
     // Bookmarks collection (quick save positions)
     match /bookmarks/{bookmarkId} {
       // Users can read their own bookmarks
+      // Instructors can read all bookmarks for analytics
       allow read: if isAuthenticated() && 
-        (isOwner(resource.data.userId) || isAdmin());
+        (isOwner(resource.data.userId) || isInstructor() || isAdmin());
       
       // Users can create their own bookmarks
       allow create: if isAuthenticated() && 
