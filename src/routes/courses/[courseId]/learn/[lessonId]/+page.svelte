@@ -532,14 +532,14 @@
 		</Card>
 	</div>
 {:else}
-	<div class="min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-slate-50">
 		<!-- Mobile Menu Button (Fixed at top-left on mobile only) -->
 		<button
 			onclick={() => showMobileSidebar = !showMobileSidebar}
-			class="fixed top-20 left-4 z-40 lg:hidden bg-white p-2 rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+			class="fixed top-20 left-4 z-40 lg:hidden bg-white p-3 rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition-all duration-200 active:scale-95"
 			aria-label="Toggle sidebar menu"
 		>
-			<svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				{#if showMobileSidebar}
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 				{:else}
@@ -561,10 +561,10 @@
 		{/if}
 
 		<!-- Fixed Sidebar - Course Navigation (below header) -->
-		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : focusMode ? '-translate-x-full lg:-translate-x-full' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col">
+		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r border-slate-200 z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : focusMode ? '-translate-x-full lg:-translate-x-full' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col shadow-lg">
 			<!-- Scrollable Content Area -->
-			<div class="flex-1 overflow-y-auto">
-				<div class="p-6 border-b bg-gradient-to-r from-blue-50 to-blue-100">
+			<div class="flex-1 overflow-y-auto scrollbar-thin">
+				<div class="p-6 border-b border-slate-200 bg-gradient-to-br from-primary-50 via-white to-secondary-50">
 				<Button 
 					variant="ghost" 
 					onclick={() => goto(`/courses/${courseId}`)}
@@ -575,33 +575,40 @@
 					</svg>
 					Back to Course
 				</Button>
-				<h1 class="font-bold text-lg text-gray-900">{course?.title}</h1>
+				<h1 class="font-bold text-lg text-slate-900">{course?.title}</h1>
 				<div class="mt-4 flex items-center justify-between text-sm">
-					<span class="text-gray-600">
+					<span class="text-slate-600">
 						{progress?.completedLessons.length || 0} of {course?.lessons?.length || 0} complete
 					</span>
-					<span class="font-medium text-blue-600">
+					<span class="font-semibold text-primary-600">
 						{Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%
 					</span>
+				</div>
+				<!-- Progress Bar -->
+				<div class="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
+					<div 
+						class="h-full bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500 rounded-full"
+						style="width: {Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%"
+					></div>
 				</div>
 			</div>
 
 			<div class="p-4">
-				<h2 class="text-sm font-semibold text-gray-900 mb-3 px-2">Lessons</h2>
+				<h2 class="text-sm font-semibold text-slate-900 mb-3 px-2">Lessons</h2>
 				{#if course?.lessons}
-					<nav class="space-y-1">
+					<nav class="space-y-1.5">
 						{#each sortedLessons as lesson, index (lesson.id)}
 							<button
-								class="w-full text-left p-3 rounded-lg transition-colors {lesson.id === lessonId ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-50'}"
+								class="w-full text-left p-3 rounded-xl transition-all duration-200 {lesson.id === lessonId ? 'bg-primary-50 border-l-4 border-l-primary-600 shadow-sm' : 'hover:bg-slate-50 active:scale-[0.98]'}"
 								onclick={() => handleNavigateToLesson(lesson)}
 							>
 								<div class="flex items-center gap-3">
-									<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium {progress?.completedLessons.includes(lesson.id) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}">
+									<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-200 {progress?.completedLessons.includes(lesson.id) ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 text-white shadow-md' : 'bg-slate-200 text-slate-600'}">
 										{progress?.completedLessons.includes(lesson.id) ? '✓' : lesson.order || index + 1}
 									</div>
 									<div class="flex-1 min-w-0">
-										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-blue-900' : 'text-gray-900'}">{lesson.title}</p>
-										<div class="flex items-center gap-2 text-xs text-gray-500">
+										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-primary-900' : 'text-slate-900'}">{lesson.title}</p>
+										<div class="flex items-center gap-2 text-xs text-slate-500">
 											<span class="capitalize">{lesson.type}</span>
 											{#if lesson.duration}
 												<span>• {lesson.duration} min</span>
@@ -617,10 +624,10 @@
 
 				<!-- Table of Contents (in sidebar) -->
 				{#if !isQuizLesson && currentLesson?.content}
-					<div class="border-t p-4">
+					<div class="border-t border-slate-200 p-4">
 						<button
 							onclick={() => showTableOfContents = !showTableOfContents}
-							class="w-full flex items-center justify-between px-2 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded"
+							class="interactive w-full flex items-center justify-between px-2 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg active:scale-[0.98] transition-all"
 						>
 							<span>Table of Contents</span>
 							<svg 
@@ -643,10 +650,10 @@
 				{/if}
 				
 				<!-- Notes & Bookmarks Panel (in sidebar) -->
-				<div class="border-t">
+				<div class="border-t border-slate-200">
 					<button
 						onclick={() => showNotesPanel = !showNotesPanel}
-						class="w-full flex items-center justify-between px-6 py-3 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded"
+						class="interactive w-full flex items-center justify-between px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg active:scale-[0.98] transition-all"
 					>
 						<span>Notes & Bookmarks</span>
 						<svg 
@@ -681,7 +688,7 @@
 				<div class="fixed inset-0 pointer-events-none z-10 lg:hidden">
 					{#if swipeOffset > 0 && previousLesson}
 						<div 
-							class="absolute left-0 top-1/2 -translate-y-1/2 bg-blue-500 text-white px-6 py-3 rounded-r-lg shadow-lg"
+							class="absolute left-0 top-1/2 -translate-y-1/2 bg-gradient-to-br from-primary-600 to-primary-700 text-white px-6 py-3 rounded-r-xl shadow-lg font-medium"
 							style="opacity: {Math.min(swipeOffset / 50, 1)}; transform: translateX({Math.max(-100, -100 + swipeOffset)}px) translateY(-50%);"
 						>
 							← Previous
@@ -689,7 +696,7 @@
 					{/if}
 					{#if swipeOffset < 0 && nextLesson && canNavigateNext}
 						<div 
-							class="absolute right-0 top-1/2 -translate-y-1/2 bg-blue-500 text-white px-6 py-3 rounded-l-lg shadow-lg"
+							class="absolute right-0 top-1/2 -translate-y-1/2 bg-gradient-to-br from-primary-600 to-primary-700 text-white px-6 py-3 rounded-l-xl shadow-lg font-medium"
 							style="opacity: {Math.min(Math.abs(swipeOffset) / 50, 1)}; transform: translateX({Math.min(100, 100 + swipeOffset)}px) translateY(-50%);"
 						>
 							Next →
@@ -701,9 +708,9 @@
 			<!-- Lesson Content -->
 			<div class="px-6 py-12 {focusMode ? 'max-w-3xl' : 'max-w-4xl'} mx-auto {fontSizeClass}">
 					{#if currentLesson}
-						<Card class="mb-6">
+						<Card class="mb-6 card-hover shadow-lg">
 							<!-- Lesson Header with Bookmark -->
-							<div class="px-6 pt-6 pb-4 border-b border-gray-200 dark:border-gray-700">
+							<div class="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
 								<!-- Top Row: Controls -->
 								<div class="flex items-center justify-between gap-4 mb-4">
 									<div class="flex items-center gap-3">
@@ -732,11 +739,11 @@
 								
 								<!-- Bottom Row: Title and Description -->
 								<div class="space-y-2">
-									<h1 class="text-2xl font-bold text-gray-900 dark:text-gray-100 leading-tight">
+									<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
 										{currentLesson.title}
 									</h1>
 									{#if currentLesson.description}
-										<p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-3xl">
+										<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
 											{currentLesson.description}
 										</p>
 									{/if}
@@ -748,14 +755,14 @@
 									<!-- Quiz Content -->
 									{#if !showQuizResults}
 										<div class="space-y-6">
-											<div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+											<div class="bg-accent-50 border border-accent-200 rounded-xl p-5 shadow-sm">
 												<div class="flex items-start gap-3">
-													<svg class="w-5 h-5 text-yellow-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<svg class="w-5 h-5 text-accent-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 													</svg>
 													<div>
-														<h3 class="text-sm font-medium text-yellow-800">Quiz Instructions</h3>
-														<p class="text-sm text-yellow-700 mt-1">
+														<h3 class="text-sm font-semibold text-accent-900">Quiz Instructions</h3>
+														<p class="text-sm text-accent-700 mt-1">
 															You need {currentLesson.quiz.passingScore || 70}% to pass this quiz.
 															{#if currentLesson.quiz.timeLimit}
 																Time limit: {currentLesson.quiz.timeLimit} minutes.
@@ -769,57 +776,57 @@
 											</div>
 
 											{#each currentLesson.quiz.questions as question, qIndex (question.id)}
-												<div class="border border-gray-200 rounded-lg p-6">
+												<div class="border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
 													<div class="flex items-start gap-4">
-														<div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-sm font-medium text-blue-600">
+														<div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm">
 															{qIndex + 1}
 														</div>
 														<div class="flex-1">
-															<h3 class="font-medium mb-4">{question.question}</h3>
+															<h3 class="font-semibold text-slate-900 mb-4">{question.question}</h3>
 															
 															{#if question.type === 'multiple_choice'}
-																<div class="space-y-3">
+																<div class="space-y-2.5">
 																	{#each question.options || [] as option, optIndex (optIndex)}
-																		<label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+																		<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
 																			<input
 																				type="radio"
 																				name="question_{question.id}"
 																				value={optIndex}
 																				bind:group={quizAnswers[question.id]}
-																				class="text-blue-600 focus:ring-blue-500"
+																				class="text-primary-600 focus:ring-primary-500 focus:ring-2"
 																			/>
-																			<span>{option}</span>
+																			<span class="text-slate-700">{option}</span>
 																		</label>
 																	{/each}
 																</div>
 															{:else if question.type === 'true_false'}
-																<div class="space-y-3">
-																	<label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+																<div class="space-y-2.5">
+																	<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
 																		<input
 																			type="radio"
 																			name="question_{question.id}"
 																			value="true"
 																			bind:group={quizAnswers[question.id]}
-																			class="text-blue-600 focus:ring-blue-500"
+																			class="text-primary-600 focus:ring-primary-500 focus:ring-2"
 																		/>
-																		<span>True</span>
+																		<span class="text-slate-700">True</span>
 																	</label>
-																	<label class="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+																	<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
 																		<input
 																			type="radio"
 																			name="question_{question.id}"
 																			value="false"
 																			bind:group={quizAnswers[question.id]}
-																			class="text-blue-600 focus:ring-blue-500"
+																			class="text-primary-600 focus:ring-primary-500 focus:ring-2"
 																		/>
-																		<span>False</span>
+																		<span class="text-slate-700">False</span>
 																	</label>
 																</div>
 															{:else}
 																<textarea
 																	bind:value={quizAnswers[question.id]}
 																	placeholder="Enter your answer..."
-																	class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+																	class="input w-full"
 																	rows="3"
 																></textarea>
 															{/if}
@@ -832,7 +839,7 @@
 												<Button 
 													onclick={handleQuizSubmit}
 													disabled={quizSubmitting}
-													class="px-8"
+													class="px-8 shadow-sm"
 												>
 													{quizSubmitting ? 'Submitting...' : 'Submit Quiz'}
 												</Button>
@@ -840,16 +847,16 @@
 										</div>
 									{:else}
 										<!-- Quiz Results -->
-										<div class="text-center space-y-6">
-											<div class="w-24 h-24 mx-auto rounded-full flex items-center justify-center {quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}">
-												<span class="text-2xl font-bold">{quizScore}%</span>
+										<div class="text-center space-y-6 py-4">
+											<div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center shadow-lg {quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 text-white' : 'bg-gradient-to-br from-red-500 to-red-600 text-white'}">
+												<span class="text-3xl font-bold">{quizScore}%</span>
 											</div>
 											
 											<div>
-												<h3 class="text-xl font-semibold mb-2">
-													{quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? 'Congratulations!' : 'Keep Trying!'}
+												<h3 class="text-2xl font-bold text-slate-900 mb-2">
+													{quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? '🎉 Congratulations!' : '💪 Keep Trying!'}
 												</h3>
-												<p class="text-gray-600">
+												<p class="text-slate-600 text-lg">
 													{quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) 
 														? 'You passed the quiz!' 
 														: `You need ${currentLesson.quiz.passingScore || 70}% to pass. You scored ${quizScore}%.`}
@@ -858,26 +865,26 @@
 											
 											{#if currentLesson.quiz.showCorrectAnswers}
 												<!-- Show correct answers -->
-												<div class="text-left border-t pt-6">
-													<h4 class="font-medium mb-4">Review Answers:</h4>
+												<div class="text-left border-t border-slate-200 pt-6">
+													<h4 class="font-semibold text-slate-900 mb-4">Review Answers:</h4>
 													<!-- Implementation of answer review would go here -->
 												</div>
 											{/if}
 											
-											<div class="flex gap-3 justify-center">
+											<div class="flex gap-3 justify-center flex-wrap">
 												{#if currentLesson.quiz.allowMultipleAttempts && (!quizScore || quizScore < (currentLesson.quiz.passingScore || 70))}
-													<Button onclick={handleQuizRetry} variant="outline">
+													<Button onclick={handleQuizRetry} variant="outline" class="shadow-sm">
 														Try Again
 													</Button>
 												{/if}
 												
 												{#if nextLesson}
-													<Button onclick={() => handleNavigateToLesson(nextLesson!)}>
-														Next Lesson
+													<Button onclick={() => handleNavigateToLesson(nextLesson!)} class="shadow-sm">
+														Next Lesson →
 													</Button>
 												{:else}
-													<Button onclick={() => goto(`/courses/${courseId}`)}>
-														Back to Course
+													<Button onclick={() => goto(`/courses/${courseId}`)} class="shadow-sm">
+														← Back to Course
 													</Button>
 												{/if}
 											</div>
@@ -885,11 +892,11 @@
 									{/if}
 								{:else}
 									<!-- Regular Lesson Content -->
-									<div bind:this={contentElement}>
+									<div bind:this={contentElement} class="prose prose-slate max-w-none">
 										{#if currentLesson.content}
 											<MarkdownRenderer content={currentLesson.content} />
 										{:else}
-											<p class="text-gray-600">This lesson content will be available soon.</p>
+											<p class="text-slate-600">This lesson content will be available soon.</p>
 										{/if}
 									</div>
 								{/if}
@@ -931,7 +938,7 @@
 					<!-- Mobile Notes Button (Fixed at bottom-right on mobile only) -->
 					<button
 						onclick={() => showMobileNotesSheet = true}
-						class="fixed bottom-24 right-4 z-30 lg:hidden bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 transition-colors"
+						class="interactive fixed bottom-24 right-4 z-30 lg:hidden bg-gradient-to-br from-primary-600 to-primary-700 text-white p-4 rounded-full shadow-lg hover:shadow-xl active:scale-95 transition-all"
 						aria-label="Open notes panel"
 					>
 						<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -954,13 +961,13 @@
 
 					<!-- Error Display -->
 					{#if error}
-						<div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+						<div class="mt-6 p-5 bg-red-50 border border-red-200 rounded-xl shadow-sm">
 							<div class="flex items-start gap-3">
-								<svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-5 h-5 text-red-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 								</svg>
 								<div>
-									<h3 class="text-sm font-medium text-red-800">Error</h3>
+									<h3 class="text-sm font-semibold text-red-900">Error</h3>
 									<p class="text-sm text-red-700 mt-1">{error}</p>
 								</div>
 							</div>
