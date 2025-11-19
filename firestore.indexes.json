@@ -4,163 +4,214 @@
       "collectionGroup": "enrollments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "mode": "ASCENDING" },
-        { "fieldPath": "status", "mode": "ASCENDING" },
-        { "fieldPath": "enrolledAt", "mode": "DESCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "enrolledAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "enrollments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "courseId", "mode": "ASCENDING" },
-        { "fieldPath": "status", "mode": "ASCENDING" },
-        { "fieldPath": "enrolledAt", "mode": "DESCENDING" }
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "enrolledAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "enrollments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "mode": "ASCENDING" },
-        { "fieldPath": "courseId", "mode": "ASCENDING" },
-        { "fieldPath": "status", "mode": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isFeatured", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" }
+        { "fieldPath": "isFeatured", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "instructorId", "mode": "ASCENDING" },
-        { "fieldPath": "createdAt", "mode": "DESCENDING" }
+        { "fieldPath": "instructorId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "enrollments",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "courseId", "mode": "ASCENDING" },
-        { "fieldPath": "status", "mode": "ASCENDING" }
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "status", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "courseProgress",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "mode": "ASCENDING" },
-        { "fieldPath": "courseId", "mode": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "enrolled", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "enrolled", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "difficulty", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "level", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "difficulty", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "level", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "difficulty", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "difficulty", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "level", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "level", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category", "mode": "ASCENDING" },
-        { "fieldPath": "difficulty", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "difficulty", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "category", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "level", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "category", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "level", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "courses",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "difficulty", "mode": "ASCENDING" },
-        { "fieldPath": "isPublished", "mode": "ASCENDING" },
-        { "fieldPath": "level", "mode": "ASCENDING" },
-        { "fieldPath": "rating", "mode": "DESCENDING" },
-        { "fieldPath": "__name__", "mode": "DESCENDING" }
+        { "fieldPath": "difficulty", "order": "ASCENDING" },
+        { "fieldPath": "isPublished", "order": "ASCENDING" },
+        { "fieldPath": "level", "order": "ASCENDING" },
+        { "fieldPath": "rating", "order": "DESCENDING" },
+        { "fieldPath": "__name__", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "notes",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "mode": "ASCENDING" },
-        { "fieldPath": "courseId", "mode": "ASCENDING" },
-        { "fieldPath": "lessonId", "mode": "ASCENDING" },
-        { "fieldPath": "position", "mode": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "position", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     },
     {
       "collectionGroup": "bookmarks",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "mode": "ASCENDING" },
-        { "fieldPath": "courseId", "mode": "ASCENDING" },
-        { "fieldPath": "lessonId", "mode": "ASCENDING" },
-        { "fieldPath": "position", "mode": "ASCENDING" }
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "position", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bookmarks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bookmarks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "readingPositions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "lessonId", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "readingPositions",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" },
+        { "fieldPath": "courseId", "order": "ASCENDING" },
+        { "fieldPath": "updatedAt", "order": "DESCENDING" }
       ]
     }
   ],
