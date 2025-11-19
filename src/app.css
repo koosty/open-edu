@@ -71,6 +71,31 @@
   --color-info-600: #0284c7;
   --color-info-700: #0369a1;
 
+  /* Base Colors (Light Mode) */
+  --color-background: #ffffff;           /* Pure white background */
+  --color-foreground: #0f172a;          /* slate-900 - main text */
+
+  /* Muted Colors */
+  --color-muted: #f1f5f9;               /* slate-100 - subtle backgrounds */
+  --color-muted-foreground: #64748b;    /* slate-500 - secondary text */
+
+  /* Card Colors */
+  --color-card: #ffffff;                /* Card backgrounds */
+  --color-card-foreground: #0f172a;     /* Card text */
+
+  /* Popover Colors */
+  --color-popover: #ffffff;             /* Popover backgrounds */
+  --color-popover-foreground: #0f172a;  /* Popover text */
+
+  /* Border & Input */
+  --color-border: #e2e8f0;              /* slate-200 - borders */
+  --color-input: #e2e8f0;               /* slate-200 - input borders */
+  --color-ring: #2563eb;                /* primary-600 - focus rings */
+
+  /* Destructive (Error Actions) */
+  --color-destructive: #dc2626;         /* red-600 */
+  --color-destructive-foreground: #ffffff; /* White text on red */
+
   /* Typography */
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-display: 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -208,6 +233,21 @@
   --color-accent-800: #5b21b6;
   --color-accent-900: #4c1d95;
   --color-accent-950: #2e1065;
+
+  /* Base Colors (Light Mode) - inherited from default theme */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #4f46e5; /* Use academic primary color for focus */
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
 }
 
 /* Theme 3: Warm Approachable (Sky + Orange + Teal) */
@@ -247,6 +287,21 @@
   --color-accent-800: #115e59;
   --color-accent-900: #134e4a;
   --color-accent-950: #042f2e;
+
+  /* Base Colors (Light Mode) - inherited from default theme */
+  --color-background: #ffffff;
+  --color-foreground: #0f172a;
+  --color-muted: #f1f5f9;
+  --color-muted-foreground: #64748b;
+  --color-card: #ffffff;
+  --color-card-foreground: #0f172a;
+  --color-popover: #ffffff;
+  --color-popover-foreground: #0f172a;
+  --color-border: #e2e8f0;
+  --color-input: #e2e8f0;
+  --color-ring: #0ea5e9; /* Use warm primary (sky) for focus */
+  --color-destructive: #dc2626;
+  --color-destructive-foreground: #ffffff;
 }
 
 /* ============================================
