@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { onMount, onDestroy } from 'svelte'
+	import { onDestroy, untrack } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
@@ -10,6 +10,18 @@
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import type { Course, Lesson, UserProgress } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
+	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
+	import TableOfContents from '$lib/components/TableOfContents.svelte'
+	import AuthGuard from '$lib/components/AuthGuard.svelte'
+	import LessonNavigation from '$lib/components/LessonNavigation.svelte'
+	import { 
+		ReadingPositionManager, 
+		loadReadingPosition, 
+		restoreScrollPosition,
+		shouldRestorePosition,
+		deleteReadingPosition
+	} from '$lib/services/readingPosition'
+	import { ReadingProgressTracker } from '$lib/services/readingProgress'
 
 	let courseId = $derived($page.params.courseId as string)
 	let lessonId = $derived($page.params.lessonId as string)
@@ -37,6 +49,18 @@
 	let quizScore = $state<number | null>(null)
 	let quizSubmitting = $state(false)
 	
+	// UI state
+	let showTableOfContents = $state(false)
+	let showMobileSidebar = $state(false)
+	let contentElement = $state<HTMLElement | null>(null)
+	
+	// Reading position management
+	let positionManager: ReadingPositionManager | null = null
+	let progressTracker: ReadingProgressTracker | null = null
+	let hasRestoredPosition = $state(false)
+	let lastAccessedAt = $state<Date | null>(null)
+	let estimatedReadingMinutes = $state(0)
+	
 	// Derived states
 	let isCompleted = $derived(
 		progress?.completedLessons.includes(lessonId) || false
@@ -45,24 +69,41 @@
 		isCompleted || currentLesson?.type === 'lesson'
 	)
 	let isQuizLesson = $derived(currentLesson?.type === 'quiz')
-	let hasAccess = $derived(
-		authState.user && progress !== null
-	)
 	// Sorted lessons to prevent mutation in template
 	let sortedLessons = $derived(
 		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
 	)
 
-	onMount(async () => {
-		await loadLessonData()
-		startLessonTimer()
+	// Load lesson data when user is authenticated or lesson/course changes
+	$effect(() => {
+		// Only track auth state and route params (courseId, lessonId)
+		const isReady = authState.initialized && authState.user
+		const currentCourseId = courseId
+		const currentLessonId = lessonId
+		
+		// Wait for auth to initialize and user to be available
+		if (isReady) {
+			// Run these functions without tracking their internal state changes
+			untrack(() => {
+				loadLessonData()
+				startLessonTimer()
+				initializeReadingTracking()
+			})
+			
+			// Cleanup function when lesson changes or component unmounts
+			return () => {
+				// Cleanup doesn't need untrack - it's just cleaning up resources
+				cleanupReadingTracking()
+				if (timer) {
+					clearInterval(timer)
+					timer = null
+				}
+			}
+		}
 	})
 
 	onDestroy(() => {
-		if (timer) {
-			clearInterval(timer)
-		}
-		// Save session time when leaving
+		// Save session time when leaving (if not already saved by effect cleanup)
 		if (startTime && authState.user && currentLesson) {
 			const timeSpent = Math.round((Date.now() - startTime.getTime()) / 60000) // in minutes
 			if (timeSpent > 0) {
@@ -76,14 +117,10 @@
 		error = null
 
 		try {
-			// Check user access first
-			if (!authState.user) {
-				error = 'Please sign in to access this lesson'
-				return
-			}
-
+			// No need to check authState.user - AuthGuard guarantees it exists
+			
 			// Verify enrollment
-			const hasEnrollmentAccess = await EnrollmentService.hasAccess(authState.user.id, courseId)
+			const hasEnrollmentAccess = await EnrollmentService.hasAccess(authState.user!.id, courseId)
 			if (!hasEnrollmentAccess) {
 				error = 'You are not enrolled in this course'
 				return
@@ -92,7 +129,7 @@
 			// Load course and lesson data
 			const [courseData, progressData] = await Promise.all([
 				CourseService.getCourse(courseId),
-				ProgressService.getCourseProgress(authState.user.id, courseId)
+				ProgressService.getCourseProgress(authState.user!.id, courseId)
 			])
 
 			if (!courseData) {
@@ -112,6 +149,12 @@
 
 			currentLesson = lesson
 
+			// Calculate estimated reading time if content exists
+			if (lesson.content) {
+				const { estimateReadingTime } = await import('$lib/services/markdown')
+				estimatedReadingMinutes = estimateReadingTime(lesson.content)
+			}
+
 			// Find lesson navigation
 			if (courseData.lessons) {
 				const sortedLessons = [...courseData.lessons].sort((a, b) => a.order - b.order)
@@ -126,8 +169,8 @@
 				}
 			}
 
-			// Mark lesson as started
-			await ProgressService.startLesson(authState.user.id, courseId, lessonId)
+		// Mark lesson as started (AuthGuard guarantees user exists)
+		await ProgressService.startLesson(authState.user!.id, courseId, lessonId)
 
 		} catch (err: any) {
 			error = err.message || 'Failed to load lesson'
@@ -142,6 +185,76 @@
 		timer = setInterval(() => {
 			sessionTime += 1
 		}, 1000)
+	}
+
+	async function initializeReadingTracking() {
+		if (!authState.user) return
+
+		// Initialize reading position manager
+		positionManager = new ReadingPositionManager(
+			authState.user.id,
+			courseId,
+			lessonId,
+			{
+				debounceMs: 2000, // Save every 2 seconds
+				minProgressDelta: 5 // Only save if scrolled 5% or more
+			}
+		)
+
+		// Initialize reading progress tracker
+		progressTracker = new ReadingProgressTracker({
+			onProgressChange: (state) => {
+				// Auto-save position when progress changes
+				positionManager?.scheduleSave(state)
+			},
+			throttleMs: 200
+		})
+
+		progressTracker.start()
+
+		// Try to restore saved reading position
+		if (!hasRestoredPosition) {
+			await restoreSavedPosition()
+		}
+	}
+
+	async function restoreSavedPosition() {
+		if (!authState.user || hasRestoredPosition) return
+
+		try {
+			const savedPosition = await loadReadingPosition(authState.user.id, lessonId)
+			
+			if (savedPosition) {
+				// Set last accessed date
+				lastAccessedAt = savedPosition.updatedAt
+				
+				if (shouldRestorePosition(savedPosition)) {
+					// Wait for content to render
+					setTimeout(() => {
+						restoreScrollPosition(savedPosition.scrollTop, true)
+						hasRestoredPosition = true
+					}, 300)
+				}
+			}
+		} catch (error) {
+			console.error('Error restoring reading position:', error)
+		}
+	}
+
+	async function cleanupReadingTracking() {
+		// Stop tracking
+		progressTracker?.stop()
+
+		// Flush any pending saves
+		if (positionManager && progressTracker) {
+			const currentState = progressTracker.getState()
+			await positionManager.flush(currentState)
+		}
+
+		// Reset for next lesson
+		positionManager = null
+		progressTracker = null
+		hasRestoredPosition = false
 	}
 
 	async function handleCompleteLesson() {
@@ -166,6 +279,9 @@
 			if (progress && !progress.completedLessons.includes(lessonId)) {
 				progress.completedLessons = [...progress.completedLessons, lessonId]
 			}
+
+			// Delete saved reading position since lesson is completed
+			await deleteReadingPosition(authState.user.id, lessonId)
 
 			// Navigate to next lesson if available
 			if (nextLesson) {
@@ -232,6 +348,9 @@
 				if (progress && !progress.completedLessons.includes(lessonId)) {
 					progress.completedLessons = [...progress.completedLessons, lessonId]
 				}
+
+				// Delete saved reading position since quiz is completed
+				await deleteReadingPosition(authState.user.id, lessonId)
 			}
 
 			showQuizResults = true
@@ -252,6 +371,7 @@
 	}
 
 	function handleNavigateToLesson(lesson: Lesson) {
+		showMobileSidebar = false // Close mobile sidebar on navigation
 		goto(`/courses/${courseId}/learn/${lesson.id}`)
 	}
 
@@ -271,6 +391,7 @@
 	<meta name="description" content={currentLesson?.description || 'Open-EDU Lesson'} />
 </svelte:head>
 
+<AuthGuard redirectTo="/courses/{courseId}">
 {#if loading}
 	<div class="flex justify-center items-center min-h-[50vh]">
 		<Loading />
@@ -294,129 +415,125 @@
 			</CardContent>
 		</Card>
 	</div>
-{:else if !hasAccess}
-	<div class="container mx-auto px-4 py-8">
-		<Card>
-			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold mb-4">Access Required</h2>
-				<p class="text-gray-600 mb-6">Please enroll in this course to access the lessons.</p>
-				<Button onclick={() => goto(`/courses/${courseId}`)}>
-					View Course
-				</Button>
-			</CardContent>
-		</Card>
-	</div>
 {:else}
 	<div class="min-h-screen bg-gray-50">
-		<!-- Header -->
-		<div class="bg-white border-b sticky top-0 z-10">
-			<div class="container mx-auto px-4 py-4">
-				<div class="flex items-center justify-between">
-					<div class="flex items-center gap-4">
-						<Button 
-							variant="ghost" 
-							onclick={() => goto(`/courses/${courseId}`)}
-							class="p-2"
-						>
-							<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-							</svg>
-						</Button>
-						<div>
-							<h1 class="font-semibold text-lg">{course?.title}</h1>
-							<p class="text-sm text-gray-600">{currentLesson?.title}</p>
-						</div>
-					</div>
-					
-					<div class="flex items-center gap-4">
-						<!-- Progress indicator -->
-						{#if course?.lessons}
-							<div class="text-sm text-gray-600">
-								{currentLessonIndex + 1} of {course.lessons.length}
-							</div>
-						{/if}
-						
-						<!-- Timer -->
-						<div class="text-sm font-mono bg-gray-100 px-3 py-1 rounded">
-							{formatTime(sessionTime)}
-						</div>
-						
-						<!-- Completion status -->
-						{#if isCompleted}
-							<div class="flex items-center gap-2 text-green-600">
-								<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-									<path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-								</svg>
-								<span class="text-sm font-medium">Completed</span>
-							</div>
-						{/if}
-					</div>
+		<!-- Mobile Menu Button (Fixed at top-left on mobile only) -->
+		<button
+			onclick={() => showMobileSidebar = !showMobileSidebar}
+			class="fixed top-20 left-4 z-40 lg:hidden bg-white p-2 rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
+			aria-label="Toggle sidebar menu"
+		>
+			<svg class="w-6 h-6 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+				{#if showMobileSidebar}
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+				{:else}
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+				{/if}
+			</svg>
+		</button>
+
+		<!-- Mobile Sidebar Overlay -->
+		{#if showMobileSidebar}
+			<div 
+				class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+				onclick={() => showMobileSidebar = false}
+				onkeydown={(e) => e.key === 'Enter' && (showMobileSidebar = false)}
+				role="button"
+				tabindex="0"
+				aria-label="Close sidebar"
+			></div>
+		{/if}
+
+		<!-- Fixed Sidebar - Course Navigation (below header) -->
+		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col">
+			<!-- Scrollable Content Area -->
+			<div class="flex-1 overflow-y-auto">
+				<div class="p-6 border-b bg-gradient-to-r from-blue-50 to-blue-100">
+				<Button 
+					variant="ghost" 
+					onclick={() => goto(`/courses/${courseId}`)}
+					class="mb-3 -ml-2"
+				>
+					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+					</svg>
+					Back to Course
+				</Button>
+				<h1 class="font-bold text-lg text-gray-900">{course?.title}</h1>
+				<div class="mt-4 flex items-center justify-between text-sm">
+					<span class="text-gray-600">
+						{progress?.completedLessons.length || 0} of {course?.lessons?.length || 0} complete
+					</span>
+					<span class="font-medium text-blue-600">
+						{Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%
+					</span>
 				</div>
 			</div>
-		</div>
 
-		<div class="container mx-auto px-4 py-8">
-			<div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
-				<!-- Sidebar - Course Navigation -->
-				<div class="lg:col-span-1">
-					<Card>
-						<CardHeader>
-							<CardTitle class="text-lg">Course Content</CardTitle>
-						</CardHeader>
-						<CardContent class="p-0">
-							{#if course?.lessons}
-								<div class="space-y-1">
-									{#each sortedLessons as lesson, index (lesson.id)}
-										<button
-											class="w-full text-left p-3 hover:bg-gray-50 border-b border-gray-100 last:border-b-0 {lesson.id === lessonId ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''}"
-											onclick={() => handleNavigateToLesson(lesson)}
-										>
-											<div class="flex items-center gap-3">
-												<div class="w-6 h-6 rounded-full flex items-center justify-center text-xs {progress?.completedLessons.includes(lesson.id) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}">
-													{progress?.completedLessons.includes(lesson.id) ? '✓' : lesson.order || index + 1}
-												</div>
-												<div class="flex-1 min-w-0">
-													<p class="font-medium text-sm truncate">{lesson.title}</p>
-													<div class="flex items-center gap-2 text-xs text-gray-500">
-														<span class="capitalize">{lesson.type}</span>
-														{#if lesson.duration}
-															<span>• {lesson.duration} min</span>
-														{/if}
-													</div>
-												</div>
-											</div>
-										</button>
-									{/each}
+			<div class="p-4">
+				<h2 class="text-sm font-semibold text-gray-900 mb-3 px-2">Lessons</h2>
+				{#if course?.lessons}
+					<nav class="space-y-1">
+						{#each sortedLessons as lesson, index (lesson.id)}
+							<button
+								class="w-full text-left p-3 rounded-lg transition-colors {lesson.id === lessonId ? 'bg-blue-50 border-l-4 border-l-blue-600' : 'hover:bg-gray-50'}"
+								onclick={() => handleNavigateToLesson(lesson)}
+							>
+								<div class="flex items-center gap-3">
+									<div class="w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium {progress?.completedLessons.includes(lesson.id) ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-600'}">
+										{progress?.completedLessons.includes(lesson.id) ? '✓' : lesson.order || index + 1}
+									</div>
+									<div class="flex-1 min-w-0">
+										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-blue-900' : 'text-gray-900'}">{lesson.title}</p>
+										<div class="flex items-center gap-2 text-xs text-gray-500">
+											<span class="capitalize">{lesson.type}</span>
+											{#if lesson.duration}
+												<span>• {lesson.duration} min</span>
+											{/if}
+										</div>
+									</div>
 								</div>
-							{/if}
-						</CardContent>
-					</Card>
-				</div>
+							</button>
+						{/each}
+					</nav>
+				{/if}
+			</div>
 
-				<!-- Main Content -->
-				<div class="lg:col-span-3">
+				<!-- Table of Contents (in sidebar) -->
+				{#if !isQuizLesson && currentLesson?.content}
+					<div class="border-t p-4">
+						<button
+							onclick={() => showTableOfContents = !showTableOfContents}
+							class="w-full flex items-center justify-between px-2 py-2 text-sm font-semibold text-gray-900 hover:bg-gray-50 rounded"
+						>
+							<span>Table of Contents</span>
+							<svg 
+								class="w-4 h-4 transition-transform {showTableOfContents ? 'rotate-180' : ''}" 
+								fill="none" 
+								stroke="currentColor" 
+								viewBox="0 0 24 24"
+							>
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+							</svg>
+						</button>
+						{#if showTableOfContents}
+							<div class="mt-2">
+								<TableOfContents 
+									markdown={currentLesson.content}
+								/>
+							</div>
+						{/if}
+					</div>
+				{/if}
+			</div>
+		</aside>
+
+		<!-- Main Content (with left offset for sidebar) -->
+		<main class="lg:pl-80">
+			<!-- Lesson Content -->
+			<div class="px-6 py-12 max-w-4xl mx-auto">
 					{#if currentLesson}
 						<Card class="mb-6">
-							<CardHeader>
-								<div class="flex items-center justify-between">
-									<div>
-										<CardTitle class="text-2xl">{currentLesson.title}</CardTitle>
-										{#if currentLesson.description}
-											<p class="text-gray-600 mt-2">{currentLesson.description}</p>
-										{/if}
-									</div>
-									<div class="flex items-center gap-2">
-										<span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full capitalize">
-											{currentLesson.type}
-										</span>
-										{#if currentLesson.isRequired}
-											<span class="px-3 py-1 bg-red-100 text-red-600 text-sm font-medium rounded-full">
-												Required
-											</span>
-										{/if}
-									</div>
-								</div>
-							</CardHeader>
 							
 							<CardContent>
 								{#if isQuizLesson && currentLesson.quiz}
@@ -560,9 +677,9 @@
 									{/if}
 								{:else}
 									<!-- Regular Lesson Content -->
-									<div class="prose max-w-none">
+									<div bind:this={contentElement}>
 										{#if currentLesson.content}
-											{@html currentLesson.content}
+											<MarkdownRenderer content={currentLesson.content} />
 										{:else}
 											<p class="text-gray-600">This lesson content will be available soon.</p>
 										{/if}
@@ -571,44 +688,20 @@
 							</CardContent>
 						</Card>
 
-						<!-- Navigation Footer -->
-						<div class="flex items-center justify-between">
-							<div>
-								{#if previousLesson}
-									<Button 
-										variant="outline" 
-										onclick={() => handleNavigateToLesson(previousLesson!)}
-										class="flex items-center gap-2"
-									>
-										<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-										</svg>
-										Previous
-									</Button>
-								{/if}
-							</div>
-
-							<div class="flex gap-3">
-								{#if !isQuizLesson && !isCompleted}
-									<Button 
-										onclick={handleCompleteLesson}
-										disabled={completing}
-									>
-										{completing ? 'Completing...' : 'Mark Complete'}
-									</Button>
-								{/if}
-
-								{#if nextLesson && canNavigateNext}
-									<Button onclick={() => handleNavigateToLesson(nextLesson!)}>
-										Next Lesson
-									</Button>
-								{:else if !nextLesson && isCompleted}
-									<Button onclick={() => goto(`/courses/${courseId}?completed=true`)}>
-										Course Complete
-									</Button>
-								{/if}
-							</div>
-						</div>
+					<!-- Navigation Footer -->
+					<LessonNavigation
+						{previousLesson}
+						{nextLesson}
+						currentLessonIndex={currentLessonIndex}
+						totalLessons={sortedLessons.length}
+						{isCompleted}
+						{canNavigateNext}
+						{completing}
+						onNavigate={handleNavigateToLesson}
+						onComplete={handleCompleteLesson}
+						onCourseComplete={() => goto(`/courses/${courseId}?completed=true`)}
+						showMarkComplete={!isQuizLesson}
+					/>
 					{/if}
 
 					<!-- Error Display -->
@@ -626,7 +719,7 @@
 						</div>
 					{/if}
 				</div>
-			</div>
+			</main>
 		</div>
-	</div>
 {/if}
+</AuthGuard>
