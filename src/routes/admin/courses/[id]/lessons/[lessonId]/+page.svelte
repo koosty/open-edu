@@ -236,35 +236,35 @@
 			<Loading />
 		</div>
 	{:else if error && !course}
-		<div class="min-h-screen bg-gray-50 flex items-center justify-center">
-			<Card class="max-w-md">
+		<div class="min-h-screen bg-slate-50 flex items-center justify-center">
+			<Card class="max-w-md shadow-lg">
 				<CardContent class="p-8 text-center">
 					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-					<p class="text-gray-600 mb-6">{error}</p>
-					<Button onclick={() => goto('/admin')}>
-						Back to Admin
+					<p class="text-slate-600 mb-6">{error}</p>
+					<Button onclick={() => goto('/admin')} class="shadow-sm">
+						← Back to Admin
 					</Button>
 				</CardContent>
 			</Card>
 		</div>
 	{:else}
-		<div class="min-h-screen bg-gray-50">
+		<div class="min-h-screen bg-slate-50">
 			<!-- Header -->
-			<div class="bg-white border-b sticky top-0 z-10">
+			<div class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
 				<div class="container mx-auto px-4 py-4">
 					<div class="flex items-center justify-between">
 						<div>
-							<h1 class="text-2xl font-bold">{isNewLesson ? 'Create' : 'Edit'} Lesson</h1>
-							<p class="text-sm text-gray-600 mt-1">{course?.title}</p>
+							<h1 class="text-2xl font-bold text-slate-900">{isNewLesson ? 'Create' : 'Edit'} Lesson</h1>
+							<p class="text-sm text-slate-600 mt-1">{course?.title}</p>
 						</div>
 						<div class="flex gap-3">
-							<Button variant="outline" onclick={handleCancel}>
+							<Button variant="outline" onclick={handleCancel} class="shadow-sm">
 								Cancel
 							</Button>
 							<Button 
 								onclick={submitForm} 
 								disabled={!isValid || submitting}
-								class="px-6"
+								class="px-6 shadow-sm"
 							>
 								{submitting ? 'Saving...' : isNewLesson ? 'Create Lesson' : 'Save Changes'}
 							</Button>
@@ -276,37 +276,37 @@
 			<div class="container mx-auto px-4 py-6">
 				<!-- Success Message -->
 				{#if success}
-					<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+					<div class="mb-6 p-5 bg-secondary-50 border border-secondary-200 rounded-xl shadow-sm">
 						<div class="flex items-center gap-3">
-							<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-secondary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 							</svg>
-							<p class="text-green-800 font-medium">Lesson {isNewLesson ? 'created' : 'updated'} successfully! Redirecting...</p>
+							<p class="text-secondary-900 font-semibold">Lesson {isNewLesson ? 'created' : 'updated'} successfully! Redirecting...</p>
 						</div>
 					</div>
 				{/if}
 
 				<!-- Error Message -->
 				{#if error}
-					<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+					<div class="mb-6 p-5 bg-red-50 border border-red-200 rounded-xl shadow-sm">
 						<div class="flex items-center gap-3">
-							<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
-							<p class="text-red-800">{error}</p>
+							<p class="text-red-900 font-medium">{error}</p>
 						</div>
 					</div>
 				{/if}
 
 				<form onsubmit={handleSubmit} class="space-y-6">
 					<!-- Basic Info -->
-					<Card>
+					<Card class="shadow-sm">
 						<CardHeader>
 							<CardTitle>Lesson Information</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
 							<div>
-								<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+								<label for="title" class="block text-sm font-semibold text-slate-900 mb-2">
 									Lesson Title *
 								</label>
 								<Input
@@ -319,7 +319,7 @@
 							</div>
 
 							<div>
-								<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+								<label for="description" class="block text-sm font-semibold text-slate-900 mb-2">
 									Description
 								</label>
 								<textarea
@@ -327,19 +327,19 @@
 									bind:value={form.description}
 									placeholder="Brief description of what students will learn"
 									rows="2"
-									class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									class="input w-full"
 								></textarea>
 							</div>
 
 							<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 								<div>
-									<label for="type" class="block text-sm font-medium text-gray-700 mb-2">
+									<label for="type" class="block text-sm font-semibold text-slate-900 mb-2">
 										Type *
 									</label>
 									<select
 										id="type"
 										bind:value={form.type}
-										class="w-full h-10 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+										class="input w-full h-10"
 									>
 										<option value="lesson">Lesson</option>
 										<option value="quiz">Quiz</option>
@@ -347,7 +347,7 @@
 								</div>
 
 								<div>
-									<label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
+									<label for="duration" class="block text-sm font-semibold text-slate-900 mb-2">
 										Duration (minutes) *
 									</label>
 									<Input
@@ -363,7 +363,7 @@
 								</div>
 
 								<div>
-									<label for="order" class="block text-sm font-medium text-gray-700 mb-2">
+									<label for="order" class="block text-sm font-semibold text-slate-900 mb-2">
 										Order *
 									</label>
 									<Input
@@ -380,7 +380,7 @@
 							</div>
 
 							<div>
-								<label for="videoUrl" class="block text-sm font-medium text-gray-700 mb-2">
+								<label for="videoUrl" class="block text-sm font-semibold text-slate-900 mb-2">
 									Video URL (optional)
 								</label>
 								<Input
@@ -392,22 +392,22 @@
 							</div>
 
 							<div>
-								<label class="flex items-center gap-2">
+								<label class="flex items-center gap-2 cursor-pointer">
 									<input
 										type="checkbox"
 										bind:checked={form.isRequired}
-										class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
+										class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500 focus:ring-2"
 									/>
-									<span class="text-sm font-medium text-gray-700">Required Lesson</span>
+									<span class="text-sm font-medium text-slate-900">Required Lesson</span>
 								</label>
-								<p class="text-xs text-gray-500 mt-1">Students must complete this to progress</p>
+								<p class="text-xs text-slate-500 mt-1">Students must complete this to progress</p>
 							</div>
 						</CardContent>
 					</Card>
 
 					<!-- Markdown Editor -->
 					{#if form.type === 'lesson'}
-						<Card>
+						<Card class="shadow-sm">
 							<CardHeader>
 								<div class="flex items-center justify-between">
 									<CardTitle>Lesson Content</CardTitle>
@@ -416,7 +416,7 @@
 											type="button"
 											variant={previewMode === 'edit' ? 'default' : 'outline'}
 											onclick={() => previewMode = 'edit'}
-											class="text-sm"
+											class="text-sm shadow-sm"
 										>
 											Edit
 										</Button>
@@ -424,7 +424,7 @@
 											type="button"
 											variant={previewMode === 'split' ? 'default' : 'outline'}
 											onclick={() => previewMode = 'split'}
-											class="text-sm"
+											class="text-sm shadow-sm"
 										>
 											Split
 										</Button>
@@ -432,7 +432,7 @@
 											type="button"
 											variant={previewMode === 'preview' ? 'default' : 'outline'}
 											onclick={() => previewMode = 'preview'}
-											class="text-sm"
+											class="text-sm shadow-sm"
 										>
 											Preview
 										</Button>
@@ -441,11 +441,11 @@
 							</CardHeader>
 							<CardContent>
 								<!-- Toolbar -->
-								<div class="flex flex-wrap gap-2 mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200">
+								<div class="flex flex-wrap gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
 									<button
 										type="button"
 										onclick={() => insertMarkdown('heading')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-medium"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-medium shadow-sm transition-all"
 										title="Heading"
 									>
 										H2
@@ -453,7 +453,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('bold')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-bold"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-bold shadow-sm transition-all"
 										title="Bold"
 									>
 										B
@@ -461,7 +461,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('italic')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm italic"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm italic shadow-sm transition-all"
 										title="Italic"
 									>
 										I
@@ -469,7 +469,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('code')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm font-mono"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-mono shadow-sm transition-all"
 										title="Inline Code"
 									>
 										&lt;/&gt;
@@ -477,7 +477,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('codeblock')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
 										title="Code Block"
 									>
 										```
@@ -485,7 +485,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('link')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
 										title="Link"
 									>
 										🔗
@@ -493,7 +493,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('list')}
-										class="px-3 py-1.5 bg-white border border-gray-300 rounded hover:bg-gray-50 text-sm"
+										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
 										title="List"
 									>
 										• List
@@ -510,33 +510,35 @@
 												bind:value={form.content}
 												placeholder="Write your lesson content in Markdown..."
 												rows="25"
-												class="w-full p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
+												class="input w-full font-mono text-sm"
 											></textarea>
 										</div>
 									{/if}
 
 									<!-- Preview -->
 									{#if previewMode !== 'edit'}
-										<div class="border border-gray-300 rounded-lg p-4 bg-white overflow-auto max-h-[600px]">
-											<MarkdownRenderer content={form.content} />
+										<div class="border border-slate-300 rounded-xl p-6 bg-white overflow-auto max-h-[600px] shadow-sm">
+											<div class="prose prose-slate max-w-none">
+												<MarkdownRenderer content={form.content} />
+											</div>
 										</div>
 									{/if}
 								</div>
 
-								<p class="text-xs text-gray-500 mt-3">
-									💡 Tip: Use Markdown syntax for formatting. Supports code highlighting, math formulas, and more!
+								<p class="text-xs text-slate-600 mt-3 bg-primary-50/50 p-3 rounded-lg border border-primary-100">
+									💡 <span class="font-medium">Tip:</span> Use Markdown syntax for formatting. Supports code highlighting, math formulas, and more!
 								</p>
 							</CardContent>
 						</Card>
 					{:else}
-						<Card>
+						<Card class="shadow-sm">
 							<CardContent class="p-8 text-center">
-								<svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
 								</svg>
-								<h3 class="text-lg font-semibold mb-2">Quiz Editor Coming Soon</h3>
-								<p class="text-gray-600">Quiz creation interface will be added in the next update.</p>
-								<p class="text-sm text-gray-500 mt-2">For now, you can create regular lessons with quiz questions in the content.</p>
+								<h3 class="text-lg font-semibold text-slate-900 mb-2">Quiz Editor Coming Soon</h3>
+								<p class="text-slate-600">Quiz creation interface will be added in the next update.</p>
+								<p class="text-sm text-slate-500 mt-2">For now, you can create regular lessons with quiz questions in the content.</p>
 							</CardContent>
 						</Card>
 					{/if}
