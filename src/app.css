@@ -562,29 +562,6 @@
 }
 
 /* ============================================
-   DARK MODE (Optional)
-   ============================================ */
-
-@media (prefers-color-scheme: dark) {
-  @theme {
-    --color-background: #0f172a;
-    --color-foreground: #f1f5f9;
-  }
-
-  body {
-    @apply bg-slate-900 text-slate-100;
-  }
-
-  .card {
-    @apply bg-slate-800 border-slate-700;
-  }
-
-  .input {
-    @apply bg-slate-800 border-slate-700 text-slate-100;
-  }
-}
-
-/* ============================================
    ANIMATION UTILITIES
    ============================================ */
 
