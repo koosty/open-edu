@@ -8,4 +8,5 @@ export { default as MarkdownRenderer } from "./MarkdownRenderer.svelte";
 export { default as NotesPanel } from "./NotesPanel.svelte";
 export { default as NoteWidget } from "./NoteWidget.svelte";
 export { default as ReadingProgress } from "./ReadingProgress.svelte";
+export { default as ReadingModeToggle } from "./ReadingModeToggle.svelte";
 export { default as TableOfContents } from "./TableOfContents.svelte";

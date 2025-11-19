@@ -17,6 +17,7 @@
 	import NoteWidget from '$lib/components/NoteWidget.svelte'
 	import BookmarkButton from '$lib/components/BookmarkButton.svelte'
 	import NotesPanel from '$lib/components/NotesPanel.svelte'
+	import ReadingModeToggle from '$lib/components/ReadingModeToggle.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -57,6 +58,11 @@
 	let showNotesPanel = $state(false)
 	let showMobileSidebar = $state(false)
 	let contentElement = $state<HTMLElement | null>(null)
+	
+	// Reading mode state
+	let focusMode = $state(false)
+	let fontSize = $state<'sm' | 'base' | 'lg' | 'xl'>('base')
+	let theme = $state<'light' | 'dark' | 'system'>('system')
 	
 	// Reading position management
 	let positionManager: ReadingPositionManager | null = null
@@ -396,6 +402,35 @@
 	function formatLessonNumber(order: number): string {
 		return `Lesson ${order}`
 	}
+	
+	/**
+	 * Handle theme change
+	 */
+	function handleThemeChange(newTheme: 'light' | 'dark' | 'system') {
+		theme = newTheme
+		
+		// Apply theme to document
+		if (newTheme === 'system') {
+			// Use system preference
+			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+			document.documentElement.classList.toggle('dark', isDark)
+		} else {
+			document.documentElement.classList.toggle('dark', newTheme === 'dark')
+		}
+	}
+	
+	/**
+	 * Get font size class for content
+	 */
+	const fontSizeClass = $derived.by(() => {
+		switch (fontSize) {
+			case 'sm': return 'text-sm'
+			case 'base': return 'text-base'
+			case 'lg': return 'text-lg'
+			case 'xl': return 'text-xl'
+			default: return 'text-base'
+		}
+	})
 </script>
 
 <svelte:head>
@@ -457,7 +492,7 @@
 		{/if}
 
 		<!-- Fixed Sidebar - Course Navigation (below header) -->
-		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col">
+		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'} {focusMode ? 'lg:-translate-x-full' : 'lg:translate-x-0'} lg:z-20 flex flex-col">
 			<!-- Scrollable Content Area -->
 			<div class="flex-1 overflow-y-auto">
 				<div class="p-6 border-b bg-gradient-to-r from-blue-50 to-blue-100">
@@ -567,9 +602,9 @@
 		</aside>
 
 		<!-- Main Content (with left offset for sidebar) -->
-		<main class="lg:pl-80">
+		<main class="transition-all duration-300 {focusMode ? 'lg:pl-0' : 'lg:pl-80'}">
 			<!-- Lesson Content -->
-			<div class="px-6 py-12 max-w-4xl mx-auto">
+			<div class="px-6 py-12 {focusMode ? 'max-w-3xl' : 'max-w-4xl'} mx-auto {fontSizeClass}">
 					{#if currentLesson}
 						<Card class="mb-6">
 							<!-- Lesson Header with Bookmark -->
@@ -586,6 +621,12 @@
 										{/if}
 									</div>
 									<div class="flex items-center gap-3">
+										<ReadingModeToggle
+											bind:focusMode
+											bind:fontSize
+											bind:theme
+											onThemeChange={handleThemeChange}
+										/>
 										<BookmarkButton
 											{courseId}
 											{lessonId}
