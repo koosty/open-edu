@@ -327,23 +327,23 @@
 						</svg>
 					{/if}
 				</button>
-				{#each Object.keys(NOTE_COLORS) as color}
-					<button
-						onclick={() => selectedColor = color as NoteColor}
-						class="w-6 h-6 rounded-full border-2 transition-all {selectedColor === color 
-							? 'border-gray-900 dark:border-white scale-110' 
-							: 'border-transparent hover:scale-105'}
-							{color === 'yellow' ? 'bg-yellow-400' : ''}
-							{color === 'green' ? 'bg-green-400' : ''}
-							{color === 'blue' ? 'bg-blue-400' : ''}
-							{color === 'purple' ? 'bg-purple-400' : ''}
-							{color === 'pink' ? 'bg-pink-400' : ''}
-							{color === 'orange' ? 'bg-orange-400' : ''}
-							{color === 'red' ? 'bg-red-400' : ''}
-							{color === 'gray' ? 'bg-gray-400' : ''}"
-						title={color}
-					/>
-				{/each}
+			{#each Object.keys(NOTE_COLORS) as color}
+				<button
+					onclick={() => selectedColor = color as NoteColor}
+					class="w-6 h-6 rounded-full border-2 transition-all {selectedColor === color 
+						? 'border-gray-900 dark:border-white scale-110' 
+						: 'border-transparent hover:scale-105'}
+						{color === 'yellow' ? 'bg-yellow-400' : ''}
+						{color === 'green' ? 'bg-green-400' : ''}
+						{color === 'blue' ? 'bg-blue-400' : ''}
+						{color === 'purple' ? 'bg-purple-400' : ''}
+						{color === 'pink' ? 'bg-pink-400' : ''}
+						{color === 'orange' ? 'bg-orange-400' : ''}
+						{color === 'red' ? 'bg-red-400' : ''}
+						{color === 'gray' ? 'bg-gray-400' : ''}"
+					title={color}
+				></button>
+			{/each}
 			</div>
 		</div>
 	</div>
@@ -499,6 +499,7 @@
 	.line-clamp-2 {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

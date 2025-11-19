@@ -270,8 +270,8 @@
 			searchInput = urlSearch
 			searchQuery = urlSearch
 			selectedCategories = urlCategories
-			selectedDifficulties = urlDifficulties
-			selectedLevels = urlLevels
+			selectedDifficulties = urlDifficulties as ('Beginner' | 'Intermediate' | 'Advanced')[]
+			selectedLevels = urlLevels as ('free' | 'premium')[]
 			currentPage = urlPage
 			loadCourses()
 		}

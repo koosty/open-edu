@@ -202,9 +202,9 @@
 			
 			<!-- Color Picker -->
 			<div class="mb-4">
-				<label class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+				<span class="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
 					Color
-				</label>
+				</span>
 				<div class="flex gap-2">
 					{#each colors as color}
 						<button
@@ -224,7 +224,7 @@
 							class:bg-gray-400={color === 'gray'}
 							title={color}
 							aria-label={`Select ${color} color`}
-						/>
+						></button>
 					{/each}
 				</div>
 			</div>

@@ -10,7 +10,8 @@ describe("Home Page", () => {
 
     const heading = page.getByRole("heading", { level: 1 });
     await expect.element(heading).toBeInTheDocument();
-    await expect.element(heading).toContainText("Transform Your Learning");
+    // Check that heading contains the expected text
+    await expect.element(heading).toHaveTextContent(/Transform Your Learning/i);
   });
 
   it("should show Sign In button when user is not authenticated", async () => {

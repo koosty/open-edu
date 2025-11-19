@@ -353,7 +353,8 @@
 									<Input
 										id="duration"
 										type="number"
-										bind:value={form.duration}
+										value={form.duration.toString()}
+										oninput={(e) => form.duration = parseInt((e.target as HTMLInputElement).value) || 0}
 										placeholder="30"
 										class="w-full"
 										min="1"
@@ -368,13 +369,13 @@
 									<Input
 										id="order"
 										type="number"
-										bind:value={form.order}
+										value={form.order.toString()}
+										oninput={(e) => form.order = parseInt((e.target as HTMLInputElement).value) || 0}
 										placeholder="1"
 										class="w-full"
 										min="1"
 										required
 									/>
-									<p class="text-xs text-gray-500 mt-1">Position in course</p>
 								</div>
 							</div>
 

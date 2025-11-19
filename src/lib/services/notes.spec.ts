@@ -41,6 +41,7 @@ describe('NotesService - Create Operations', () => {
 			lessonId: 'lesson-1',
 			content: 'This is my note',
 			title: 'Important Note',
+			position: 0,
 			isPrivate: true
 		}
 		
@@ -58,7 +59,9 @@ describe('NotesService - Create Operations', () => {
 			userId: 'user-1',
 			courseId: 'course-1',
 			lessonId: 'lesson-1',
-			content: 'Test note'
+			content: 'Test note',
+			position: 0,
+			isPrivate: false
 		}
 		
 		await expect(NotesService.createNote(input)).rejects.toThrow('Failed to create note')
@@ -172,7 +175,8 @@ describe('NotesService - Bookmarks', () => {
 		const input: CreateBookmarkInput = {
 			userId: 'user-1',
 			courseId: 'course-1',
-			lessonId: 'lesson-1'
+			lessonId: 'lesson-1',
+			position: 0
 		}
 		
 		const bookmarkId = await NotesService.createBookmark(input)
@@ -372,7 +376,9 @@ describe('NotesService - Error Handling', () => {
 			userId: 'user-1',
 			courseId: 'course-1',
 			lessonId: 'lesson-1',
-			content: 'Test'
+			content: 'Test',
+			position: 0,
+			isPrivate: false
 		}
 		
 		await expect(NotesService.createNote(input)).rejects.toThrow('Failed to create note')
