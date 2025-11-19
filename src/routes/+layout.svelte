@@ -8,6 +8,7 @@
 	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
 	import { base } from '$app/paths'
 	import { isAdmin } from '$lib/utils/admin'
+	import { initTheme } from '$lib/config/theme'
 
 	let { children } = $props()
 	let mobileMenuOpen = $state(false)
@@ -20,6 +21,11 @@
 
 	// Initialize auth immediately when script runs
 	initializeAuth()
+
+	// Initialize theme on mount
+	onMount(() => {
+		initTheme()
+	})
 
 	async function handleLogout() {
 		try {

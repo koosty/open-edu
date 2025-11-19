@@ -15,7 +15,7 @@
 
 <div
 	data-slot="card-content"
-	class={cn('px-6 [&:last-child]:pb-6', className)}
+	class={cn('', className)}
 	{...restProps}
 >
 	{@render children?.()}
