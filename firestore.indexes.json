@@ -142,6 +142,26 @@
         { "fieldPath": "rating", "mode": "DESCENDING" },
         { "fieldPath": "__name__", "mode": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "notes",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "mode": "ASCENDING" },
+        { "fieldPath": "courseId", "mode": "ASCENDING" },
+        { "fieldPath": "lessonId", "mode": "ASCENDING" },
+        { "fieldPath": "position", "mode": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bookmarks",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "mode": "ASCENDING" },
+        { "fieldPath": "courseId", "mode": "ASCENDING" },
+        { "fieldPath": "lessonId", "mode": "ASCENDING" },
+        { "fieldPath": "position", "mode": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

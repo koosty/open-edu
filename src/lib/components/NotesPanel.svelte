@@ -47,7 +47,7 @@
 		const currentCourseId = courseId
 		const currentLessonId = lessonId
 		
-		if (authState.user) {
+		if (authState.initialized && authState.user) {
 			loadData()
 		}
 	})
@@ -66,7 +66,13 @@
 			bookmarks = bookmarksData
 		} catch (e) {
 			console.error('Failed to load notes/bookmarks:', e)
-			error = 'Failed to load notes'
+			// Check if it's a missing index error
+			const errorMessage = String(e)
+			if (errorMessage.includes('index') || errorMessage.includes('requires an index')) {
+				error = 'Firestore indexes are being created. Please wait a few minutes and refresh.'
+			} else {
+				error = 'Failed to load notes'
+			}
 		} finally {
 			loading = false
 		}
@@ -264,12 +270,8 @@
 </script>
 
 <div class="notes-panel h-full flex flex-col">
-	<!-- Header with Search -->
+	<!-- Search & Filters -->
 	<div class="p-4 border-b border-gray-200 dark:border-gray-700">
-		<h3 class="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-3">
-			Notes & Bookmarks
-		</h3>
-		
 		<!-- Search -->
 		<div class="relative">
 			<Search size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
