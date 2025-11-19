@@ -434,14 +434,16 @@
 
 <div class="container mx-auto px-4 py-8">
 	<!-- Skip to main content link for accessibility -->
-	<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-blue-600 text-white px-4 py-2 rounded">
+	<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
 		Skip to main content
 	</a>
 
 	<!-- Hero Section -->
 	<header class="mb-12 text-center">
-		<h1 class="text-4xl font-bold text-gray-900 mb-4">Explore Our Course Catalog</h1>
-		<p class="text-lg text-gray-600 max-w-2xl mx-auto">
+		<h1 class="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-4">
+			Explore Our Course Catalog
+		</h1>
+		<p class="text-lg text-slate-600 max-w-2xl mx-auto">
 			Discover thousands of courses taught by industry experts. Learn new skills and advance your career.
 		</p>
 	</header>
@@ -451,19 +453,19 @@
 		<!-- Search Bar -->
 		<div class="relative flex gap-2">
 			<div class="relative flex-1">
-				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
+				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true" />
 				<Input
 					type="text"
 					placeholder="Search courses..."
 					bind:value={searchInput}
 					onkeydown={handleSearchKeydown}
 					oninput={handleSearchInput}
-					class="pl-10"
+					class="pl-10 input"
 					aria-label="Search courses"
 					role="searchbox"
 				/>
 			</div>
-			<Button onclick={handleSearch} class="px-6" aria-label="Search courses">
+			<Button onclick={handleSearch} class="px-6 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800" aria-label="Search courses">
 				Search
 			</Button>
 		</div>
@@ -475,7 +477,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleCategoryModal}
-					class="gap-2 {selectedCategories.length > 0 ? 'bg-blue-50 border-blue-300 text-blue-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedCategories.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
 					aria-label="Filter by category"
 				>
 					{#if selectedCategories.length === 0}
@@ -491,25 +493,25 @@
 				</Button>
 				
 				{#if showCategoryModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[240px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[240px] z-10">
 						<div class="space-y-2" role="group" aria-label="Category filter options">
 							{#each categories as category}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedCategories.includes(category)}
 										onchange={() => toggleCategory(category)}
-										class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
 									/>
-									<span class="text-gray-700 text-sm">{category}</span>
+									<span class="text-slate-700 text-sm">{category}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedCategories.length > 0}
-							<div class="mt-3 pt-3 border-t border-gray-200">
+							<div class="mt-3 pt-3 border-t border-slate-200">
 								<button 
 									onclick={() => { selectedCategories = []; handleCategoryChange(); }}
-									class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
 								>
 									Clear categories
 								</button>
@@ -524,7 +526,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleDifficultyModal}
-					class="gap-2 {selectedDifficulties.length > 0 ? 'bg-blue-50 border-blue-300 text-blue-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedDifficulties.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
 					aria-label="Filter by difficulty"
 				>
 					{#if selectedDifficulties.length === 0}
@@ -540,25 +542,25 @@
 				</Button>
 				
 				{#if showDifficultyModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[180px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[180px] z-10">
 						<div class="space-y-2" role="group" aria-label="Difficulty filter options">
 							{#each difficulties as difficulty}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedDifficulties.includes(difficulty)}
 										onchange={() => toggleDifficulty(difficulty)}
-										class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
 									/>
-									<span class="text-gray-700 text-sm">{difficulty}</span>
+									<span class="text-slate-700 text-sm">{difficulty}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedDifficulties.length > 0}
-							<div class="mt-3 pt-3 border-t border-gray-200">
+							<div class="mt-3 pt-3 border-t border-slate-200">
 								<button 
 									onclick={() => { selectedDifficulties = []; handleDifficultyChange(); }}
-									class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
 								>
 									Clear difficulties
 								</button>
@@ -573,7 +575,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleLevelModal}
-					class="gap-2 {selectedLevels.length > 0 ? 'bg-blue-50 border-blue-300 text-blue-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedLevels.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
 					aria-label="Filter by course type"
 				>
 					{#if selectedLevels.length === 0}
@@ -589,25 +591,25 @@
 				</Button>
 				
 				{#if showLevelModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 p-4 min-w-[140px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[140px] z-10">
 						<div class="space-y-2" role="group" aria-label="Type filter options">
 							{#each levels as level}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedLevels.includes(level)}
 										onchange={() => toggleLevel(level)}
-										class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
 									/>
-									<span class="text-gray-700 text-sm">{level === 'free' ? 'Free' : 'Premium'}</span>
+									<span class="text-slate-700 text-sm">{level === 'free' ? 'Free' : 'Premium'}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedLevels.length > 0}
-							<div class="mt-3 pt-3 border-t border-gray-200">
+							<div class="mt-3 pt-3 border-t border-slate-200">
 								<button 
 									onclick={() => { selectedLevels = []; handleLevelChange(); }}
-									class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
 								>
 									Clear types
 								</button>
@@ -619,7 +621,7 @@
 			
 			<!-- Clear All Button -->
 			{#if hasActiveFilters()}
-				<Button variant="outline" onclick={clearFilters} class="text-gray-600 hover:text-gray-800">
+				<Button variant="outline" onclick={clearFilters} class="text-slate-600 hover:text-slate-800 interactive rounded-lg">
 					Clear all
 				</Button>
 			{/if}
@@ -628,7 +630,7 @@
 
 	<!-- Results Count -->
 	<div class="mb-6" aria-live="polite">
-		<p class="text-gray-600">
+		<p class="text-slate-600 font-medium">
 			{#if loading}
 				Loading courses...
 			{:else}
@@ -642,12 +644,12 @@
 
 	<!-- Error Message -->
 	{#if error}
-		<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg" role="alert" aria-live="assertive">
+		<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm" role="alert" aria-live="assertive">
 			<h3 class="font-semibold text-red-800 mb-2">
 				{error.includes('Network') ? 'Connection Error' : 'Loading Error'}
 			</h3>
 			<p class="text-red-700">{error}</p>
-			<Button variant="outline" onclick={loadCourses} class="mt-2">
+			<Button variant="outline" onclick={loadCourses} class="mt-2 interactive">
 				Try Again
 			</Button>
 		</div>
@@ -660,15 +662,15 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" aria-label="Loading course cards">
 				{#each Array(6) as _, index (index)}
 					<div class="animate-pulse" aria-hidden="true">
-						<Card class="h-full">
+						<Card class="h-full card rounded-xl">
 							<CardHeader class="p-0">
-								<div class="aspect-video bg-gray-200 rounded-t-lg"></div>
+								<div class="aspect-video bg-slate-200 rounded-t-xl"></div>
 							</CardHeader>
 							<CardContent class="pt-4">
 								<div class="space-y-2">
-									<div class="h-4 bg-gray-200 rounded w-3/4"></div>
-									<div class="h-3 bg-gray-200 rounded w-1/2"></div>
-									<div class="h-3 bg-gray-200 rounded w-2/3"></div>
+									<div class="h-4 bg-slate-200 rounded w-3/4"></div>
+									<div class="h-3 bg-slate-200 rounded w-1/2"></div>
+									<div class="h-3 bg-slate-200 rounded w-2/3"></div>
 								</div>
 							</CardContent>
 						</Card>
@@ -682,12 +684,12 @@
 						<article>
 							<button
 								onclick={() => viewCourse(course.id)}
-								class="text-left focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg w-full h-full"
+								class="text-left focus:outline-none focus:ring-2 focus:ring-primary-500 rounded-xl w-full h-full interactive"
 								aria-label="View details for {course.title}"
 							>
-								<Card class="h-full hover:shadow-lg transition-shadow duration-200">
+								<Card class="h-full card-hover rounded-xl shadow-sm">
 									<CardHeader class="p-0">
-										<div class="aspect-video overflow-hidden rounded-t-lg">
+										<div class="aspect-video overflow-hidden rounded-t-xl">
 											<img 
 												src={course.thumbnail} 
 												alt=""
@@ -700,42 +702,42 @@
 									
 									<CardContent class="pt-4">
 										<!-- Category and Difficulty Badges -->
-										<div class="flex items-center gap-2 mb-2" role="group" aria-label="Course tags">
-											<span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded">
+										<div class="flex items-center gap-2 mb-2 flex-wrap" role="group" aria-label="Course tags">
+											<span class="px-2 py-1 bg-primary-100 text-primary-800 text-xs font-medium rounded-lg">
 												{course.category}
 											</span>
-											<span class="px-2 py-1 text-xs font-medium rounded {course.difficultyColor}">
+											<span class="px-2 py-1 text-xs font-medium rounded-lg {course.difficultyColor === 'bg-green-100 text-green-800' ? 'bg-secondary-100 text-secondary-800' : course.difficultyColor === 'bg-yellow-100 text-yellow-800' ? 'bg-accent-100 text-accent-800' : 'bg-red-100 text-red-800'}">
 												{course.difficulty}
 											</span>
 											{#if course.level === 'premium'}
-												<span class="px-2 py-1 bg-purple-100 text-purple-800 text-xs font-medium rounded">
+												<span class="px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-xs font-medium rounded-lg">
 													Premium
 												</span>
 											{/if}
 										</div>
 										
 										<!-- Course Title -->
-										<h3 class="text-lg font-semibold text-gray-900 mb-2 line-clamp-2">
+										<h3 class="text-lg font-semibold text-slate-900 mb-2 line-clamp-2">
 											{course.title}
 										</h3>
 										
 										<!-- Course Description -->
-										<p class="text-gray-600 text-sm line-clamp-2 mb-4">
+										<p class="text-slate-600 text-sm line-clamp-2 mb-4">
 											{course.description}
 										</p>
 										
 										<!-- Instructor -->
-										<p class="text-sm font-medium text-gray-700 mb-3">
+										<p class="text-sm font-medium text-slate-700 mb-3">
 											Instructor: {course.instructor}
 										</p>
 									</CardContent>
 									
-									<CardFooter class="flex items-center justify-between text-sm text-gray-600 pt-0">
+									<CardFooter class="flex items-center justify-between text-sm text-slate-600 pt-0">
 										<!-- Rating -->
 										<div class="flex items-center gap-1" aria-label="Rating: {course.rating} out of 5 stars">
-											<Star class="h-4 w-4 fill-yellow-400 text-yellow-400" aria-hidden="true" />
-											<span class="font-medium">{course.rating}</span>
-											<span class="text-gray-500">({course.ratingCount})</span>
+											<Star class="h-4 w-4 fill-accent-400 text-accent-400" aria-hidden="true" />
+											<span class="font-medium text-slate-900">{course.rating}</span>
+											<span class="text-slate-500">({course.ratingCount})</span>
 										</div>
 										
 										<!-- Enrollment Count -->
@@ -762,7 +764,7 @@
 						<Button 
 							onclick={() => handlePageChange(currentPage + 1)}
 							disabled={loading}
-							class="px-8"
+							class="px-8 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive"
 							aria-label="Load more courses"
 						>
 							{loading ? 'Loading...' : 'Load More Courses'}
@@ -775,13 +777,13 @@
 			<section class="text-center py-12" aria-label="No courses found">
 				<div class="max-w-md mx-auto">
 					<div class="mb-4">
-						<Search class="h-16 w-16 text-gray-400 mx-auto" aria-hidden="true" />
+						<Search class="h-16 w-16 text-slate-400 mx-auto" aria-hidden="true" />
 					</div>
-					<h2 class="text-lg font-semibold text-gray-900 mb-2">No courses found</h2>
-					<p class="text-gray-600 mb-4">
+					<h2 class="text-lg font-semibold text-slate-900 mb-2">No courses found</h2>
+					<p class="text-slate-600 mb-4">
 						We couldn't find any courses matching your criteria. Try adjusting your filters or search terms.
 					</p>
-					<Button variant="outline" onclick={clearFilters}>
+					<Button variant="outline" onclick={clearFilters} class="interactive rounded-lg">
 						Clear all filters
 					</Button>
 				</div>
