@@ -14,54 +14,35 @@ export const lessonAttachmentSchema = z.object({
   uploadedAt: z.string(),
 });
 
-export const quizQuestionSchema = z
-  .object({
-    id: z.string(),
-    type: z.enum(["multiple_choice", "true_false", "short_answer", "essay"]),
-    question: z.string().min(1, "Question is required"),
-    options: z.array(z.string()).optional(),
-    correctAnswer: z.union([z.string(), z.number()]),
-    explanation: z.string().optional(),
-    points: z
-      .number()
-      .min(0, "Points must be non-negative")
-      .max(100, "Points cannot exceed 100"),
-    order: z.number().min(0),
-    image: z.string().url().optional(),
-    hint: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      // Validate multiple choice questions have options
-      if (data.type === "multiple_choice") {
-        return Array.isArray(data.options) && data.options.length >= 2;
-      }
-      return true;
-    },
-    {
-      message: "Multiple choice questions must have at least 2 options",
-      path: ["options"],
-    },
-  )
-  .refine(
-    (data) => {
-      // Validate correct answer index for multiple choice
-      if (data.type === "multiple_choice" && Array.isArray(data.options)) {
-        const answerIndex = Number(data.correctAnswer);
-        return (
-          !isNaN(answerIndex) &&
-          answerIndex >= 0 &&
-          answerIndex < data.options.length
-        );
-      }
-      return true;
-    },
-    {
-      message:
-        "Correct answer must be a valid option index for multiple choice questions",
-      path: ["correctAnswer"],
-    },
-  );
+// Question Option schema (used in multiple choice questions)
+const questionOptionSchema = z.object({
+  id: z.string(),
+  text: z.string(),
+  isCorrect: z.boolean(),
+  explanation: z.string().optional(),
+});
+
+export const quizQuestionSchema = z.object({
+  id: z.string(),
+  type: z.enum(["multiple_choice", "multiple_select", "true_false", "short_answer", "essay", "fill_blank"]),
+  question: z.string().min(1, "Question is required"),
+  options: z.array(questionOptionSchema).optional(),
+  correctAnswer: z.union([z.string(), z.number(), z.array(z.string()), z.boolean()]),
+  explanation: z.string().optional(),
+  points: z
+    .number()
+    .min(0, "Points must be non-negative")
+    .max(100, "Points cannot exceed 100"),
+  order: z.number().min(0),
+  image: z.string().url().optional(),
+  hint: z.string().optional(),
+  tags: z.array(z.string()).optional(),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  caseSensitive: z.boolean().optional(),
+  acceptableAnswers: z.array(z.string()).optional(),
+  maxLength: z.number().optional(),
+  minLength: z.number().optional(),
+});
 
 export const quizSchema = z.object({
   id: z.string(),

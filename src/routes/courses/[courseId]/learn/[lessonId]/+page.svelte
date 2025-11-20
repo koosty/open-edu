@@ -414,6 +414,11 @@
 				Math.floor((Date.now() - startTime.getTime()) / 1000) : 
 				sessionTime
 
+			// Save all answers before submitting
+			for (const answer of answers) {
+				await QuizService.saveQuizAnswer(currentAttempt.id, answer)
+			}
+
 			// Submit quiz and get graded attempt
 			const gradedAttempt = await QuizService.submitQuizAttempt(
 				currentAttempt.id,

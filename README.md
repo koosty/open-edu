@@ -1,11 +1,11 @@
 # 🎓 Open-EDU - Interactive Learning Platform
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-blue?style=for-the-badge)](https://koosty.github.io/open-edu/)
-[![Version](https://img.shields.io/badge/Version-v1.2.1-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.2.1)
+[![Version](https://img.shields.io/badge/Version-v1.3.0-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.3.0)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
 [![Tests](https://img.shields.io/badge/Tests-89_Passing-success?style=for-the-badge)](package.json)
 
-**A modern, feature-rich learning platform with markdown rendering, progress tracking, and interactive note-taking.**
+**A modern, feature-rich learning platform with markdown rendering, interactive quizzes, progress tracking, and comprehensive course management.**
 
 Built with SvelteKit, Firebase, and TypeScript. Transform your learning journey with a best-in-class reading experience, content analytics, and mobile-optimized design.
 
@@ -13,7 +13,19 @@ Built with SvelteKit, Firebase, and TypeScript. Transform your learning journey 
 
 ## 🌟 Features
 
-### ✅ **v1.2.1 - Design System & UI Polish (Current)**
+### ✅ **v1.3.0 - Interactive Features & Assessments (Current)**
+- 📝 **Quiz System** - Complete quiz creation, taking, and grading workflow
+- 🎯 **6 Question Types** - Multiple choice, multiple select, true/false, short answer, essay, fill-in-the-blank
+- ⏱️ **Quiz Timer** - Countdown timer with time limit enforcement
+- 🔄 **Multiple Attempts** - Configurable retry system with attempt tracking
+- 📊 **Automated Grading** - Instant scoring for objective questions, manual grading for essays
+- 📈 **Quiz Analytics** - Real-time statistics (attempts, average score, pass rate)
+- 🎨 **Visual Quiz Builder** - Drag-and-drop interface for instructors to create quizzes
+- 💡 **Hints & Explanations** - Optional hints during quiz, detailed explanations in results
+- 🔒 **Quiz Settings** - Pass threshold, time limits, attempt limits, randomization, feedback control
+- 🧪 **Quiz Management** - Admin interface for publishing, monitoring, and editing quizzes
+
+### ✅ **v1.2.1 - Design System & UI Polish**
 - 🎨 **Multi-Theme System** - 3 color variants (Progressive, Academic, Warm)
 - ♿ **WCAG AA Compliance** - 100% Lighthouse accessibility score
 - 📱 **Responsive Design** - Tested on mobile (375px), tablet (768px), desktop (1440px)
@@ -343,7 +355,17 @@ For detailed deployment setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
 - [x] Progress tracking
 - [x] Course catalog and discovery
 
-### **✅ v1.2.0 - Enhanced Reading Experience (Complete - Current)**
+### **✅ v1.3.0 - Interactive Features & Assessments (Complete - Current)**
+- [x] Quiz creation and management (visual builder)
+- [x] Multiple question types (6 types supported)
+- [x] Automatic grading system with manual review
+- [x] Student performance tracking
+- [x] Quiz analytics and insights
+- [x] Admin quiz management interface
+- [x] Quiz timer and attempt tracking
+- [x] Hints, explanations, and feedback system
+
+### **✅ v1.2.0 - Enhanced Reading Experience (Complete)**
 - [x] Rich markdown rendering with GFM
 - [x] Syntax highlighting (Highlight.js)
 - [x] LaTeX math support (KaTeX)
@@ -355,15 +377,19 @@ For detailed deployment setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
 - [x] Auto-save reading position
 - [x] Comprehensive test coverage (89 tests)
 
-### **🔮 v1.3.0 - Interactive Features & Assessments (Next)**
-- [ ] Quiz creation and management
-- [ ] Multiple question types (multiple choice, true/false, short answer)
-- [ ] Automatic grading system
-- [ ] Student performance tracking
-- [ ] Gradebook for instructors
-- [ ] Quiz analytics and insights
+### **🔮 v2.0.0 - Advanced Features & Scaling (Next)**
+- [ ] Assignment submission and grading system
+- [ ] Discussion forums and Q&A
+- [ ] Full-text search across courses and content
+- [ ] Achievement system with badges and streaks
+- [ ] Advanced analytics dashboard for instructors
+- [ ] Progressive Web App with offline support
+- [ ] Learning path builder and recommendations
+- [ ] API access and integration capabilities
+- [ ] Multi-language internationalization
+- [ ] Advanced security and performance optimizations
 
-### **🌟 v2.0.0 - Advanced Features (Future)**
+### **🌟 v3.0.0 - Premium Features (Future)**
 - [ ] Monaco Editor integration for code challenges
 - [ ] Real-time code execution sandbox
 - [ ] Multi-language support (Python, JavaScript, Java, etc.)
@@ -388,8 +414,9 @@ See detailed roadmap files: [roadmap/](roadmap/)
 - **Test Coverage**: Core services 100%
 
 ### **Features Delivered**
-- **Releases**: 3 major versions (v1.0, v1.1, v1.2)
-- **Tasks Completed**: 112/158 total roadmap tasks (71%)
+- **Releases**: 4 major versions (v1.0, v1.1, v1.2, v1.3)
+- **Tasks Completed**: 121/158 core roadmap tasks (77%)
+- **Quiz System**: 9 tasks completed, 6 question types supported
 - **Security**: Role-based access control with Firestore rules
 - **Performance**: Optimized with code splitting and lazy loading
 
@@ -490,6 +517,6 @@ A: Ensure Firestore indexes are deployed with `firebase deploy --only firestore:
     <a href="DEPLOYMENT.md">Deploy Guide</a>
   </p>
   <p>
-    <strong>v1.2.0</strong> - Enhanced Reading Experience
+    <strong>v1.3.0</strong> - Interactive Features & Assessments
   </p>
 </div>

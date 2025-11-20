@@ -18,7 +18,8 @@ import {
 	type Query,
 	type DocumentData,
 	serverTimestamp,
-	Timestamp
+	Timestamp,
+	arrayUnion
 } from 'firebase/firestore'
 import { db } from '$lib/firebase'
 import { COLLECTIONS } from '$lib/firebase/collections'
@@ -29,6 +30,7 @@ import type {
 	QuizResults,
 	QuizStatistics
 } from '$lib/types/quiz'
+import type { Lesson } from '$lib/types'
 
 // ============================================
 // Quiz CRUD Operations
@@ -52,6 +54,95 @@ export async function createQuiz(quizData: Omit<Quiz, 'id' | 'createdAt' | 'upda
 	return {
 		id: createdQuiz.id,
 		...createdQuiz.data() as Omit<Quiz, 'id'>
+	}
+}
+
+/**
+ * Create a new quiz with an associated lesson
+ * This is the preferred method for creating quizzes as it ensures 
+ * the lesson and quiz are properly linked and the lesson type is set correctly
+ */
+export async function createQuizWithLesson(
+	courseId: string,
+	lessonData: {
+		title: string
+		description?: string
+		duration?: number
+		order?: number
+		isRequired?: boolean
+	},
+	quizData: Omit<Quiz, 'id' | 'createdAt' | 'updatedAt' | 'lessonId' | 'courseId'>
+): Promise<{ quiz: Quiz; lesson: Lesson }> {
+	// Get the course to determine the next lesson order
+	const courseRef = doc(db, COLLECTIONS.COURSES, courseId)
+	const courseSnap = await getDoc(courseRef)
+	
+	if (!courseSnap.exists()) {
+		throw new Error('Course not found')
+	}
+	
+	const courseData = courseSnap.data()
+	const existingLessons = courseData.lessons || []
+	
+	// Generate lesson ID
+	const lessonId = `lesson-${Date.now()}`
+	
+	// Create lesson object with type: 'quiz'
+	// Note: Only include duration if it's actually provided (Firestore doesn't support undefined)
+	const newLesson: Lesson = {
+		id: lessonId,
+		courseId,
+		title: lessonData.title,
+		description: lessonData.description || '',
+		type: 'quiz',
+		order: lessonData.order ?? existingLessons.length + 1,
+		...(lessonData.duration !== undefined && { duration: lessonData.duration }),
+		isRequired: lessonData.isRequired ?? true,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString()
+	}
+	
+	// Create quiz with reference to the new lesson
+	const quizRef = collection(db, COLLECTIONS.QUIZZES)
+	const newQuiz = {
+		...quizData,
+		courseId,
+		lessonId,
+		createdAt: serverTimestamp(),
+		updatedAt: serverTimestamp()
+	}
+	
+	const quizDocRef = await addDoc(quizRef, newQuiz)
+	
+	// Get the created quiz data
+	const createdQuizSnap = await getDoc(quizDocRef)
+	const quizDataRaw = createdQuizSnap.data()
+	
+	// Convert timestamps to ISO strings for the lesson
+	const now = new Date().toISOString()
+	const createdQuiz: Quiz = {
+		id: createdQuizSnap.id,
+		...quizDataRaw as Omit<Quiz, 'id'>,
+		createdAt: now,
+		updatedAt: now
+	}
+	
+	// Update the lesson to include the quiz data
+	// This is required by the validation schema
+	const lessonWithQuiz: Lesson = {
+		...newLesson,
+		quiz: createdQuiz
+	}
+	
+	// Add lesson to course
+	await updateDoc(courseRef, {
+		lessons: arrayUnion(lessonWithQuiz),
+		updatedAt: serverTimestamp()
+	})
+	
+	return {
+		quiz: createdQuiz,
+		lesson: lessonWithQuiz
 	}
 }
 

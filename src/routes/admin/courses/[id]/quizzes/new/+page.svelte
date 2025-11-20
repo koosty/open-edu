@@ -5,15 +5,21 @@
 	import { canManageCourses } from '$lib/utils/admin'
 	import { auth } from '$lib/firebase'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
+	import { Button, Card, CardContent, CardHeader, CardTitle, Input } from '$lib/components/ui'
 	import QuizBuilder from '$lib/components/QuizBuilder.svelte'
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz } from '$lib/types/quiz'
 	
 	let courseId = $derived($page.params.id as string)
-	let lessonId = $derived($page.url.searchParams.get('lessonId') || '')
 	
 	let isSaving = $state(false)
 	let error = $state<string | null>(null)
+	let showLessonForm = $state(true)
+	
+	// Lesson data state
+	let lessonTitle = $state('')
+	let lessonDescription = $state('')
+	let lessonDuration = $state<number | undefined>(undefined)
 	
 	// Redirect if not authorized
 	$effect(() => {
@@ -25,8 +31,8 @@
 	})
 	
 	async function handleSave(quizData: Partial<Quiz>) {
-		if (!lessonId) {
-			error = 'Lesson ID is required. Please select a lesson first.'
+		if (!lessonTitle.trim()) {
+			error = 'Lesson title is required'
 			return
 		}
 		
@@ -41,14 +47,20 @@
 		error = null
 		
 		try {
-			// Create the quiz with createdBy field for security rules
-			const newQuiz = await QuizService.createQuiz({
-				...quizData,
+			// Create the quiz with lesson using the new service function
+			const result = await QuizService.createQuizWithLesson(
 				courseId,
-				lessonId,
-				createdBy: currentUser.uid,
-				isPublished: false
-			} as Omit<Quiz, 'id' | 'createdAt' | 'updatedAt'>)
+				{
+					title: lessonTitle,
+					description: lessonDescription || undefined,
+					duration: lessonDuration
+				},
+				{
+					...quizData,
+					createdBy: currentUser.uid,
+					isPublished: false
+				} as Omit<Quiz, 'id' | 'createdAt' | 'updatedAt' | 'lessonId' | 'courseId'>
+			)
 			
 			// Navigate back to quiz management
 			await goto(`/admin/courses/${courseId}/quizzes`)
@@ -63,7 +75,20 @@
 	function handleCancel() {
 		goto(`/admin/courses/${courseId}/quizzes`)
 	}
+	
+	function handleLessonFormContinue() {
+		if (!lessonTitle.trim()) {
+			error = 'Lesson title is required'
+			return
+		}
+		error = null
+		showLessonForm = false
+	}
 </script>
+
+<svelte:head>
+	<title>Create New Quiz</title>
+</svelte:head>
 
 <AuthGuard>
 	<div class="min-h-screen bg-gray-50">
@@ -75,33 +100,107 @@
 			</div>
 		{/if}
 		
-		{#if !lessonId}
-			<div class="max-w-6xl mx-auto p-6">
-				<div class="bg-yellow-50 border border-yellow-300 rounded-lg p-6">
-					<h2 class="text-lg font-semibold text-yellow-900 mb-2">Lesson Required</h2>
-					<p class="text-yellow-800 mb-4">
-						You must select a lesson before creating a quiz. Quizzes are linked to specific lessons in your course.
-					</p>
+		{#if showLessonForm}
+			<!-- Step 1: Lesson Information -->
+			<div class="max-w-2xl mx-auto p-6">
+				<Card>
+					<CardHeader>
+						<CardTitle>Create Quiz Lesson</CardTitle>
+						<p class="text-sm text-gray-600 mt-2">
+							First, let's set up the lesson that will contain this quiz. 
+							Students will see this information in the course lesson list.
+						</p>
+					</CardHeader>
+					<CardContent class="space-y-4">
+						<div>
+							<label for="lesson-title" class="block text-sm font-medium mb-2">
+								Lesson Title <span class="text-red-500">*</span>
+							</label>
+							<Input
+								id="lesson-title"
+								type="text"
+								bind:value={lessonTitle}
+								placeholder="e.g., Quiz: Introduction to Variables"
+								class="w-full"
+							/>
+							<p class="text-xs text-gray-500 mt-1">
+								This will appear in the course table of contents
+							</p>
+						</div>
+						
+						<div>
+							<label for="lesson-description" class="block text-sm font-medium mb-2">
+								Lesson Description
+							</label>
+							<textarea
+								id="lesson-description"
+								bind:value={lessonDescription}
+								placeholder="Describe what this quiz covers..."
+								class="w-full px-3 py-2 border rounded-md resize-none"
+								rows="3"
+							></textarea>
+							<p class="text-xs text-gray-500 mt-1">
+								Optional: Brief description visible to students
+							</p>
+						</div>
+						
+						<div>
+							<label for="lesson-duration" class="block text-sm font-medium mb-2">
+								Estimated Duration (minutes)
+							</label>
+							<input
+								id="lesson-duration"
+								type="number"
+								bind:value={lessonDuration}
+								placeholder="15"
+								class="w-full px-3 py-2 border rounded-md"
+								min="1"
+								max="180"
+							/>
+							<p class="text-xs text-gray-500 mt-1">
+								Optional: How long should students expect to spend?
+							</p>
+						</div>
+						
+						<div class="flex gap-3 pt-4">
+							<Button
+								onclick={handleLessonFormContinue}
+								disabled={!lessonTitle.trim()}
+								class="flex-1"
+							>
+								Continue to Quiz Builder
+							</Button>
+							<Button
+								variant="outline"
+								onclick={handleCancel}
+							>
+								Cancel
+							</Button>
+						</div>
+					</CardContent>
+				</Card>
+				
+				<!-- Help Text -->
+				<div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
 					<div class="flex gap-3">
-						<button
-							onclick={() => goto(`/admin/courses/${courseId}/lessons`)}
-							class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-						>
-							Go to Lessons
-						</button>
-						<button
-							onclick={handleCancel}
-							class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-						>
-							Cancel
-						</button>
+						<svg class="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+						</svg>
+						<div class="text-sm text-blue-800">
+							<p class="font-medium mb-1">New Workflow!</p>
+							<p>
+								Creating a quiz now automatically creates the lesson it belongs to. 
+								You no longer need to pre-create quiz lessons separately.
+							</p>
+						</div>
 					</div>
 				</div>
 			</div>
 		{:else}
+			<!-- Step 2: Quiz Builder -->
 			<QuizBuilder
 				{courseId}
-				{lessonId}
+				lessonId=""
 				onSave={handleSave}
 				onCancel={handleCancel}
 				{isSaving}
