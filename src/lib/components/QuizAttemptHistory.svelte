@@ -135,8 +135,8 @@
 									{/if}
 									
 									<div>
-										<span class="font-medium">{attempt.correctAnswers}</span>
-										<span>/{attempt.totalQuestions} correct</span>
+										<span class="font-medium">{attempt.answers.filter(a => a.isCorrect).length}</span>
+										<span>/{attempt.answers.length} correct</span>
 									</div>
 								</div>
 								

@@ -153,27 +153,28 @@
 </script>
 
 <div class="quiz-viewer">
-	<!-- Quiz Header -->
-	<div class="quiz-header bg-white border-b border-slate-200 p-6 sticky top-0 z-10 shadow-sm">
+	<!-- Quiz Header - Mobile Optimized -->
+	<div class="quiz-header bg-white border-b border-slate-200 p-4 md:p-6 sticky top-0 z-10 shadow-sm">
 		<div class="max-w-4xl mx-auto">
-			<div class="flex items-center justify-between mb-4">
-				<div>
-					<h2 class="text-2xl font-bold text-slate-900">{quiz.title}</h2>
+			<!-- Mobile: Stack vertically, Desktop: Side by side -->
+			<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-0 mb-4">
+				<div class="flex-1 min-w-0">
+					<h2 class="text-lg md:text-2xl font-bold text-slate-900 truncate">{quiz.title}</h2>
 					{#if quiz.description}
-						<p class="text-slate-600 mt-1">{quiz.description}</p>
+						<p class="text-sm md:text-base text-slate-600 mt-1 line-clamp-2 md:line-clamp-1">{quiz.description}</p>
 					{/if}
 				</div>
 				
-				<div class="flex items-center gap-4">
-					<!-- Enhanced Timer with Visual Warnings -->
+				<div class="flex items-center gap-2 md:gap-4">
+					<!-- Enhanced Timer with Visual Warnings - Mobile Optimized -->
 					{#if timeLimitSeconds}
-						<div class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 {
+						<div class="flex items-center gap-2 md:gap-3 px-3 md:px-4 py-2 rounded-lg transition-all duration-300 {
 							timerWarningLevel === 'critical' ? 'bg-red-50 text-red-700 ring-2 ring-red-200 animate-pulse' :
 							timerWarningLevel === 'warning' ? 'bg-yellow-50 text-yellow-700 ring-2 ring-yellow-200' :
 							'bg-slate-100 text-slate-700'
 						}">
-							<!-- Circular Progress Indicator -->
-							<div class="relative w-10 h-10">
+							<!-- Circular Progress Indicator - Smaller on mobile -->
+							<div class="relative w-8 h-8 md:w-10 md:h-10">
 								<svg class="transform -rotate-90" viewBox="0 0 36 36">
 									<!-- Background circle -->
 									<circle
@@ -198,66 +199,67 @@
 										style="transition: stroke-dashoffset 1s linear"
 									/>
 								</svg>
-								<Clock class="w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+								<Clock class="w-3 h-3 md:w-4 md:h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
 							</div>
 							
 							<div class="flex flex-col">
-								<span class="text-xs font-medium opacity-75">Time Remaining</span>
-								<span class="font-mono text-lg font-bold leading-none">
+								<span class="text-[10px] md:text-xs font-medium opacity-75 hidden md:block">Time Remaining</span>
+								<span class="font-mono text-base md:text-lg font-bold leading-none">
 									{formatTime(timeRemainingSeconds || 0)}
 								</span>
 							</div>
 							
 							{#if timerWarningLevel === 'critical'}
-								<span class="text-xs font-semibold">Hurry!</span>
+								<span class="text-xs font-semibold hidden md:inline">Hurry!</span>
 							{:else if timerWarningLevel === 'warning'}
 								<span class="text-xs font-semibold">⚠️</span>
 							{/if}
 						</div>
 					{:else}
-						<!-- Elapsed time (no limit) -->
-						<div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700">
-							<Clock class="w-5 h-5" />
-							<span class="font-mono font-semibold">
+						<!-- Elapsed time (no limit) - Mobile Optimized -->
+						<div class="flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg bg-slate-100 text-slate-700">
+							<Clock class="w-4 h-4 md:w-5 md:h-5" />
+							<span class="font-mono font-semibold text-sm md:text-base">
 								{formatTime(timeElapsed)}
 							</span>
 						</div>
 					{/if}
 					
-					<!-- Progress -->
-					<div class="text-sm">
+					<!-- Progress - Mobile Compact -->
+					<div class="text-xs md:text-sm whitespace-nowrap">
 						<span class="font-semibold text-slate-900">{answeredCount}</span>
-						<span class="text-slate-600">/{totalQuestions} answered</span>
+						<span class="text-slate-600">/{totalQuestions}</span>
+						<span class="hidden md:inline text-slate-600"> answered</span>
 					</div>
 				</div>
 			</div>
 			
 			<!-- Progress bar -->
-			<div class="w-full bg-slate-200 rounded-full h-2">
+			<div class="w-full bg-slate-200 rounded-full h-1.5 md:h-2">
 				<div
-					class="bg-gradient-to-r from-primary-500 to-primary-600 h-2 rounded-full transition-all duration-300"
+					class="bg-gradient-to-r from-primary-500 to-primary-600 h-1.5 md:h-2 rounded-full transition-all duration-300"
 					style="width: {(answeredCount / totalQuestions) * 100}%"
 				></div>
 			</div>
 		</div>
 	</div>
 	
-	<!-- Quiz Instructions -->
+	<!-- Quiz Instructions - Mobile Optimized -->
 	{#if quiz.instructions}
-		<div class="max-w-4xl mx-auto px-6 pt-6">
-			<div class="bg-accent-50 border border-accent-200 rounded-xl p-5 shadow-sm">
-				<div class="flex items-start gap-3">
-					<AlertCircle class="w-5 h-5 text-accent-600 mt-0.5 shrink-0" />
-					<div>
-						<h3 class="text-sm font-semibold text-accent-900">Instructions</h3>
-						<p class="text-sm text-accent-700 mt-1">{quiz.instructions}</p>
-						<div class="flex gap-4 mt-2 text-xs text-accent-600">
-							<span>Passing Score: {quiz.passingScore}%</span>
+		<div class="max-w-4xl mx-auto px-4 md:px-6 pt-4 md:pt-6">
+			<div class="bg-accent-50 border border-accent-200 rounded-xl p-4 md:p-5 shadow-sm">
+				<div class="flex items-start gap-2 md:gap-3">
+					<AlertCircle class="w-4 h-4 md:w-5 md:h-5 text-accent-600 mt-0.5 shrink-0" />
+					<div class="flex-1 min-w-0">
+						<h3 class="text-xs md:text-sm font-semibold text-accent-900">Instructions</h3>
+						<p class="text-xs md:text-sm text-accent-700 mt-1 leading-relaxed">{quiz.instructions}</p>
+						<div class="flex flex-wrap gap-3 md:gap-4 mt-2 text-[10px] md:text-xs text-accent-600">
+							<span class="whitespace-nowrap">Pass: {quiz.passingScore}%</span>
 							{#if quiz.timeLimit}
-								<span>Time Limit: {quiz.timeLimit} minutes</span>
+								<span class="whitespace-nowrap">Time: {quiz.timeLimit} min</span>
 							{/if}
 							{#if quiz.allowMultipleAttempts}
-								<span>Multiple attempts allowed</span>
+								<span class="whitespace-nowrap">Multiple attempts</span>
 							{/if}
 						</div>
 					</div>
@@ -266,23 +268,23 @@
 		</div>
 	{/if}
 	
-	<!-- Question Content -->
-	<div class="max-w-4xl mx-auto px-6 py-8">
+	<!-- Question Content - Mobile Optimized -->
+	<div class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
 		{#if currentQuestion}
 			<Card class="shadow-lg border-slate-200">
-				<CardContent class="p-8">
-					<!-- Question Header -->
-					<div class="flex items-start gap-4 mb-6">
-						<div class="w-10 h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-md shrink-0">
+				<CardContent class="p-4 md:p-8">
+					<!-- Question Header - Mobile Friendly -->
+					<div class="flex items-start gap-3 md:gap-4 mb-4 md:mb-6">
+						<div class="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-xs md:text-sm font-bold text-white shadow-md shrink-0">
 							{currentQuestionIndex + 1}
 						</div>
-						<div class="flex-1">
-							<div class="flex items-center gap-2 mb-2">
-								<span class="text-xs font-semibold text-slate-500 uppercase tracking-wide">
+						<div class="flex-1 min-w-0">
+							<div class="flex flex-wrap items-center gap-2 mb-2">
+								<span class="text-[10px] md:text-xs font-semibold text-slate-500 uppercase tracking-wide">
 									{currentQuestion.type.replace('_', ' ')}
 								</span>
 								{#if currentQuestion.difficulty}
-									<span class="text-xs px-2 py-0.5 rounded-full {
+									<span class="text-[10px] md:text-xs px-1.5 md:px-2 py-0.5 rounded-full {
 										currentQuestion.difficulty === 'easy' ? 'bg-green-100 text-green-700' :
 										currentQuestion.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-700' :
 										'bg-red-100 text-red-700'
@@ -290,11 +292,11 @@
 										{currentQuestion.difficulty}
 									</span>
 								{/if}
-								<span class="text-xs text-slate-500 ml-auto">
-									{currentQuestion.points} {currentQuestion.points === 1 ? 'point' : 'points'}
+								<span class="text-[10px] md:text-xs text-slate-500 ml-auto">
+									{currentQuestion.points} {currentQuestion.points === 1 ? 'pt' : 'pts'}
 								</span>
 							</div>
-							<h3 class="text-lg font-semibold text-slate-900 leading-relaxed">
+							<h3 class="text-base md:text-lg font-semibold text-slate-900 leading-relaxed">
 								{currentQuestion.question}
 							</h3>
 							
@@ -321,12 +323,12 @@
 					<!-- Answer Input -->
 					<div class="space-y-3">
 						{#if currentQuestion.type === 'multiple_choice'}
-							<!-- Multiple Choice -->
+							<!-- Multiple Choice - Touch Optimized (min 44px height) -->
 							{#each currentQuestion.options || [] as option (option.id)}
 								<button
 									type="button"
 									onclick={() => setAnswer(currentQuestion.id, option.id)}
-									class="w-full text-left p-4 rounded-lg border-2 transition-all duration-200 {
+									class="w-full text-left min-h-[44px] p-3 md:p-4 rounded-lg border-2 transition-all duration-200 active:scale-[0.98] {
 										answers[currentQuestion.id] === option.id
 											? 'border-primary-500 bg-primary-50 shadow-sm'
 											: 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
@@ -334,16 +336,16 @@
 									disabled={isSubmitting}
 								>
 									<div class="flex items-center gap-3">
-										<div class="w-5 h-5 rounded-full border-2 flex items-center justify-center {
+										<div class="w-5 h-5 md:w-6 md:h-6 rounded-full border-2 flex items-center justify-center shrink-0 {
 											answers[currentQuestion.id] === option.id
 												? 'border-primary-500 bg-primary-500'
 												: 'border-slate-300'
 										}">
 											{#if answers[currentQuestion.id] === option.id}
-												<div class="w-2 h-2 bg-white rounded-full"></div>
+												<div class="w-2 h-2 md:w-2.5 md:h-2.5 bg-white rounded-full"></div>
 											{/if}
 										</div>
-										<span class="font-medium text-slate-900">{option.text}</span>
+										<span class="font-medium text-sm md:text-base text-slate-900 leading-snug">{option.text}</span>
 									</div>
 								</button>
 							{/each}
@@ -456,16 +458,16 @@
 		{/if}
 	</div>
 	
-	<!-- Navigation Footer -->
-	<div class="border-t border-slate-200 bg-white p-6 sticky bottom-0 shadow-lg">
+	<!-- Navigation Footer - Mobile Optimized -->
+	<div class="border-t border-slate-200 bg-white p-3 md:p-6 sticky bottom-0 shadow-lg safe-area-bottom">
 		<div class="max-w-4xl mx-auto">
-			<!-- Question Navigator -->
-			<div class="flex gap-2 mb-4 overflow-x-auto pb-2">
+			<!-- Question Navigator - Touch Optimized -->
+			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
 				{#each quiz.questions as question, index (question.id)}
 					<button
 						type="button"
 						onclick={() => goToQuestion(index)}
-						class="w-10 h-10 rounded-lg border-2 shrink-0 transition-all duration-200 {
+						class="min-w-[44px] min-h-[44px] w-11 h-11 md:w-10 md:h-10 rounded-lg border-2 shrink-0 transition-all duration-200 font-semibold text-sm active:scale-95 {
 							index === currentQuestionIndex
 								? 'border-primary-500 bg-primary-500 text-white shadow-sm'
 								: isQuestionAnswered(question.id)
@@ -478,22 +480,24 @@
 				{/each}
 			</div>
 			
-			<!-- Navigation Buttons -->
-			<div class="flex items-center justify-between">
+			<!-- Navigation Buttons - Mobile Optimized (min 44px touch target) -->
+			<div class="flex items-center justify-between gap-2 md:gap-3">
 				<Button
 					variant="outline"
 					onclick={goPrevious}
 					disabled={!canGoPrevious || isSubmitting}
+					class="min-h-[44px] px-4 md:px-6"
 				>
-					← Previous
+					<span class="hidden sm:inline">←</span>
+					<span class="sm:ml-2">Prev</span>
 				</Button>
 				
-				<div class="flex gap-3">
+				<div class="flex gap-2 md:gap-3 flex-1 justify-end">
 					{#if isLastQuestion}
 						<Button
 							onclick={handleSubmitClick}
 							disabled={isSubmitting}
-							class="bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md"
+							class="min-h-[44px] px-4 md:px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md"
 						>
 							{isSubmitting ? 'Submitting...' : 'Submit Quiz'}
 						</Button>
@@ -501,8 +505,10 @@
 						<Button
 							onclick={goNext}
 							disabled={!canGoNext || isSubmitting}
+							class="min-h-[44px] px-4 md:px-6"
 						>
-							Next →
+							<span class="sm:mr-2">Next</span>
+							<span class="hidden sm:inline">→</span>
 						</Button>
 					{/if}
 				</div>
@@ -569,6 +575,21 @@
 		background-color: #f8fafc;
 	}
 	
+	/* Mobile-specific styles */
+	.scrollbar-hide {
+		-ms-overflow-style: none;
+		scrollbar-width: none;
+	}
+	
+	.scrollbar-hide::-webkit-scrollbar {
+		display: none;
+	}
+	
+	/* Safe area for mobile devices (notch support) */
+	.safe-area-bottom {
+		padding-bottom: env(safe-area-inset-bottom);
+	}
+	
 	@keyframes fade-in {
 		from { opacity: 0; }
 		to { opacity: 1; }
@@ -589,5 +610,12 @@
 	
 	.zoom-in {
 		animation: zoom-in 0.3s ease-out;
+	}
+	
+	/* Touch feedback */
+	@media (hover: none) {
+		button:active {
+			transform: scale(0.97);
+		}
 	}
 </style>

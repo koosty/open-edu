@@ -523,7 +523,7 @@
 		showQuizResults = false
 		showAttemptHistory = false
 		// If we're viewing an old attempt, start a new one
-		if (currentAttempt?.status === 'completed') {
+		if (currentAttempt?.status === 'graded' || currentAttempt?.status === 'submitted') {
 			handleQuizRetry()
 		}
 	}
