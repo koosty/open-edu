@@ -22,6 +22,7 @@
 	import BottomSheet from '$lib/components/BottomSheet.svelte'
 	import ErrorAlert from '$lib/components/ErrorAlert.svelte'
 	import AutoSaveIndicator from '$lib/components/AutoSaveIndicator.svelte'
+	import CompletionCelebration from '$lib/components/CompletionCelebration.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -72,6 +73,7 @@
 	let showNotesPanel = $state(false)
 	let showMobileSidebar = $state(false)
 	let showMobileNotesSheet = $state(false)
+	let showCompletionCelebration = $state(false)
 	let contentElement = $state<HTMLElement | null>(null)
 	
 	// Reading mode state
@@ -391,13 +393,8 @@
 			// Delete saved reading position since lesson is completed
 			await deleteReadingPosition(authState.user.id, lessonId)
 
-			// Navigate to next lesson if available
-			if (nextLesson) {
-				goto(`/courses/${courseId}/learn/${nextLesson.id}`)
-			} else {
-				// Course completed
-				goto(`/courses/${courseId}?completed=true`)
-			}
+			// Show celebration animation
+			showCompletionCelebration = true
 
 		} catch (err: any) {
 			error = err.message || 'Failed to complete lesson'
@@ -405,6 +402,27 @@
 		} finally {
 			completing = false
 		}
+	}
+	
+	/**
+	 * Handle celebration continue button
+	 */
+	function handleCelebrationContinue() {
+		showCompletionCelebration = false
+		
+		if (nextLesson) {
+			goto(`/courses/${courseId}/learn/${nextLesson.id}`)
+		} else {
+			// Course completed
+			goto(`/courses/${courseId}?completed=true`)
+		}
+	}
+	
+	/**
+	 * Handle celebration close button
+	 */
+	function handleCelebrationClose() {
+		showCompletionCelebration = false
 	}
 
 	// Load quiz data for quiz lessons
@@ -631,6 +649,17 @@
 	bind:status={saveStatus}
 	bind:lastSaved={lastSaved}
 	errorMessage={saveErrorMessage}
+/>
+
+<!-- Completion celebration -->
+<CompletionCelebration
+	bind:show={showCompletionCelebration}
+	lessonTitle={currentLesson?.title || ''}
+	isLastLesson={!nextLesson}
+	nextLessonTitle={nextLesson?.title || ''}
+	courseProgress={course?.lessons ? (progress?.completedLessons.length || 0) / course.lessons.length * 100 : 0}
+	onContinue={handleCelebrationContinue}
+	onClose={handleCelebrationClose}
 />
 
 <AuthGuard redirectTo="/courses/{courseId}">
