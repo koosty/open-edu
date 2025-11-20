@@ -355,16 +355,6 @@ For detailed deployment setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
 - [x] Progress tracking
 - [x] Course catalog and discovery
 
-### **✅ v1.3.0 - Interactive Features & Assessments (Complete - Current)**
-- [x] Quiz creation and management (visual builder)
-- [x] Multiple question types (6 types supported)
-- [x] Automatic grading system with manual review
-- [x] Student performance tracking
-- [x] Quiz analytics and insights
-- [x] Admin quiz management interface
-- [x] Quiz timer and attempt tracking
-- [x] Hints, explanations, and feedback system
-
 ### **✅ v1.2.0 - Enhanced Reading Experience (Complete)**
 - [x] Rich markdown rendering with GFM
 - [x] Syntax highlighting (Highlight.js)
@@ -377,7 +367,25 @@ For detailed deployment setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
 - [x] Auto-save reading position
 - [x] Comprehensive test coverage (89 tests)
 
-### **🔮 v2.0.0 - Advanced Features & Scaling (Next)**
+### **✅ v1.3.0 - Interactive Features & Assessments (Complete - Current)**
+- [x] Quiz creation and management (visual builder)
+- [x] Multiple question types (6 types supported)
+- [x] Automatic grading system with manual review
+- [x] Student performance tracking
+- [x] Quiz analytics and insights
+- [x] Admin quiz management interface
+- [x] Quiz timer and attempt tracking
+- [x] Hints, explanations, and feedback system
+
+### **🔮 v1.4.0 - Quality Assurance & UX Polish (Next)**
+- [ ] Comprehensive E2E testing with Playwright
+- [ ] Quiz UX improvements (timer display, attempt history, certificates)
+- [ ] Mobile quiz optimization and touch interactions
+- [ ] Student and instructor documentation guides
+- [ ] Analytics dashboard for instructors
+- [ ] Loading states and error message improvements
+
+### **🌟 v2.0.0 - Advanced Features & Scaling (Future)**
 - [ ] Assignment submission and grading system
 - [ ] Discussion forums and Q&A
 - [ ] Full-text search across courses and content

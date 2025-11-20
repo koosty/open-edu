@@ -8,3 +8,4 @@ export { default as CardContent } from "./CardContent.svelte";
 export { default as CardFooter } from "./CardFooter.svelte";
 export { default as ProgressBar } from "./ProgressBar.svelte";
 export { default as Breadcrumb } from "./Breadcrumb.svelte";
+export { default as Skeleton } from "./Skeleton.svelte";

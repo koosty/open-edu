@@ -6,10 +6,11 @@
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { ProgressService } from '$lib/services/progress'
 	import { authState } from '$lib/auth.svelte'
-	import { Button } from '$lib/components/ui'
+	import { Button, Skeleton } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import type { Course, Lesson, UserProgress } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
+	import LessonSkeleton from '$lib/components/LessonSkeleton.svelte'
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
 	import TableOfContents from '$lib/components/TableOfContents.svelte'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
@@ -31,6 +32,7 @@
 	import QuizViewer from '$lib/components/QuizViewer.svelte'
 	import QuizResults from '$lib/components/QuizResults.svelte'
 	import QuizAttemptHistory from '$lib/components/QuizAttemptHistory.svelte'
+	import QuizSkeleton from '$lib/components/QuizSkeleton.svelte'
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
@@ -600,8 +602,11 @@
 
 <AuthGuard redirectTo="/courses/{courseId}">
 {#if loading}
-	<div class="flex justify-center items-center min-h-[50vh]">
-		<Loading />
+	<!-- Skeleton loader for better UX -->
+	<div class="min-h-screen bg-slate-50">
+		<div class="lg:pl-80 transition-all duration-300">
+			<LessonSkeleton />
+		</div>
 	</div>
 {:else if error}
 	<div class="container mx-auto px-4 py-8">
@@ -844,7 +849,21 @@
 							<CardContent>
 								{#if isQuizLesson}
 									{#if loadingQuiz}
-										<Loading message="Loading quiz..." />
+										<!-- Quiz loading skeleton -->
+										<div class="space-y-4 py-8">
+											<Skeleton variant="heading" width="60%" />
+											<Skeleton variant="text" width="80%" />
+											<div class="space-y-3 mt-6">
+												<Skeleton variant="button" height="44px" />
+												<Skeleton variant="button" height="44px" />
+												<Skeleton variant="button" height="44px" />
+												<Skeleton variant="button" height="44px" />
+											</div>
+											<div class="flex justify-between mt-8">
+												<Skeleton variant="button" width="100px" />
+												<Skeleton variant="button" width="120px" />
+											</div>
+										</div>
 									{:else if showAttemptHistory && currentQuiz && allAttempts.length > 0}
 										<!-- Quiz Attempt History View -->
 										<div class="space-y-4">
