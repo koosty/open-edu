@@ -20,6 +20,7 @@
 	import NotesPanel from '$lib/components/NotesPanel.svelte'
 	import ReadingModeToggle from '$lib/components/ReadingModeToggle.svelte'
 	import BottomSheet from '$lib/components/BottomSheet.svelte'
+	import ErrorAlert from '$lib/components/ErrorAlert.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -610,22 +611,15 @@
 	</div>
 {:else if error}
 	<div class="container mx-auto px-4 py-8">
-		<Card>
-			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Error</h2>
-				<p class="text-gray-600 mb-6">{error}</p>
-				<div class="flex gap-3 justify-center">
-					<Button onclick={() => goto('/courses')}>
-						Browse Courses
-					</Button>
-					{#if !authState.user}
-						<Button onclick={() => goto('/auth/login')}>
-							Sign In
-						</Button>
-					{/if}
-				</div>
-			</CardContent>
-		</Card>
+		<ErrorAlert 
+			message={error}
+			onRetry={loadLessonData}
+			onGoBack={() => goto(`/courses/${courseId}`)}
+			onGoHome={() => goto('/courses')}
+			showRetry={true}
+			showGoBack={true}
+			showGoHome={true}
+		/>
 	</div>
 {:else}
 	<div class="min-h-screen bg-slate-50">
@@ -935,18 +929,13 @@
 										</div>
 									{:else}
 										<!-- Error State: Quiz not found -->
-										<div class="text-center py-12 space-y-4">
-											<div class="w-20 h-20 mx-auto rounded-full bg-red-100 flex items-center justify-center">
-												<svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-												</svg>
-											</div>
-											<h3 class="text-xl font-semibold text-slate-900">Quiz Not Available</h3>
-											<p class="text-slate-600">This quiz could not be loaded. Please contact your instructor.</p>
-											<Button onclick={() => goto(`/courses/${courseId}`)} variant="outline" class="mt-4">
-												← Back to Course
-											</Button>
-										</div>
+										<ErrorAlert 
+											message="Quiz not available. This quiz could not be loaded."
+											onRetry={loadQuizData}
+											onGoBack={() => goto(`/courses/${courseId}`)}
+											showRetry={true}
+											showGoBack={true}
+										/>
 									{/if}
 								{:else}
 									<!-- Regular Lesson Content -->
