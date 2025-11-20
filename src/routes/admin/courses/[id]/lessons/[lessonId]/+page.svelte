@@ -553,29 +553,37 @@
 									<div class="flex items-start gap-3">
 										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
 										<div>
-											<p class="font-medium text-slate-900">Navigate to Quiz Management</p>
-											<p class="text-sm text-slate-600 mt-1">After saving, go to <span class="font-mono bg-white px-2 py-0.5 rounded border border-slate-300">Admin → Courses → {course?.title} → Manage Quizzes</span></p>
-										</div>
-									</div>
-									
-									<div class="flex items-start gap-3">
-										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
-										<div>
-											<p class="font-medium text-slate-900">Create quiz and link to this lesson</p>
-											<p class="text-sm text-slate-600 mt-1">Use "Create Quiz" button and link it to the lesson you just created</p>
+											<p class="font-medium text-slate-900">Create Quiz with Visual Builder</p>
+											<p class="text-sm text-slate-600 mt-1">
+												{#if !isNewLesson && lesson}
+													Click the button below to create a quiz for this lesson using our visual builder
+												{:else}
+													After saving this lesson, you'll see a button to create the quiz
+												{/if}
+											</p>
 										</div>
 									</div>
 								</div>
 
-								<div class="mt-6 flex items-center justify-center gap-3">
-									<a 
-										href="/docs/quiz-creation-guide.md" 
-										target="_blank"
-										class="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline"
-									>
-										📚 View Complete Quiz Creation Guide →
-									</a>
-								</div>
+								{#if !isNewLesson && lesson}
+									<div class="mt-6 flex items-center justify-center">
+										<Button
+											onclick={() => goto(`/admin/courses/${courseId}/quizzes/new?lessonId=${lesson?.id || lessonId}`)}
+											class="shadow-sm px-6"
+										>
+											<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+											</svg>
+											Create Quiz for This Lesson
+										</Button>
+									</div>
+								{:else}
+									<div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
+										<p class="text-sm text-yellow-800">
+											💡 Save this lesson first, then you can create the quiz using our visual builder
+										</p>
+									</div>
+								{/if}
 
 								<div class="mt-6 p-4 bg-slate-100 border border-slate-200 rounded-lg">
 									<p class="text-xs text-slate-600 leading-relaxed">

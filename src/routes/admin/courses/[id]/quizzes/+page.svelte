@@ -115,18 +115,8 @@
 	}
 	
 	function handleCreateQuiz() {
-		// Open Firebase Console in new tab
-		const projectId = 'open-edu-koosty' // You may want to make this configurable
-		const url = `https://console.firebase.google.com/project/${projectId}/firestore/data/~2Fquizzes`
-		window.open(url, '_blank')
-		
-		// Show instructions
-		alert('Create a new quiz in Firebase Console:\n\n' +
-			'1. Click "Add document"\n' +
-			'2. Copy a template from docs/quiz-creation-guide.md\n' +
-			'3. Set courseId to: ' + courseId + '\n' +
-			'4. Set isPublished to true when ready\n' +
-			'5. Refresh this page to see your new quiz')
+		// Navigate to quiz builder - need to select lesson first
+		goto(`/admin/courses/${courseId}/lessons?action=select-for-quiz`)
 	}
 	
 	function getDifficultyColor(difficulty?: 'easy' | 'medium' | 'hard'): string {
@@ -260,7 +250,7 @@
 								</div>
 								<h3 class="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
 								<p class="text-gray-600 mb-6 max-w-md mx-auto">
-									Create your first quiz to assess student learning. Use the Firebase Console to create quizzes from templates.
+									Create your first quiz to assess student learning with our visual quiz builder.
 								</p>
 								<Button onclick={handleCreateQuiz}>
 									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -270,10 +260,7 @@
 								</Button>
 								<div class="mt-6 pt-6 border-t">
 									<p class="text-sm text-gray-500">
-										Need help? Check out the 
-										<a href="/docs/quiz-creation-guide.md" class="text-blue-600 hover:underline" target="_blank">
-											Quiz Creation Guide
-										</a>
+										You'll select a lesson, then use our drag-and-drop quiz builder to create questions.
 									</p>
 								</div>
 							</CardContent>
