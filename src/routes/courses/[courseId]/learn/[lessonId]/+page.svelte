@@ -21,6 +21,7 @@
 	import ReadingModeToggle from '$lib/components/ReadingModeToggle.svelte'
 	import BottomSheet from '$lib/components/BottomSheet.svelte'
 	import ErrorAlert from '$lib/components/ErrorAlert.svelte'
+	import AutoSaveIndicator from '$lib/components/AutoSaveIndicator.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -84,6 +85,11 @@
 	let hasRestoredPosition = $state(false)
 	let lastAccessedAt = $state<Date | null>(null)
 	let estimatedReadingMinutes = $state(0)
+	
+	// Auto-save indicator state
+	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle')
+	let lastSaved = $state<Date | null>(null)
+	let saveErrorMessage = $state('')
 	
 	// Note-taking state
 	let currentHeadingId = $state<string>('')
@@ -276,7 +282,26 @@
 			lessonId,
 			{
 				debounceMs: 2000, // Save every 2 seconds
-				minProgressDelta: 5 // Only save if scrolled 5% or more
+				minProgressDelta: 5, // Only save if scrolled 5% or more
+				onSaveStart: () => {
+					saveStatus = 'saving'
+				},
+				onSaveComplete: (success, error) => {
+					if (success) {
+						saveStatus = 'saved'
+						lastSaved = new Date()
+						saveErrorMessage = ''
+						// Auto-hide "Saved" indicator after 2 seconds
+						setTimeout(() => {
+							if (saveStatus === 'saved') {
+								saveStatus = 'idle'
+							}
+						}, 2000)
+					} else {
+						saveStatus = 'error'
+						saveErrorMessage = error?.message || 'Failed to save progress'
+					}
+				}
 			}
 		)
 
@@ -600,6 +625,13 @@
 	<title>{currentLesson?.title || 'Lesson'} - {course?.title || 'Open-EDU'}</title>
 	<meta name="description" content={currentLesson?.description || 'Open-EDU Lesson'} />
 </svelte:head>
+
+<!-- Auto-save indicator -->
+<AutoSaveIndicator 
+	bind:status={saveStatus}
+	bind:lastSaved={lastSaved}
+	errorMessage={saveErrorMessage}
+/>
 
 <AuthGuard redirectTo="/courses/{courseId}">
 {#if loading}

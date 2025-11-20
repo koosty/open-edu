@@ -1,4 +1,5 @@
 export { default as AuthGuard } from "./AuthGuard.svelte";
+export { default as AutoSaveIndicator } from "./AutoSaveIndicator.svelte";
 export { default as BookmarkButton } from "./BookmarkButton.svelte";
 export { default as BottomSheet } from "./BottomSheet.svelte";
 export { default as CodeBlock } from "./CodeBlock.svelte";

@@ -25,6 +25,8 @@ export interface ReadingPosition {
 export interface SavePositionOptions {
 	debounceMs?: number // Debounce save operations (default: 2000ms)
 	minProgressDelta?: number // Minimum scroll % change to trigger save (default: 5)
+	onSaveStart?: () => void // Callback when save starts
+	onSaveComplete?: (success: boolean, error?: Error) => void // Callback when save completes
 }
 
 /**
@@ -83,6 +85,7 @@ export class ReadingPositionManager {
 		if (this.isSaving) return
 
 		this.isSaving = true
+		this.options.onSaveStart?.()
 
 		try {
 			const position: Omit<ReadingPosition, 'updatedAt'> = {
@@ -99,9 +102,11 @@ export class ReadingPositionManager {
 
 			await saveReadingPosition(position)
 			this.lastSavedProgress = progressState.scrollPercentage
+			this.options.onSaveComplete?.(true)
 
 		} catch (error) {
 			console.error('Error saving reading position:', error)
+			this.options.onSaveComplete?.(false, error as Error)
 		} finally {
 			this.isSaving = false
 		}
