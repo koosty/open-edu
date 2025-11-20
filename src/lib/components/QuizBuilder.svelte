@@ -302,6 +302,7 @@
 			return
 		}
 		
+		// Build quiz data, filtering out undefined values
 		const quizData: Partial<Quiz> = {
 			courseId,
 			lessonId,
@@ -309,8 +310,22 @@
 			description,
 			instructions,
 			questions,
-			...settings,
+			passingScore: settings.passingScore,
+			allowMultipleAttempts: settings.allowMultipleAttempts,
+			showCorrectAnswers: settings.showCorrectAnswers,
+			showExplanations: settings.showExplanations,
+			randomizeQuestions: settings.randomizeQuestions,
+			randomizeOptions: settings.randomizeOptions,
+			allowReview: settings.allowReview,
 			isPublished: false // Save as draft by default
+		}
+		
+		// Add optional fields only if they have values
+		if (settings.timeLimit !== undefined && settings.timeLimit !== null) {
+			quizData.timeLimit = settings.timeLimit
+		}
+		if (settings.maxAttempts !== undefined && settings.maxAttempts !== null) {
+			quizData.maxAttempts = settings.maxAttempts
 		}
 		
 		await onSave(quizData)

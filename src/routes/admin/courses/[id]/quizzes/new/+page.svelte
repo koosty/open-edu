@@ -3,6 +3,7 @@
 	import { goto } from '$app/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
+	import { auth } from '$lib/firebase'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import QuizBuilder from '$lib/components/QuizBuilder.svelte'
 	import * as QuizService from '$lib/services/quiz'
@@ -29,15 +30,23 @@
 			return
 		}
 		
+		// Get current user from Firebase Auth directly
+		const currentUser = auth.currentUser
+		if (!currentUser) {
+			error = 'You must be logged in to create a quiz.'
+			return
+		}
+		
 		isSaving = true
 		error = null
 		
 		try {
-			// Create the quiz
+			// Create the quiz with createdBy field for security rules
 			const newQuiz = await QuizService.createQuiz({
 				...quizData,
 				courseId,
 				lessonId,
+				createdBy: currentUser.uid,
 				isPublished: false
 			} as Omit<Quiz, 'id' | 'createdAt' | 'updatedAt'>)
 			
