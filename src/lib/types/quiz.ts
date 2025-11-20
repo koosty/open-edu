@@ -9,8 +9,8 @@
 
 export interface Quiz {
 	id: string
-	lessonId: string
-	courseId: string
+	lessonId: string // Required - quizzes must belong to a lesson
+	courseId: string // Required - quizzes must belong to a course
 	title: string
 	description?: string
 	instructions?: string
@@ -29,7 +29,7 @@ export interface Quiz {
 	
 	// Metadata
 	isPublished: boolean
-	createdBy: string // Instructor user ID
+	createdBy?: string // Instructor user ID (optional for backward compatibility)
 	createdAt: string
 	updatedAt: string
 	publishedAt?: string

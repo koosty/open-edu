@@ -1,5 +1,7 @@
-// Lesson-related types for Open-EDU v1.1.0
+// Lesson-related types for Open-EDU v1.4.0
 // Based on sample template structure and roadmap requirements
+
+import type { Quiz } from './quiz'
 
 export interface Lesson {
   id: string;
@@ -14,25 +16,6 @@ export interface Lesson {
   isRequired: boolean;
   createdAt: Date;
   updatedAt: Date;
-}
-
-export interface Quiz {
-  id: string;
-  questions: QuizQuestion[];
-  timeLimit?: number; // Time limit in minutes
-  passingScore: number; // Percentage required to pass
-  allowMultipleAttempts: boolean;
-  showCorrectAnswers: boolean;
-}
-
-export interface QuizQuestion {
-  id: string;
-  question: string;
-  type: "multiple-choice" | "true-false" | "short-answer";
-  options?: string[]; // For multiple choice questions
-  correctAnswer: number | string; // Index for MC, string for others
-  explanation?: string;
-  points: number;
 }
 
 export interface Chapter {
@@ -65,4 +48,3 @@ export interface LessonCompletion {
 }
 
 export type LessonType = "lesson" | "quiz";
-export type QuestionType = "multiple-choice" | "true-false" | "short-answer";

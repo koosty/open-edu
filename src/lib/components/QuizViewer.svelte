@@ -11,11 +11,15 @@
 	let {
 		quiz,
 		onSubmit,
-		isSubmitting = false
+		isSubmitting = false,
+		previewMode = false,
+		onExitPreview
 	}: {
 		quiz: Quiz
 		onSubmit: (answers: QuizAnswer[]) => Promise<void>
 		isSubmitting?: boolean
+		previewMode?: boolean
+		onExitPreview?: () => void
 	} = $props()
 	
 	// State
@@ -120,6 +124,12 @@
 	async function handleSubmit() {
 		showSubmitConfirm = false
 		
+		// In preview mode, don't actually submit
+		if (previewMode) {
+			alert('Preview mode: Quiz submission is disabled. Click "Reset Preview" to try again or "Exit Preview" to return.')
+			return
+		}
+		
 		// Convert answers to QuizAnswer format
 		const quizAnswers: QuizAnswer[] = quiz.questions.map((question, index) => ({
 			questionId: question.id,
@@ -132,6 +142,15 @@
 		}))
 		
 		await onSubmit(quizAnswers)
+	}
+	
+	function handleResetPreview() {
+		// Reset all state for preview
+		answers = {}
+		currentQuestionIndex = 0
+		timeElapsed = 0
+		showSubmitConfirm = false
+		showTimeUpModal = false
 	}
 	
 	async function handleAutoSubmit() {
@@ -153,6 +172,52 @@
 </script>
 
 <div class="quiz-viewer">
+	<!-- Preview Mode Banner -->
+	{#if previewMode}
+		<div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3 sticky top-0 z-20 shadow-md">
+			<div class="max-w-4xl mx-auto flex items-center justify-between gap-4">
+				<div class="flex items-center gap-3">
+					<div class="bg-white/20 p-2 rounded-lg">
+						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+						</svg>
+					</div>
+					<div>
+						<p class="font-semibold text-sm md:text-base">Preview Mode</p>
+						<p class="text-xs text-white/90 hidden md:block">Test the quiz as a student. Submissions are disabled.</p>
+					</div>
+				</div>
+				<div class="flex items-center gap-2">
+					<Button
+						onclick={handleResetPreview}
+						variant="secondary"
+						size="sm"
+						class="bg-white/20 hover:bg-white/30 text-white border-white/30"
+					>
+						<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+						</svg>
+						<span class="hidden sm:inline">Reset</span>
+					</Button>
+					{#if onExitPreview}
+						<Button
+							onclick={onExitPreview}
+							variant="secondary"
+							size="sm"
+							class="bg-white text-orange-600 hover:bg-white/90"
+						>
+							<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+							</svg>
+							Exit
+						</Button>
+					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
+	
 	<!-- Quiz Header - Mobile Optimized -->
 	<div class="quiz-header bg-white border-b border-slate-200 p-4 md:p-6 sticky top-0 z-10 shadow-sm">
 		<div class="max-w-4xl mx-auto">

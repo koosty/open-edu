@@ -18,8 +18,8 @@
 		onCancel,
 		isSaving = false
 	}: {
-		courseId: string
-		lessonId: string
+		courseId?: string
+		lessonId?: string
 		initialQuiz?: Quiz
 		onSave: (quiz: Partial<Quiz>) => Promise<void>
 		onCancel: () => void
@@ -514,13 +514,13 @@
 													
 													<!-- Multiple choice/select options -->
 													{#if question.type === 'multiple_choice' || question.type === 'multiple_select'}
-														<div>
-															<label class="block text-sm font-medium mb-2">
+														<fieldset>
+															<legend class="block text-sm font-medium mb-2">
 																Options *
 																<span class="text-gray-500 text-xs ml-2">
 																	({question.type === 'multiple_choice' ? 'Select one correct answer' : 'Select all correct answers'})
 																</span>
-															</label>
+															</legend>
 															<div class="space-y-2">
 																{#each question.options || [] as option (option.id)}
 																	<div class="flex items-center gap-2">
@@ -555,13 +555,13 @@
 																<Plus class="w-3 h-3" />
 																Add option
 															</button>
-														</div>
+														</fieldset>
 													{/if}
 													
 													<!-- True/False (no options to edit) -->
 													{#if question.type === 'true_false'}
-														<div>
-															<label class="block text-sm font-medium mb-2">Correct Answer *</label>
+														<fieldset>
+															<legend class="block text-sm font-medium mb-2">Correct Answer *</legend>
 															<div class="flex gap-4">
 																<label class="flex items-center gap-2">
 																	<input
@@ -592,7 +592,7 @@
 																	<span>False</span>
 																</label>
 															</div>
-														</div>
+														</fieldset>
 													{/if}
 													
 													<!-- Short answer -->
@@ -1005,6 +1005,7 @@
 	
 	.line-clamp-2 {
 		display: -webkit-box;
+		line-clamp: 2;
 		-webkit-line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;

@@ -1,3 +1,8 @@
+// Import Quiz types from dedicated quiz module (v1.4.0)
+import type { Quiz, QuizQuestion, QuestionType } from './types/quiz';
+
+export type { Quiz, QuizQuestion, QuestionType };
+
 export interface User {
   id: string;
   email: string;
@@ -89,35 +94,6 @@ export interface LessonAttachment {
   type: "pdf" | "image" | "video" | "audio" | "document";
   size: number; // in bytes
   uploadedAt: string;
-}
-
-export interface Quiz {
-  id: string;
-  title: string;
-  description?: string;
-  questions: QuizQuestion[];
-  timeLimit?: number; // Time limit in minutes
-  passingScore: number; // Percentage required to pass (0-100)
-  allowMultipleAttempts: boolean;
-  showCorrectAnswers: boolean;
-  randomizeQuestions: boolean;
-  randomizeOptions: boolean;
-  maxAttempts?: number;
-  createdAt: string;
-  updatedAt: string;
-}
-
-export interface QuizQuestion {
-  id: string;
-  type: "multiple_choice" | "true_false" | "short_answer" | "essay";
-  question: string;
-  options?: string[]; // For multiple choice questions
-  correctAnswer: string | number; // Index for MC, string for others
-  explanation?: string;
-  points: number;
-  order: number;
-  image?: string; // Optional image URL for question
-  hint?: string;
 }
 
 export interface UserProgress {

@@ -46,8 +46,11 @@ export const quizQuestionSchema = z.object({
 
 export const quizSchema = z.object({
   id: z.string(),
+  lessonId: z.string().min(1, "Lesson ID is required"),
+  courseId: z.string().min(1, "Course ID is required"),
   title: z.string().min(1, "Quiz title is required"),
   description: z.string().optional(),
+  instructions: z.string().optional(),
   questions: z
     .array(quizQuestionSchema)
     .min(1, "Quiz must have at least one question"),
@@ -57,12 +60,17 @@ export const quizSchema = z.object({
     .min(0, "Passing score cannot be negative")
     .max(100, "Passing score cannot exceed 100"),
   allowMultipleAttempts: z.boolean(),
+  maxAttempts: z.number().positive("Max attempts must be positive").optional(),
   showCorrectAnswers: z.boolean(),
+  showExplanations: z.boolean().optional().default(true), // New field with default
   randomizeQuestions: z.boolean(),
   randomizeOptions: z.boolean(),
-  maxAttempts: z.number().positive("Max attempts must be positive").optional(),
+  allowReview: z.boolean().optional().default(true), // New field with default
+  isPublished: z.boolean().optional().default(false), // New field with default
+  createdBy: z.string().optional(), // Optional for backward compatibility
   createdAt: z.string(),
   updatedAt: z.string(),
+  publishedAt: z.string().optional(),
 });
 
 export const lessonSchema = z

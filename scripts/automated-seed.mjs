@@ -152,51 +152,6 @@ const sampleCourse = {
       isRequired: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString()
-    },
-    {
-      id: 'js-quiz-1',
-      courseId: 'js-fundamentals-001',
-      title: 'JavaScript Knowledge Check',
-      type: 'quiz',
-      order: 2,
-      duration: 15,
-      isRequired: true,
-      quiz: {
-        id: 'js-quiz-1',
-        title: 'JavaScript Fundamentals Quiz',
-        description: 'Test your understanding of JavaScript basics',
-        questions: [
-          {
-            id: 'q1',
-            type: 'multiple_choice',
-            question: 'Which of the following is used to declare a variable in JavaScript?',
-            options: ['var', 'let', 'const', 'All of the above'],
-            correctAnswer: 3,
-            explanation: 'JavaScript has three ways to declare variables: var, let, and const.',
-            points: 10,
-            order: 0
-          },
-          {
-            id: 'q2',
-            type: 'true_false',
-            question: 'JavaScript is a strongly typed language.',
-            options: ['True', 'False'],
-            correctAnswer: 1,
-            explanation: 'JavaScript is a dynamically typed language, not strongly typed.',
-            points: 10,
-            order: 1
-          }
-        ],
-        passingScore: 70,
-        allowMultipleAttempts: true,
-        showCorrectAnswers: true,
-        randomizeQuestions: false,
-        randomizeOptions: false,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
-      },
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
     }
   ],
   chapters: [],

@@ -27,6 +27,12 @@
 	let selectedQuizIds = $state<Set<string>>(new Set())
 	let bulkActionInProgress = $state(false)
 	
+	// Delete modal state
+	let showDeleteModal = $state(false)
+	let quizToDelete = $state<Quiz | null>(null)
+	let isDeleting = $state(false)
+	let showBulkDeleteModal = $state(false)
+	
 	// Load data
 	$effect(() => {
 		const currentCourseId = courseId
@@ -99,23 +105,40 @@
 		}
 	}
 	
-	async function handleDeleteQuiz(quiz: Quiz) {
-		if (!confirm(`Are you sure you want to delete "${quiz.title}"? This action cannot be undone.`)) {
-			return
-		}
+	function handleDeleteQuiz(quiz: Quiz) {
+		quizToDelete = quiz
+		showDeleteModal = true
+	}
+	
+	async function confirmDeleteQuiz() {
+		if (!quizToDelete) return
+		
+		isDeleting = true
+		error = null
 		
 		try {
-			await QuizService.deleteQuiz(quiz.id)
-			success = 'Quiz deleted successfully'
+			await QuizService.deleteQuiz(quizToDelete.id)
+			success = `Quiz "${quizToDelete.title}" deleted successfully`
 			
 			// Update local state
-			quizzes = quizzes.filter(q => q.id !== quiz.id)
+			quizzes = quizzes.filter(q => q.id !== quizToDelete!.id)
+			
+			// Close modal
+			showDeleteModal = false
+			quizToDelete = null
 			
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to delete quiz'
 			setTimeout(() => error = null, 5000)
+		} finally {
+			isDeleting = false
 		}
+	}
+	
+	function cancelDelete() {
+		showDeleteModal = false
+		quizToDelete = null
 	}
 	
 	function handleCreateQuiz() {
@@ -126,7 +149,7 @@
 	// Bulk operations
 	function toggleSelectAll() {
 		if (selectedQuizIds.size === quizzes.length) {
-			selectedQuizIds.clear()
+			selectedQuizIds = new Set()
 		} else {
 			selectedQuizIds = new Set(quizzes.map(q => q.id))
 		}
@@ -163,7 +186,7 @@
 			)
 			
 			success = `${selectedQuizIds.size} quiz(zes) published successfully`
-			selectedQuizIds.clear()
+			selectedQuizIds = new Set()
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to publish quizzes'
@@ -195,7 +218,7 @@
 			)
 			
 			success = `${selectedQuizIds.size} quiz(zes) unpublished successfully`
-			selectedQuizIds.clear()
+			selectedQuizIds = new Set()
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to unpublish quizzes'
@@ -205,17 +228,17 @@
 		}
 	}
 	
-	async function handleBulkDelete() {
+	function handleBulkDelete() {
 		if (selectedQuizIds.size === 0) return
-		
-		if (!confirm(`Are you sure you want to delete ${selectedQuizIds.size} selected quiz(zes)? This action cannot be undone.`)) {
-			return
-		}
-		
+		showBulkDeleteModal = true
+	}
+	
+	async function confirmBulkDelete() {
 		bulkActionInProgress = true
 		error = null
 		
 		try {
+			const count = selectedQuizIds.size
 			const promises = Array.from(selectedQuizIds).map(id =>
 				QuizService.deleteQuiz(id)
 			)
@@ -224,8 +247,9 @@
 			// Update local state
 			quizzes = quizzes.filter(q => !selectedQuizIds.has(q.id))
 			
-			success = `${selectedQuizIds.size} quiz(zes) deleted successfully`
-			selectedQuizIds.clear()
+			success = `${count} quiz(zes) deleted successfully`
+			selectedQuizIds = new Set()
+			showBulkDeleteModal = false
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to delete quizzes'
@@ -233,6 +257,10 @@
 		} finally {
 			bulkActionInProgress = false
 		}
+	}
+	
+	function cancelBulkDelete() {
+		showBulkDeleteModal = false
 	}
 	
 	function handleBulkExport() {
@@ -377,7 +405,7 @@
 									{selectedQuizIds.size} quiz{selectedQuizIds.size > 1 ? 'zes' : ''} selected
 								</span>
 								<button
-									onclick={() => selectedQuizIds.clear()}
+									onclick={() => selectedQuizIds = new Set()}
 									class="text-sm text-primary-600 hover:text-primary-800 font-medium"
 								>
 									Clear selection
@@ -612,16 +640,25 @@
 												<Button
 													size="sm"
 													variant="outline"
-													onclick={() => {
-														const projectId = 'open-edu-koosty'
-														window.open(
-															`https://console.firebase.google.com/project/${projectId}/firestore/data/~2Fquizzes~2F${quiz.id}`,
-															'_blank'
-														)
-													}}
+													onclick={() => goto(`/admin/courses/${courseId}/quizzes/${quiz.id}/preview`)}
 												>
-													Edit
+													<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+													</svg>
+													Preview
 												</Button>
+												
+											<Button
+												size="sm"
+												variant="outline"
+												onclick={() => goto(`/admin/courses/${courseId}/quizzes/${quiz.id}/edit`)}
+											>
+												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+												</svg>
+												Edit
+											</Button>
 												
 												<Button
 													size="sm"
@@ -638,6 +675,154 @@
 							{/each}
 						</div>
 					{/if}
+				</div>
+			</div>
+		</div>
+	{/if}
+	
+	<!-- Delete Confirmation Modal -->
+	{#if showDeleteModal && quizToDelete}
+		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
+				<!-- Header -->
+				<div class="p-6 border-b border-gray-200">
+					<div class="flex items-center gap-3">
+						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+							<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-gray-900">Delete Quiz</h3>
+							<p class="text-sm text-gray-500">This action cannot be undone</p>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Content -->
+				<div class="p-6">
+					<p class="text-gray-700 mb-4">
+						Are you sure you want to delete <span class="font-semibold text-gray-900">"{quizToDelete.title}"</span>?
+					</p>
+					<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+						<div class="flex items-start gap-2">
+							<svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							<div>
+								<p class="font-medium mb-1">This will permanently delete:</p>
+								<ul class="list-disc list-inside space-y-0.5 text-red-700">
+									<li>The quiz and all questions</li>
+									<li>All student attempts and scores</li>
+									<li>Quiz analytics and statistics</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Actions -->
+				<div class="p-6 bg-gray-50 rounded-b-xl flex items-center justify-end gap-3">
+					<Button
+						variant="outline"
+						onclick={cancelDelete}
+						disabled={isDeleting}
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="outline"
+						class="bg-red-600 text-white hover:bg-red-700 border-red-600"
+						onclick={confirmDeleteQuiz}
+						disabled={isDeleting}
+					>
+						{#if isDeleting}
+							<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							</svg>
+							Deleting...
+						{:else}
+							<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+							</svg>
+							Delete Quiz
+						{/if}
+					</Button>
+				</div>
+			</div>
+		</div>
+	{/if}
+	
+	<!-- Bulk Delete Confirmation Modal -->
+	{#if showBulkDeleteModal}
+		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
+			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
+				<!-- Header -->
+				<div class="p-6 border-b border-gray-200">
+					<div class="flex items-center gap-3">
+						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
+							<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+							</svg>
+						</div>
+						<div>
+							<h3 class="text-lg font-semibold text-gray-900">Delete Multiple Quizzes</h3>
+							<p class="text-sm text-gray-500">This action cannot be undone</p>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Content -->
+				<div class="p-6">
+					<p class="text-gray-700 mb-4">
+						Are you sure you want to delete <span class="font-semibold text-gray-900">{selectedQuizIds.size} selected quiz{selectedQuizIds.size > 1 ? 'zes' : ''}</span>?
+					</p>
+					<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+						<div class="flex items-start gap-2">
+							<svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+							</svg>
+							<div>
+								<p class="font-medium mb-1">This will permanently delete for all selected quizzes:</p>
+								<ul class="list-disc list-inside space-y-0.5 text-red-700">
+									<li>All questions and content</li>
+									<li>All student attempts and scores</li>
+									<li>All analytics and statistics</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+				
+				<!-- Actions -->
+				<div class="p-6 bg-gray-50 rounded-b-xl flex items-center justify-end gap-3">
+					<Button
+						variant="outline"
+						onclick={cancelBulkDelete}
+						disabled={bulkActionInProgress}
+					>
+						Cancel
+					</Button>
+					<Button
+						variant="outline"
+						class="bg-red-600 text-white hover:bg-red-700 border-red-600"
+						onclick={confirmBulkDelete}
+						disabled={bulkActionInProgress}
+					>
+						{#if bulkActionInProgress}
+							<svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+								<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+							</svg>
+							Deleting...
+						{:else}
+							<svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+							</svg>
+							Delete {selectedQuizIds.size} Quiz{selectedQuizIds.size > 1 ? 'zes' : ''}
+						{/if}
+					</Button>
 				</div>
 			</div>
 		</div>

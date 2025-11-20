@@ -5,7 +5,9 @@
 <script lang="ts">
 	import { Button, Card, CardContent } from '$lib/components/ui'
 	import type { Quiz, QuizAttempt } from '$lib/types/quiz'
-	import { Trophy, RotateCcw, X, Check, AlertCircle } from 'lucide-svelte'
+	import { Trophy, RotateCcw, X, Check, AlertCircle, Share2, Download, Copy, CheckCheck } from 'lucide-svelte'
+	import * as Certificate from '$lib/utils/certificate'
+	import type { CertificateData } from '$lib/utils/certificate'
 	
 	// Props
 	let {
@@ -14,6 +16,9 @@
 		showCorrectAnswers = true,
 		showExplanations = true,
 		allowRetry = false,
+		allowShare = true,
+		studentName,
+		courseName,
 		onRetry,
 		onContinue
 	}: {
@@ -22,6 +27,9 @@
 		showCorrectAnswers?: boolean
 		showExplanations?: boolean
 		allowRetry?: boolean
+		allowShare?: boolean
+		studentName?: string
+		courseName?: string
 		onRetry?: () => void
 		onContinue?: () => void
 	} = $props()
@@ -124,6 +132,71 @@
 	}
 	
 	const performanceMessage = $derived(getPerformanceMessage())
+	
+	// Share/Certificate state
+	let showShareMenu = $state(false)
+	let copySuccess = $state(false)
+	
+	// Close share menu on outside click
+	$effect(() => {
+		if (!showShareMenu) return
+		
+		function handleClick(event: MouseEvent) {
+			const target = event.target as HTMLElement
+			if (!target.closest('.share-menu-container')) {
+				showShareMenu = false
+			}
+		}
+		
+		document.addEventListener('click', handleClick)
+		return () => document.removeEventListener('click', handleClick)
+	})
+	
+	// Get certificate data
+	function getCertificateData(): CertificateData {
+		return {
+			studentName: studentName || 'Student',
+			courseName: courseName || 'Course',
+			quizTitle: quiz.title,
+			score: attempt.score,
+			isPassed: attempt.isPassed,
+			completedAt: attempt.submittedAt ? new Date(attempt.submittedAt) : new Date(),
+			attemptNumber: attempt.attemptNumber
+		}
+	}
+	
+	// Handle share actions
+	async function handleCopyText() {
+		try {
+			await Certificate.copyTextCertificate(getCertificateData())
+			copySuccess = true
+			setTimeout(() => copySuccess = false, 2000)
+		} catch (err) {
+			console.error('Failed to copy certificate:', err)
+			alert('Failed to copy certificate to clipboard')
+		}
+	}
+	
+	function handleDownloadHTML() {
+		try {
+			Certificate.downloadHTMLCertificate(getCertificateData())
+			showShareMenu = false
+		} catch (err) {
+			console.error('Failed to download certificate:', err)
+			alert('Failed to download certificate')
+		}
+	}
+	
+	function handleShareURL() {
+		const url = Certificate.generateShareableURL(getCertificateData())
+		navigator.clipboard.writeText(url).then(() => {
+			copySuccess = true
+			setTimeout(() => copySuccess = false, 2000)
+		}).catch(err => {
+			console.error('Failed to copy URL:', err)
+			alert('Failed to copy share URL')
+		})
+	}
 </script>
 
 <div class="quiz-results bg-slate-50 min-h-screen py-8">
@@ -206,7 +279,7 @@
 					</div>
 					
 					<!-- Action Buttons -->
-					<div class="flex gap-4 justify-center mt-8">
+					<div class="flex gap-4 justify-center mt-8 flex-wrap">
 						{#if allowRetry && onRetry}
 							<Button
 								onclick={onRetry}
@@ -216,6 +289,50 @@
 								<RotateCcw class="w-4 h-4" />
 								Try Again
 							</Button>
+						{/if}
+						
+						{#if allowShare && attempt.isPassed}
+							<div class="relative share-menu-container">
+								<Button
+									onclick={() => showShareMenu = !showShareMenu}
+									variant="outline"
+									class="gap-2 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 hover:border-blue-300"
+								>
+									{#if copySuccess}
+										<CheckCheck class="w-4 h-4 text-green-600" />
+										<span class="text-green-600">Copied!</span>
+									{:else}
+										<Share2 class="w-4 h-4" />
+										Share Certificate
+									{/if}
+								</Button>
+								
+								{#if showShareMenu}
+									<div class="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px] z-10 animate-in fade-in zoom-in-95 duration-150">
+										<button
+											onclick={handleDownloadHTML}
+											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+										>
+											<Download class="w-4 h-4 text-gray-600" />
+											<span>Download HTML</span>
+										</button>
+										<button
+											onclick={handleCopyText}
+											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+										>
+											<Copy class="w-4 h-4 text-gray-600" />
+											<span>Copy as Text</span>
+										</button>
+										<button
+											onclick={handleShareURL}
+											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+										>
+											<Share2 class="w-4 h-4 text-gray-600" />
+											<span>Copy Share Link</span>
+										</button>
+									</div>
+								{/if}
+							</div>
 						{/if}
 						
 						{#if onContinue}

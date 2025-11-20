@@ -38,10 +38,10 @@ export const createMockDocSnap = (
 export const createMockQuerySnap = (docs: any[], empty = false) => ({
   empty,
   size: docs.length,
-  docs: docs.map((data, index) => createMockDocSnap(data, `doc-${index}`)),
+  docs: docs.map((data, index) => createMockDocSnap(data, data.id || `doc-${index}`)),
   forEach: (callback: (doc: any) => void) =>
     docs.forEach((data, index) =>
-      callback(createMockDocSnap(data, `doc-${index}`)),
+      callback(createMockDocSnap(data, data.id || `doc-${index}`)),
     ),
 });
 

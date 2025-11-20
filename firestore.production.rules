@@ -130,6 +130,30 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
+    // Quizzes collection
+    match /quizzes/{quizId} {
+      // Students can read published quizzes for courses they're enrolled in
+      // Instructors can read all quizzes for their courses
+      // Admins can read all quizzes
+      allow read: if isAuthenticated() && 
+        (resource.data.isPublished == true || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Only instructors and admins can create quizzes
+      allow create: if isInstructor() && 
+        request.auth.uid == request.resource.data.createdBy;
+      
+      // Only quiz creator or admin can update
+      allow update: if isAuthenticated() && 
+        (request.auth.uid == resource.data.createdBy || 
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isAdmin());
+      
+      // Only admin can delete quizzes
+      allow delete: if isAdmin();
+    }
+
     // Quiz attempts collection
     match /quiz-attempts/{attemptId} {
       // Users can read their own attempts, instructors can read attempts for their courses

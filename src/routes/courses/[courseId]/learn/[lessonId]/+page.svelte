@@ -470,14 +470,18 @@
 				}
 				break
 			
-			case 's':
-			case 'S':
-				// Toggle sidebar (Ctrl/Cmd + S)
-				if (event.ctrlKey || event.metaKey) {
-					event.preventDefault()
-					showMobileSidebar = !showMobileSidebar
+		case 's':
+		case 'S':
+			// Toggle focus mode (Ctrl/Cmd + S)
+			if (event.ctrlKey || event.metaKey) {
+				event.preventDefault()
+				focusMode = !focusMode
+				// If entering focus mode, close mobile sidebar
+				if (focusMode && showMobileSidebar) {
+					showMobileSidebar = false
 				}
-				break
+			}
+			break
 			
 			case '/':
 				// Focus search (if sidebar is open)
@@ -962,7 +966,7 @@
 							<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">→</kbd>
 						</div>
 						<div class="flex justify-between">
-							<span>Toggle sidebar</span>
+							<span>Toggle focus mode</span>
 							<div class="flex gap-1">
 								<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">⌘</kbd>
 								<span class="text-slate-400">+</span>
@@ -1130,6 +1134,9 @@
 												showCorrectAnswers={currentQuiz.showCorrectAnswers}
 												showExplanations={currentQuiz.showExplanations}
 												allowRetry={currentQuiz.allowMultipleAttempts}
+												allowShare={true}
+												studentName={authState.user?.displayName || authState.user?.email || 'Student'}
+												courseName={course?.title || 'Course'}
 												onRetry={handleQuizRetry}
 												onContinue={handleQuizContinue}
 											/>
