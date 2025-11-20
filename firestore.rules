@@ -54,10 +54,10 @@ service cloud.firestore {
 
     // Course enrollments collection
     match /enrollments/{enrollmentId} {
-      // Users can read their own enrollments, instructors can read enrollments for their courses
+      // Users can read their own enrollments, instructors/admins can read all
       allow read: if isAuthenticated() && 
         (isOwner(resource.data.userId) || 
-         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isInstructor() ||
          isAdmin());
       
       // Users can enroll themselves in courses
@@ -65,10 +65,10 @@ service cloud.firestore {
         isOwner(request.resource.data.userId) &&
         exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId));
       
-      // Users can update their own enrollment status, instructors can update for their courses
+      // Users can update their own enrollment status, instructors/admins can update all
       allow update: if isAuthenticated() && 
         (isOwner(resource.data.userId) || 
-         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isInstructor() ||
          isAdmin());
       
       // Only admin can delete enrollments
@@ -77,10 +77,10 @@ service cloud.firestore {
 
     // Course Progress tracking collection
     match /courseProgress/{progressId} {
-      // Users can read their own progress, instructors can read progress for their courses
+      // Users can read their own progress, instructors/admins can read all
       allow read: if isAuthenticated() && 
         (isOwner(resource.data.userId) || 
-         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isInstructor() ||
          isAdmin());
       
       // Users can create/update their own progress
@@ -94,31 +94,34 @@ service cloud.firestore {
     // Quizzes collection
     match /quizzes/{quizId} {
       // Published quizzes can be read by enrolled students
-      // Unpublished quizzes can only be read by instructor/admin
+      // Unpublished quizzes can only be read by quiz creator or instructor/admin
+      // Note: Using createdBy field for list queries since get() isn't allowed in queries
       allow read: if isAuthenticated() && 
         (resource.data.isPublished == true ||
-         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         resource.data.createdBy == request.auth.uid ||
+         isInstructor() ||
          isAdmin());
       
-      // Only instructors for the course can create quizzes
+      // Only instructors can create quizzes
       allow create: if isAuthenticated() && 
-        request.auth.uid == get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.instructorId &&
+        isInstructor() &&
         request.resource.data.createdBy == request.auth.uid;
       
       // Only quiz creator or admin can update
       allow update: if isAuthenticated() && 
         (resource.data.createdBy == request.auth.uid || isAdmin());
       
-      // Only admin can delete quizzes
-      allow delete: if isAdmin();
+      // Only quiz creator or admin can delete quizzes
+      allow delete: if isAuthenticated() &&
+        (resource.data.createdBy == request.auth.uid || isAdmin());
     }
 
     // Quiz attempts collection
     match /quiz-attempts/{attemptId} {
-      // Users can read their own attempts, instructors can read attempts for their courses
+      // Users can read their own attempts, instructors/admins can read all
       allow read: if isAuthenticated() && 
         (isOwner(resource.data.userId) || 
-         request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId ||
+         isInstructor() ||
          isAdmin());
       
       // Users can create their own attempts

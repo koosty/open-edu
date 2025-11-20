@@ -52,7 +52,7 @@ export interface QuizQuestion {
 	type: QuestionType
 	question: string // Question text (markdown supported)
 	options?: QuestionOption[] // For multiple choice/select
-	correctAnswer: string | number | string[] // Varies by question type
+	correctAnswer: string | number | string[] | boolean // Varies by question type
 	explanation?: string // Explanation shown after answering
 	points: number // Points awarded for correct answer
 	order: number
@@ -112,7 +112,7 @@ export interface QuizAttempt {
 export interface QuizAnswer {
 	questionId: string
 	questionType: QuestionType
-	answer: string | number | string[] | null // User's answer
+	answer: string | number | string[] | boolean | null // User's answer
 	isCorrect: boolean
 	pointsEarned: number
 	pointsPossible: number

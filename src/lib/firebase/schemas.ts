@@ -79,7 +79,7 @@ export const quizQuestionSchemaFirestore = z.object({
   type: z.enum(['multiple_choice', 'multiple_select', 'true_false', 'short_answer', 'essay', 'fill_blank']),
   question: z.string(),
   options: z.array(questionOptionSchema).optional(),
-  correctAnswer: z.union([z.string(), z.number(), z.array(z.string())]),
+  correctAnswer: z.union([z.string(), z.number(), z.array(z.string()), z.boolean()]),
   explanation: z.string().optional(),
   points: z.number().min(0),
   order: z.number(),
@@ -124,7 +124,7 @@ export const quizSchemaFirestore = z.object({
 // Quiz attempt schema
 export const quizAnswerSchema = z.object({
   questionId: idSchema,
-  answer: z.union([z.string(), z.number(), z.array(z.string())]),
+  answer: z.union([z.string(), z.number(), z.array(z.string()), z.boolean(), z.null()]),
   isCorrect: z.boolean(),
   pointsAwarded: z.number(),
   timeSpent: z.number().optional(),

@@ -532,13 +532,58 @@
 						</Card>
 					{:else}
 						<Card class="shadow-sm">
-							<CardContent class="p-8 text-center">
-								<svg class="w-16 h-16 mx-auto text-slate-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-								</svg>
-								<h3 class="text-lg font-semibold text-slate-900 mb-2">Quiz Editor Coming Soon</h3>
-								<p class="text-slate-600">Quiz creation interface will be added in the next update.</p>
-								<p class="text-sm text-slate-500 mt-2">For now, you can create regular lessons with quiz questions in the content.</p>
+							<CardContent class="p-8">
+								<div class="text-center mb-6">
+									<svg class="w-16 h-16 mx-auto text-primary-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+									</svg>
+									<h3 class="text-lg font-semibold text-slate-900 mb-2">📋 Create Quiz Content</h3>
+									<p class="text-slate-600">This lesson is marked as a Quiz. To add quiz questions:</p>
+								</div>
+
+								<div class="bg-primary-50 border border-primary-200 rounded-xl p-6 text-left space-y-4">
+									<div class="flex items-start gap-3">
+										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
+										<div>
+											<p class="font-medium text-slate-900">Save this lesson first</p>
+											<p class="text-sm text-slate-600 mt-1">Click "Create Lesson" or "Save Changes" above to create the lesson placeholder</p>
+										</div>
+									</div>
+									
+									<div class="flex items-start gap-3">
+										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
+										<div>
+											<p class="font-medium text-slate-900">Navigate to Quiz Management</p>
+											<p class="text-sm text-slate-600 mt-1">After saving, go to <span class="font-mono bg-white px-2 py-0.5 rounded border border-slate-300">Admin → Courses → {course?.title} → Manage Quizzes</span></p>
+										</div>
+									</div>
+									
+									<div class="flex items-start gap-3">
+										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">3</span>
+										<div>
+											<p class="font-medium text-slate-900">Create quiz and link to this lesson</p>
+											<p class="text-sm text-slate-600 mt-1">Use "Create Quiz" button and link it to the lesson you just created</p>
+										</div>
+									</div>
+								</div>
+
+								<div class="mt-6 flex items-center justify-center gap-3">
+									<a 
+										href="/docs/quiz-creation-guide.md" 
+										target="_blank"
+										class="text-sm text-primary-600 hover:text-primary-700 font-medium hover:underline"
+									>
+										📚 View Complete Quiz Creation Guide →
+									</a>
+								</div>
+
+								<div class="mt-6 p-4 bg-slate-100 border border-slate-200 rounded-lg">
+									<p class="text-xs text-slate-600 leading-relaxed">
+										<strong>Note:</strong> Quiz lessons serve as navigation placeholders in the course structure. 
+										The actual quiz questions are managed separately through the Quiz Management interface, 
+										which provides detailed statistics and publishing controls.
+									</p>
+								</div>
 							</CardContent>
 						</Card>
 					{/if}

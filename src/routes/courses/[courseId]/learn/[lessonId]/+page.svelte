@@ -28,6 +28,10 @@
 	} from '$lib/services/readingPosition'
 	import { ReadingProgressTracker } from '$lib/services/readingProgress'
 	import { createTouchGesture, type TouchGestureManager } from '$lib/services/touchGestures'
+	import QuizViewer from '$lib/components/QuizViewer.svelte'
+	import QuizResults from '$lib/components/QuizResults.svelte'
+	import * as QuizService from '$lib/services/quiz'
+	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
 	let courseId = $derived($page.params.courseId as string)
 	let lessonId = $derived($page.params.lessonId as string)
@@ -50,10 +54,11 @@
 	let timer: NodeJS.Timeout | null = null
 	
 	// Quiz state (for quiz lessons)
-	let quizAnswers = $state<Record<string, any>>({})
+	let currentQuiz = $state<Quiz | null>(null)
+	let currentAttempt = $state<QuizAttempt | null>(null)
 	let showQuizResults = $state(false)
-	let quizScore = $state<number | null>(null)
 	let quizSubmitting = $state(false)
+	let loadingQuiz = $state(false)
 	
 	// UI state
 	let showTableOfContents = $state(false)
@@ -234,6 +239,11 @@
 
 		// Mark lesson as started (AuthGuard guarantees user exists)
 		await ProgressService.startLesson(authState.user!.id, courseId, lessonId)
+		
+		// Load quiz data if this is a quiz lesson
+		if (lesson.type === 'quiz') {
+			await loadQuizData()
+		}
 
 		} catch (err: any) {
 			error = err.message || 'Failed to load lesson'
@@ -366,49 +376,62 @@
 		}
 	}
 
-	async function handleQuizSubmit() {
-		if (!authState.user || !currentLesson?.quiz || quizSubmitting) return
+	// Load quiz data for quiz lessons
+	async function loadQuizData() {
+		if (!authState.user || !currentLesson || currentLesson.type !== 'quiz') return
+		
+		loadingQuiz = true
+		try {
+			// Get quizzes for this lesson
+			const quizzes = await QuizService.getQuizzesByLesson(lessonId)
+			if (quizzes.length > 0) {
+				currentQuiz = quizzes[0] // Use first quiz (in future, could support multiple)
+				
+				// Start a new attempt
+				currentAttempt = await QuizService.startQuizAttempt(
+					authState.user.id,
+					currentQuiz.id,
+					courseId,
+					lessonId
+				)
+			}
+		} catch (err: any) {
+			console.error('Error loading quiz:', err)
+			error = 'Failed to load quiz'
+		} finally {
+			loadingQuiz = false
+		}
+	}
+
+	async function handleQuizSubmit(answers: QuizAnswer[]) {
+		if (!authState.user || !currentAttempt || quizSubmitting) return
 
 		quizSubmitting = true
 		error = null
 
 		try {
-			// Calculate score
-			const totalQuestions = currentLesson.quiz.questions.length
-			let correctAnswers = 0
+			const timeSpentSeconds = startTime ? 
+				Math.floor((Date.now() - startTime.getTime()) / 1000) : 
+				sessionTime
 
-			currentLesson.quiz.questions.forEach(question => {
-				const userAnswer = quizAnswers[question.id]
-				if (userAnswer === question.correctAnswer) {
-					correctAnswers++
-				}
-			})
-
-			const score = Math.round((correctAnswers / totalQuestions) * 100)
-			quizScore = score
-
-			const timeSpentMinutes = startTime ? 
-				Math.round((Date.now() - startTime.getTime()) / 60000) : 
-				Math.round(sessionTime / 60)
-
-			// Update quiz attempt
-			await ProgressService.updateQuizAttempt(
-				authState.user.id,
-				courseId,
-				lessonId,
-				score,
-				timeSpentMinutes
+			// Submit quiz and get graded attempt
+			const gradedAttempt = await QuizService.submitQuizAttempt(
+				currentAttempt.id,
+				timeSpentSeconds
 			)
+			
+			currentAttempt = gradedAttempt
+			showQuizResults = true
 
-			// Check if quiz passed
-			const passingScore = currentLesson.quiz.passingScore || 70
-			if (score >= passingScore) {
+			// If quiz passed, mark lesson as complete
+			if (gradedAttempt.isPassed) {
+				const timeSpentMinutes = Math.round(timeSpentSeconds / 60)
 				await ProgressService.completeLesson(
 					authState.user.id,
 					courseId,
 					lessonId,
 					timeSpentMinutes,
-					score
+					gradedAttempt.score
 				)
 
 				// Update local progress
@@ -420,8 +443,6 @@
 				await deleteReadingPosition(authState.user.id, lessonId)
 			}
 
-			showQuizResults = true
-
 		} catch (err: any) {
 			error = err.message || 'Failed to submit quiz'
 			console.error('Error submitting quiz:', err)
@@ -430,11 +451,34 @@
 		}
 	}
 
-	function handleQuizRetry() {
-		quizAnswers = {}
+	async function handleQuizRetry() {
+		if (!authState.user || !currentQuiz) return
+		
 		showQuizResults = false
-		quizScore = null
+		currentAttempt = null
 		startTime = new Date()
+		
+		// Start new attempt
+		try {
+			currentAttempt = await QuizService.startQuizAttempt(
+				authState.user.id,
+				currentQuiz.id,
+				courseId,
+				lessonId
+			)
+		} catch (err: any) {
+			error = err.message || 'Failed to start new attempt'
+			console.error('Error starting quiz retry:', err)
+		}
+	}
+	
+	function handleQuizContinue() {
+		// Navigate to next lesson or back to course
+		if (nextLesson) {
+			goto(`/courses/${courseId}/learn/${nextLesson.id}`)
+		} else {
+			goto(`/courses/${courseId}`)
+		}
 	}
 
 	function handleNavigateToLesson(lesson: Lesson) {
@@ -751,143 +795,40 @@
 							</div>
 							
 							<CardContent>
-								{#if isQuizLesson && currentLesson.quiz}
-									<!-- Quiz Content -->
-									{#if !showQuizResults}
-										<div class="space-y-6">
-											<div class="bg-accent-50 border border-accent-200 rounded-xl p-5 shadow-sm">
-												<div class="flex items-start gap-3">
-													<svg class="w-5 h-5 text-accent-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-													</svg>
-													<div>
-														<h3 class="text-sm font-semibold text-accent-900">Quiz Instructions</h3>
-														<p class="text-sm text-accent-700 mt-1">
-															You need {currentLesson.quiz.passingScore || 70}% to pass this quiz.
-															{#if currentLesson.quiz.timeLimit}
-																Time limit: {currentLesson.quiz.timeLimit} minutes.
-															{/if}
-															{#if currentLesson.quiz.allowMultipleAttempts}
-																You can retake this quiz multiple times.
-															{/if}
-														</p>
-													</div>
-												</div>
-											</div>
-
-											{#each currentLesson.quiz.questions as question, qIndex (question.id)}
-												<div class="border border-slate-200 rounded-xl p-6 shadow-sm hover:shadow-md transition-shadow">
-													<div class="flex items-start gap-4">
-														<div class="w-8 h-8 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-sm font-semibold text-white shadow-sm">
-															{qIndex + 1}
-														</div>
-														<div class="flex-1">
-															<h3 class="font-semibold text-slate-900 mb-4">{question.question}</h3>
-															
-															{#if question.type === 'multiple_choice'}
-																<div class="space-y-2.5">
-																	{#each question.options || [] as option, optIndex (optIndex)}
-																		<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
-																			<input
-																				type="radio"
-																				name="question_{question.id}"
-																				value={optIndex}
-																				bind:group={quizAnswers[question.id]}
-																				class="text-primary-600 focus:ring-primary-500 focus:ring-2"
-																			/>
-																			<span class="text-slate-700">{option}</span>
-																		</label>
-																	{/each}
-																</div>
-															{:else if question.type === 'true_false'}
-																<div class="space-y-2.5">
-																	<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
-																		<input
-																			type="radio"
-																			name="question_{question.id}"
-																			value="true"
-																			bind:group={quizAnswers[question.id]}
-																			class="text-primary-600 focus:ring-primary-500 focus:ring-2"
-																		/>
-																		<span class="text-slate-700">True</span>
-																	</label>
-																	<label class="interactive flex items-center gap-3 p-3.5 border border-slate-200 rounded-lg hover:border-primary-300 hover:bg-primary-50/50 cursor-pointer transition-all active:scale-[0.98]">
-																		<input
-																			type="radio"
-																			name="question_{question.id}"
-																			value="false"
-																			bind:group={quizAnswers[question.id]}
-																			class="text-primary-600 focus:ring-primary-500 focus:ring-2"
-																		/>
-																		<span class="text-slate-700">False</span>
-																	</label>
-																</div>
-															{:else}
-																<textarea
-																	bind:value={quizAnswers[question.id]}
-																	placeholder="Enter your answer..."
-																	class="input w-full"
-																	rows="3"
-																></textarea>
-															{/if}
-														</div>
-													</div>
-												</div>
-											{/each}
-
-											<div class="flex justify-end">
-												<Button 
-													onclick={handleQuizSubmit}
-													disabled={quizSubmitting}
-													class="px-8 shadow-sm"
-												>
-													{quizSubmitting ? 'Submitting...' : 'Submit Quiz'}
-												</Button>
-											</div>
-										</div>
+								{#if isQuizLesson}
+									{#if loadingQuiz}
+										<Loading message="Loading quiz..." />
+									{:else if currentQuiz && currentAttempt && !showQuizResults}
+										<!-- Quiz Taking Interface -->
+										<QuizViewer 
+											quiz={currentQuiz}
+											onSubmit={handleQuizSubmit}
+											isSubmitting={quizSubmitting}
+										/>
+									{:else if showQuizResults && currentQuiz && currentAttempt}
+										<!-- Quiz Results Display -->
+										<QuizResults
+											quiz={currentQuiz}
+											attempt={currentAttempt}
+											showCorrectAnswers={currentQuiz.showCorrectAnswers}
+											showExplanations={currentQuiz.showExplanations}
+											allowRetry={currentQuiz.allowMultipleAttempts}
+											onRetry={handleQuizRetry}
+											onContinue={handleQuizContinue}
+										/>
 									{:else}
-										<!-- Quiz Results -->
-										<div class="text-center space-y-6 py-4">
-											<div class="w-32 h-32 mx-auto rounded-full flex items-center justify-center shadow-lg {quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 text-white' : 'bg-gradient-to-br from-red-500 to-red-600 text-white'}">
-												<span class="text-3xl font-bold">{quizScore}%</span>
+										<!-- Error State: Quiz not found -->
+										<div class="text-center py-12 space-y-4">
+											<div class="w-20 h-20 mx-auto rounded-full bg-red-100 flex items-center justify-center">
+												<svg class="w-10 h-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+												</svg>
 											</div>
-											
-											<div>
-												<h3 class="text-2xl font-bold text-slate-900 mb-2">
-													{quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) ? '🎉 Congratulations!' : '💪 Keep Trying!'}
-												</h3>
-												<p class="text-slate-600 text-lg">
-													{quizScore && quizScore >= (currentLesson.quiz.passingScore || 70) 
-														? 'You passed the quiz!' 
-														: `You need ${currentLesson.quiz.passingScore || 70}% to pass. You scored ${quizScore}%.`}
-												</p>
-											</div>
-											
-											{#if currentLesson.quiz.showCorrectAnswers}
-												<!-- Show correct answers -->
-												<div class="text-left border-t border-slate-200 pt-6">
-													<h4 class="font-semibold text-slate-900 mb-4">Review Answers:</h4>
-													<!-- Implementation of answer review would go here -->
-												</div>
-											{/if}
-											
-											<div class="flex gap-3 justify-center flex-wrap">
-												{#if currentLesson.quiz.allowMultipleAttempts && (!quizScore || quizScore < (currentLesson.quiz.passingScore || 70))}
-													<Button onclick={handleQuizRetry} variant="outline" class="shadow-sm">
-														Try Again
-													</Button>
-												{/if}
-												
-												{#if nextLesson}
-													<Button onclick={() => handleNavigateToLesson(nextLesson!)} class="shadow-sm">
-														Next Lesson →
-													</Button>
-												{:else}
-													<Button onclick={() => goto(`/courses/${courseId}`)} class="shadow-sm">
-														← Back to Course
-													</Button>
-												{/if}
-											</div>
+											<h3 class="text-xl font-semibold text-slate-900">Quiz Not Available</h3>
+											<p class="text-slate-600">This quiz could not be loaded. Please contact your instructor.</p>
+											<Button onclick={() => goto(`/courses/${courseId}`)} variant="outline" class="mt-4">
+												← Back to Course
+											</Button>
 										</div>
 									{/if}
 								{:else}

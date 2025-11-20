@@ -366,7 +366,7 @@ function calculateScore(
  */
 function checkAnswer(
 	question: Quiz['questions'][0],
-	answer: string | number | string[]
+	answer: string | number | string[] | boolean
 ): boolean {
 	const correctAnswer = question.correctAnswer
 	
