@@ -115,8 +115,8 @@
 	}
 	
 	function handleCreateQuiz() {
-		// Navigate to quiz builder - need to select lesson first
-		goto(`/admin/courses/${courseId}/lessons?action=select-for-quiz`)
+		// Navigate directly to quiz builder - lesson will be created automatically
+		goto(`/admin/courses/${courseId}/quizzes/new`)
 	}
 	
 	function getDifficultyColor(difficulty?: 'easy' | 'medium' | 'hard'): string {

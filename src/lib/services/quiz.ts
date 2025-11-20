@@ -18,7 +18,8 @@ import {
 	type Query,
 	type DocumentData,
 	serverTimestamp,
-	Timestamp
+	Timestamp,
+	arrayUnion
 } from 'firebase/firestore'
 import { db } from '$lib/firebase'
 import { COLLECTIONS } from '$lib/firebase/collections'
@@ -29,6 +30,7 @@ import type {
 	QuizResults,
 	QuizStatistics
 } from '$lib/types/quiz'
+import type { Lesson } from '$lib/types'
 
 // ============================================
 // Quiz CRUD Operations
@@ -52,6 +54,81 @@ export async function createQuiz(quizData: Omit<Quiz, 'id' | 'createdAt' | 'upda
 	return {
 		id: createdQuiz.id,
 		...createdQuiz.data() as Omit<Quiz, 'id'>
+	}
+}
+
+/**
+ * Create a new quiz with an associated lesson
+ * This is the preferred method for creating quizzes as it ensures 
+ * the lesson and quiz are properly linked and the lesson type is set correctly
+ */
+export async function createQuizWithLesson(
+	courseId: string,
+	lessonData: {
+		title: string
+		description?: string
+		duration?: number
+		order?: number
+		isRequired?: boolean
+	},
+	quizData: Omit<Quiz, 'id' | 'createdAt' | 'updatedAt' | 'lessonId' | 'courseId'>
+): Promise<{ quiz: Quiz; lesson: Lesson }> {
+	// Get the course to determine the next lesson order
+	const courseRef = doc(db, COLLECTIONS.COURSES, courseId)
+	const courseSnap = await getDoc(courseRef)
+	
+	if (!courseSnap.exists()) {
+		throw new Error('Course not found')
+	}
+	
+	const courseData = courseSnap.data()
+	const existingLessons = courseData.lessons || []
+	
+	// Generate lesson ID
+	const lessonId = `lesson-${Date.now()}`
+	
+	// Create lesson object with type: 'quiz'
+	const newLesson: Lesson = {
+		id: lessonId,
+		courseId,
+		title: lessonData.title,
+		description: lessonData.description || '',
+		type: 'quiz',
+		order: lessonData.order ?? existingLessons.length + 1,
+		duration: lessonData.duration,
+		isRequired: lessonData.isRequired ?? true,
+		createdAt: new Date().toISOString(),
+		updatedAt: new Date().toISOString()
+	}
+	
+	// Create quiz with reference to the new lesson
+	const quizRef = collection(db, COLLECTIONS.QUIZZES)
+	const newQuiz = {
+		...quizData,
+		courseId,
+		lessonId,
+		createdAt: serverTimestamp(),
+		updatedAt: serverTimestamp()
+	}
+	
+	const quizDocRef = await addDoc(quizRef, newQuiz)
+	
+	// Add lesson to course
+	await updateDoc(courseRef, {
+		lessons: arrayUnion(newLesson),
+		updatedAt: serverTimestamp()
+	})
+	
+	// Get the created quiz
+	const createdQuizSnap = await getDoc(quizDocRef)
+	const createdQuiz: Quiz = {
+		id: createdQuizSnap.id,
+		...createdQuizSnap.data() as Omit<Quiz, 'id'>
+	}
+	
+	return {
+		quiz: createdQuiz,
+		lesson: newLesson
 	}
 }
 
