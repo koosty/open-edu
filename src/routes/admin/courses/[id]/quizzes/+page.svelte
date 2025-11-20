@@ -23,6 +23,10 @@
 	let error = $state<string | null>(null)
 	let success = $state<string | null>(null)
 	
+	// Bulk operations state
+	let selectedQuizIds = $state<Set<string>>(new Set())
+	let bulkActionInProgress = $state(false)
+	
 	// Load data
 	$effect(() => {
 		const currentCourseId = courseId
@@ -117,6 +121,144 @@
 	function handleCreateQuiz() {
 		// Navigate directly to quiz builder - lesson will be created automatically
 		goto(`/admin/courses/${courseId}/quizzes/new`)
+	}
+	
+	// Bulk operations
+	function toggleSelectAll() {
+		if (selectedQuizIds.size === quizzes.length) {
+			selectedQuizIds.clear()
+		} else {
+			selectedQuizIds = new Set(quizzes.map(q => q.id))
+		}
+	}
+	
+	function toggleSelectQuiz(quizId: string) {
+		if (selectedQuizIds.has(quizId)) {
+			selectedQuizIds.delete(quizId)
+		} else {
+			selectedQuizIds.add(quizId)
+		}
+		selectedQuizIds = selectedQuizIds // Trigger reactivity
+	}
+	
+	async function handleBulkPublish() {
+		if (selectedQuizIds.size === 0) return
+		
+		if (!confirm(`Publish ${selectedQuizIds.size} selected quiz(zes)?`)) {
+			return
+		}
+		
+		bulkActionInProgress = true
+		error = null
+		
+		try {
+			const promises = Array.from(selectedQuizIds).map(id =>
+				QuizService.publishQuiz(id, true)
+			)
+			await Promise.all(promises)
+			
+			// Update local state
+			quizzes = quizzes.map(q =>
+				selectedQuizIds.has(q.id) ? { ...q, isPublished: true } : q
+			)
+			
+			success = `${selectedQuizIds.size} quiz(zes) published successfully`
+			selectedQuizIds.clear()
+			setTimeout(() => success = null, 3000)
+		} catch (err: any) {
+			error = err.message || 'Failed to publish quizzes'
+			setTimeout(() => error = null, 5000)
+		} finally {
+			bulkActionInProgress = false
+		}
+	}
+	
+	async function handleBulkUnpublish() {
+		if (selectedQuizIds.size === 0) return
+		
+		if (!confirm(`Unpublish ${selectedQuizIds.size} selected quiz(zes)?`)) {
+			return
+		}
+		
+		bulkActionInProgress = true
+		error = null
+		
+		try {
+			const promises = Array.from(selectedQuizIds).map(id =>
+				QuizService.publishQuiz(id, false)
+			)
+			await Promise.all(promises)
+			
+			// Update local state
+			quizzes = quizzes.map(q =>
+				selectedQuizIds.has(q.id) ? { ...q, isPublished: false } : q
+			)
+			
+			success = `${selectedQuizIds.size} quiz(zes) unpublished successfully`
+			selectedQuizIds.clear()
+			setTimeout(() => success = null, 3000)
+		} catch (err: any) {
+			error = err.message || 'Failed to unpublish quizzes'
+			setTimeout(() => error = null, 5000)
+		} finally {
+			bulkActionInProgress = false
+		}
+	}
+	
+	async function handleBulkDelete() {
+		if (selectedQuizIds.size === 0) return
+		
+		if (!confirm(`Are you sure you want to delete ${selectedQuizIds.size} selected quiz(zes)? This action cannot be undone.`)) {
+			return
+		}
+		
+		bulkActionInProgress = true
+		error = null
+		
+		try {
+			const promises = Array.from(selectedQuizIds).map(id =>
+				QuizService.deleteQuiz(id)
+			)
+			await Promise.all(promises)
+			
+			// Update local state
+			quizzes = quizzes.filter(q => !selectedQuizIds.has(q.id))
+			
+			success = `${selectedQuizIds.size} quiz(zes) deleted successfully`
+			selectedQuizIds.clear()
+			setTimeout(() => success = null, 3000)
+		} catch (err: any) {
+			error = err.message || 'Failed to delete quizzes'
+			setTimeout(() => error = null, 5000)
+		} finally {
+			bulkActionInProgress = false
+		}
+	}
+	
+	function handleBulkExport() {
+		if (selectedQuizIds.size === 0) return
+		
+		const selectedQuizzes = quizzes.filter(q => selectedQuizIds.has(q.id))
+		const exportData = {
+			version: '1.0',
+			exported: new Date().toISOString(),
+			courseId,
+			courseName: course?.title || 'Unknown',
+			quizzes: selectedQuizzes
+		}
+		
+		const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' })
+		const url = URL.createObjectURL(blob)
+		const a = document.createElement('a')
+		a.href = url
+		a.download = `quizzes-${courseId}-${Date.now()}.json`
+		document.body.appendChild(a)
+		a.click()
+		document.body.removeChild(a)
+		URL.revokeObjectURL(url)
+		
+		success = `${selectedQuizIds.size} quiz(zes) exported successfully`
+		setTimeout(() => success = null, 3000)
 	}
 	
 	function getDifficultyColor(difficulty?: 'easy' | 'medium' | 'hard'): string {
@@ -225,6 +367,71 @@
 						</div>
 					</div>
 				{/if}
+				
+				<!-- Bulk Actions Toolbar -->
+				{#if selectedQuizIds.size > 0}
+					<div class="mb-6 p-4 bg-primary-50 border border-primary-200 rounded-lg">
+						<div class="flex items-center justify-between gap-4 flex-wrap">
+							<div class="flex items-center gap-3">
+								<span class="text-sm font-medium text-primary-900">
+									{selectedQuizIds.size} quiz{selectedQuizIds.size > 1 ? 'zes' : ''} selected
+								</span>
+								<button
+									onclick={() => selectedQuizIds.clear()}
+									class="text-sm text-primary-600 hover:text-primary-800 font-medium"
+								>
+									Clear selection
+								</button>
+							</div>
+							<div class="flex items-center gap-2">
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={handleBulkPublish}
+									disabled={bulkActionInProgress}
+								>
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+									</svg>
+									Publish
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={handleBulkUnpublish}
+									disabled={bulkActionInProgress}
+								>
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+									</svg>
+									Unpublish
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
+									onclick={handleBulkExport}
+									disabled={bulkActionInProgress}
+								>
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+									</svg>
+									Export JSON
+								</Button>
+								<Button
+									variant="destructive"
+									size="sm"
+									onclick={handleBulkDelete}
+									disabled={bulkActionInProgress}
+								>
+									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+									</svg>
+									Delete
+								</Button>
+							</div>
+						</div>
+					</div>
+				{/if}
 
 				<!-- Error Message -->
 				{#if error}
@@ -266,13 +473,35 @@
 							</CardContent>
 						</Card>
 					{:else}
+						<!-- Select All Header -->
+						<div class="mb-4 flex items-center gap-3 p-3 bg-white rounded-lg border">
+							<input
+								type="checkbox"
+								checked={selectedQuizIds.size === quizzes.length}
+								indeterminate={selectedQuizIds.size > 0 && selectedQuizIds.size < quizzes.length}
+								onchange={toggleSelectAll}
+								class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+							/>
+							<span class="text-sm font-medium text-gray-700">
+								Select All ({quizzes.length})
+							</span>
+						</div>
+						
 						<!-- Quiz List -->
 						<div class="space-y-4">
 							{#each quizzes as quiz (quiz.id)}
 								{@const stats = quizStats.get(quiz.id)}
 								<Card>
 									<CardContent class="p-6">
-										<div class="flex items-start justify-between">
+										<div class="flex items-start gap-4">
+											<!-- Checkbox -->
+											<input
+												type="checkbox"
+												checked={selectedQuizIds.has(quiz.id)}
+												onchange={() => toggleSelectQuiz(quiz.id)}
+												class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+											/>
+											
 											<!-- Quiz Info -->
 											<div class="flex-1">
 												<div class="flex items-center gap-3 mb-2">
