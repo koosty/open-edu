@@ -24,6 +24,7 @@
 	let timeElapsed = $state(0)
 	let timerInterval: ReturnType<typeof setInterval> | undefined = $state(undefined)
 	let showSubmitConfirm = $state(false)
+	let showTimeUpModal = $state(false)
 	
 	// Derived state
 	let currentQuestion = $derived(quiz.questions[currentQuestionIndex])
@@ -37,6 +38,19 @@
 	let timeRemainingSeconds = $derived(
 		timeLimitSeconds ? timeLimitSeconds - timeElapsed : undefined
 	)
+	
+	// Timer warning states
+	let timerWarningLevel = $derived.by(() => {
+		if (!timeRemainingSeconds || !timeLimitSeconds) return 'none'
+		if (timeRemainingSeconds <= 60) return 'critical' // 1 min
+		if (timeRemainingSeconds <= 300) return 'warning' // 5 min
+		return 'normal'
+	})
+	
+	let timerProgress = $derived.by(() => {
+		if (!timeRemainingSeconds || !timeLimitSeconds) return 100
+		return (timeRemainingSeconds / timeLimitSeconds) * 100
+	})
 	
 	// Format time display
 	function formatTime(seconds: number): string {
@@ -123,7 +137,12 @@
 	async function handleAutoSubmit() {
 		// Auto-submit when time expires
 		if (timerInterval) clearInterval(timerInterval)
-		await handleSubmit()
+		showTimeUpModal = true
+		// Auto-submit after showing modal
+		setTimeout(async () => {
+			showTimeUpModal = false
+			await handleSubmit()
+		}, 2000)
 	}
 	
 	// Check if question is answered
@@ -146,17 +165,64 @@
 				</div>
 				
 				<div class="flex items-center gap-4">
-					<!-- Timer -->
-					<div class="flex items-center gap-2 px-4 py-2 rounded-lg {timeRemainingSeconds && timeRemainingSeconds < 60 ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-700'}">
-						<Clock class="w-5 h-5" />
-						<span class="font-mono font-semibold">
-							{#if timeLimitSeconds}
-								{formatTime(timeRemainingSeconds || 0)}
-							{:else}
-								{formatTime(timeElapsed)}
+					<!-- Enhanced Timer with Visual Warnings -->
+					{#if timeLimitSeconds}
+						<div class="flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-300 {
+							timerWarningLevel === 'critical' ? 'bg-red-50 text-red-700 ring-2 ring-red-200 animate-pulse' :
+							timerWarningLevel === 'warning' ? 'bg-yellow-50 text-yellow-700 ring-2 ring-yellow-200' :
+							'bg-slate-100 text-slate-700'
+						}">
+							<!-- Circular Progress Indicator -->
+							<div class="relative w-10 h-10">
+								<svg class="transform -rotate-90" viewBox="0 0 36 36">
+									<!-- Background circle -->
+									<circle
+										cx="18"
+										cy="18"
+										r="16"
+										fill="none"
+										class="{timerWarningLevel === 'critical' ? 'stroke-red-200' : timerWarningLevel === 'warning' ? 'stroke-yellow-200' : 'stroke-slate-200'}"
+										stroke-width="3"
+									/>
+									<!-- Progress circle -->
+									<circle
+										cx="18"
+										cy="18"
+										r="16"
+										fill="none"
+										class="{timerWarningLevel === 'critical' ? 'stroke-red-600' : timerWarningLevel === 'warning' ? 'stroke-yellow-600' : 'stroke-primary-600'}"
+										stroke-width="3"
+										stroke-dasharray="100"
+										stroke-dashoffset="{100 - timerProgress}"
+										stroke-linecap="round"
+										style="transition: stroke-dashoffset 1s linear"
+									/>
+								</svg>
+								<Clock class="w-4 h-4 absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2" />
+							</div>
+							
+							<div class="flex flex-col">
+								<span class="text-xs font-medium opacity-75">Time Remaining</span>
+								<span class="font-mono text-lg font-bold leading-none">
+									{formatTime(timeRemainingSeconds || 0)}
+								</span>
+							</div>
+							
+							{#if timerWarningLevel === 'critical'}
+								<span class="text-xs font-semibold">Hurry!</span>
+							{:else if timerWarningLevel === 'warning'}
+								<span class="text-xs font-semibold">⚠️</span>
 							{/if}
-						</span>
-					</div>
+						</div>
+					{:else}
+						<!-- Elapsed time (no limit) -->
+						<div class="flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-700">
+							<Clock class="w-5 h-5" />
+							<span class="font-mono font-semibold">
+								{formatTime(timeElapsed)}
+							</span>
+						</div>
+					{/if}
 					
 					<!-- Progress -->
 					<div class="text-sm">
@@ -476,11 +542,52 @@
 			</div>
 		</div>
 	{/if}
+	
+	<!-- Time's Up Modal -->
+	{#if showTimeUpModal}
+		<div class="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 animate-in fade-in">
+			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full p-8 text-center animate-in zoom-in duration-300">
+				<div class="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+					<Clock class="w-8 h-8 text-red-600" />
+				</div>
+				<h3 class="text-2xl font-bold text-slate-900 mb-2">Time's Up!</h3>
+				<p class="text-slate-600 mb-4">
+					Your quiz time has expired. Submitting your answers now...
+				</p>
+				<div class="flex items-center justify-center gap-2 text-sm text-slate-500">
+					<div class="w-2 h-2 bg-primary-500 rounded-full animate-pulse"></div>
+					<span>Auto-submitting...</span>
+				</div>
+			</div>
+		</div>
+	{/if}
 </div>
 
 <style>
 	.quiz-viewer {
 		min-height: 100vh;
 		background-color: #f8fafc;
+	}
+	
+	@keyframes fade-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+	
+	@keyframes zoom-in {
+		from { transform: scale(0.9); }
+		to { transform: scale(1); }
+	}
+	
+	.animate-in {
+		animation-fill-mode: both;
+	}
+	
+	.fade-in {
+		animation: fade-in 0.2s ease-out;
+	}
+	
+	.zoom-in {
+		animation: zoom-in 0.3s ease-out;
 	}
 </style>

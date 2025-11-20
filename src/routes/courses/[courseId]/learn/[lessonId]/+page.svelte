@@ -30,6 +30,7 @@
 	import { createTouchGesture, type TouchGestureManager } from '$lib/services/touchGestures'
 	import QuizViewer from '$lib/components/QuizViewer.svelte'
 	import QuizResults from '$lib/components/QuizResults.svelte'
+	import QuizAttemptHistory from '$lib/components/QuizAttemptHistory.svelte'
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
@@ -56,7 +57,9 @@
 	// Quiz state (for quiz lessons)
 	let currentQuiz = $state<Quiz | null>(null)
 	let currentAttempt = $state<QuizAttempt | null>(null)
+	let allAttempts = $state<QuizAttempt[]>([])
 	let showQuizResults = $state(false)
+	let showAttemptHistory = $state(false)
 	let quizSubmitting = $state(false)
 	let loadingQuiz = $state(false)
 	
@@ -387,6 +390,12 @@
 			if (quizzes.length > 0) {
 				currentQuiz = quizzes[0] // Use first quiz (in future, could support multiple)
 				
+				// Load all previous attempts for history
+				allAttempts = await QuizService.getUserQuizAttempts(
+					authState.user.id,
+					currentQuiz.id
+				)
+				
 				// Start a new attempt
 				currentAttempt = await QuizService.startQuizAttempt(
 					authState.user.id,
@@ -460,6 +469,7 @@
 		if (!authState.user || !currentQuiz) return
 		
 		showQuizResults = false
+		showAttemptHistory = false
 		currentAttempt = null
 		startTime = new Date()
 		
@@ -470,6 +480,12 @@
 				currentQuiz.id,
 				courseId,
 				lessonId
+			)
+			
+			// Reload attempt history to include the attempt we just completed
+			allAttempts = await QuizService.getUserQuizAttempts(
+				authState.user.id,
+				currentQuiz.id
 			)
 		} catch (err: any) {
 			error = err.message || 'Failed to start new attempt'
@@ -483,6 +499,32 @@
 			goto(`/courses/${courseId}/learn/${nextLesson.id}`)
 		} else {
 			goto(`/courses/${courseId}`)
+		}
+	}
+
+	async function handleViewAttemptResults(attemptId: string) {
+		if (!authState.user || !currentQuiz) return
+		
+		try {
+			// Load the specific attempt
+			const attempt = await QuizService.getQuizAttempt(attemptId)
+			if (attempt) {
+				currentAttempt = attempt
+				showQuizResults = true
+				showAttemptHistory = false
+			}
+		} catch (err: any) {
+			error = err.message || 'Failed to load attempt results'
+			console.error('Error loading attempt:', err)
+		}
+	}
+
+	function handleBackToQuiz() {
+		showQuizResults = false
+		showAttemptHistory = false
+		// If we're viewing an old attempt, start a new one
+		if (currentAttempt?.status === 'completed') {
+			handleQuizRetry()
 		}
 	}
 
@@ -803,24 +845,75 @@
 								{#if isQuizLesson}
 									{#if loadingQuiz}
 										<Loading message="Loading quiz..." />
+									{:else if showAttemptHistory && currentQuiz && allAttempts.length > 0}
+										<!-- Quiz Attempt History View -->
+										<div class="space-y-4">
+											<div class="flex items-center justify-between">
+												<h2 class="text-xl font-semibold text-slate-900">Attempt History</h2>
+												<Button variant="ghost" onclick={handleBackToQuiz}>
+													<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+													</svg>
+													Back
+												</Button>
+											</div>
+											<QuizAttemptHistory 
+												attempts={allAttempts}
+												quiz={currentQuiz}
+												onViewResults={handleViewAttemptResults}
+											/>
+										</div>
 									{:else if currentQuiz && currentAttempt && !showQuizResults}
 										<!-- Quiz Taking Interface -->
-										<QuizViewer 
-											quiz={currentQuiz}
-											onSubmit={handleQuizSubmit}
-											isSubmitting={quizSubmitting}
-										/>
+										<div class="space-y-4">
+											<!-- Show attempt history toggle if there are previous attempts -->
+											{#if allAttempts.length > 0}
+												<div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+													<div class="flex items-center gap-2">
+														<svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+														</svg>
+														<span class="text-sm font-medium text-slate-700">
+															You have {allAttempts.length} previous {allAttempts.length === 1 ? 'attempt' : 'attempts'}
+														</span>
+													</div>
+													<Button variant="outline" size="sm" onclick={() => showAttemptHistory = true}>
+														View History
+													</Button>
+												</div>
+											{/if}
+											
+											<QuizViewer 
+												quiz={currentQuiz}
+												onSubmit={handleQuizSubmit}
+												isSubmitting={quizSubmitting}
+											/>
+										</div>
 									{:else if showQuizResults && currentQuiz && currentAttempt}
 										<!-- Quiz Results Display -->
-										<QuizResults
-											quiz={currentQuiz}
-											attempt={currentAttempt}
-											showCorrectAnswers={currentQuiz.showCorrectAnswers}
-											showExplanations={currentQuiz.showExplanations}
-											allowRetry={currentQuiz.allowMultipleAttempts}
-											onRetry={handleQuizRetry}
-											onContinue={handleQuizContinue}
-										/>
+										<div class="space-y-4">
+											<!-- Show attempt history button -->
+											{#if allAttempts.length > 1}
+												<div class="flex justify-end">
+													<Button variant="ghost" size="sm" onclick={() => showAttemptHistory = true}>
+														<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+														</svg>
+														View All Attempts
+													</Button>
+												</div>
+											{/if}
+											
+											<QuizResults
+												quiz={currentQuiz}
+												attempt={currentAttempt}
+												showCorrectAnswers={currentQuiz.showCorrectAnswers}
+												showExplanations={currentQuiz.showExplanations}
+												allowRetry={currentQuiz.allowMultipleAttempts}
+												onRetry={handleQuizRetry}
+												onContinue={handleQuizContinue}
+											/>
+										</div>
 									{:else}
 										<!-- Error State: Quiz not found -->
 										<div class="text-center py-12 space-y-4">
