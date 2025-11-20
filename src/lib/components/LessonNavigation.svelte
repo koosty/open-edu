@@ -161,6 +161,7 @@
 		<div class="nav-item nav-next">
 			{#if hasNext}
 				<Button 
+					variant="outline"
 					onclick={() => onNavigate(nextLesson!)}
 					disabled={!canNavigateNext}
 					class="nav-button"
