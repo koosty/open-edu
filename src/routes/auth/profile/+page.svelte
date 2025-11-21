@@ -2,6 +2,7 @@
 	import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui'
 	import { authState, updateUserProfile, logout } from '$lib/auth.svelte'
 	import { navigate } from '$lib/utils/navigation'
+	import { getErrorMessage } from '$lib/utils/errors'
 	import { User, Mail, Calendar, Save, LogOut, Pencil } from 'lucide-svelte'
 	
 	let displayName = $state('')
@@ -42,8 +43,8 @@
 			await updateUserProfile({ displayName: displayName.trim() })
 			success = 'Profile updated successfully!'
 			isEditing = false
-		} catch (err: any) {
-			error = err.message || 'Failed to update profile. Please try again.'
+		} catch (err) {
+			error = getErrorMessage(err)
 		} finally {
 			loading = false
 		}
@@ -53,8 +54,8 @@
 		try {
 			await logout()
 			navigate('/')
-		} catch (err: any) {
-			error = err.message || 'Failed to logout. Please try again.'
+		} catch (err) {
+			error = getErrorMessage(err)
 		}
 	}
 

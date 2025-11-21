@@ -2,6 +2,7 @@
 	import { Button, Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui'
 	import { signInWithGoogle } from '$lib/auth.svelte'
 	import { navigate } from '$lib/utils/navigation'
+	import { getErrorMessage } from '$lib/utils/errors'
 	import { LogIn } from 'lucide-svelte'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	
@@ -15,8 +16,8 @@
 		try {
 			await signInWithGoogle()
 			navigate('/dashboard')
-		} catch (err: any) {
-			error = err.message || 'Login failed. Please try again.'
+		} catch (err) {
+			error = getErrorMessage(err)
 		} finally {
 			loading = false
 		}
