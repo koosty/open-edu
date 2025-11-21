@@ -3,6 +3,7 @@
 	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
+	import { getErrorMessage } from '$lib/utils/errors'
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
@@ -79,8 +80,8 @@
 			})
 			await Promise.all(statsPromises)
 			loadingStats = false
-		} catch (err: any) {
-			error = err.message || 'Failed to load quizzes'
+		} catch (err) {
+			error = getErrorMessage(err)
 			console.error('Error loading quizzes:', err)
 		} finally {
 			loading = false
@@ -100,8 +101,8 @@
 			)
 			
 			setTimeout(() => success = null, 3000)
-		} catch (err: any) {
-			error = err.message || 'Failed to update quiz'
+		} catch (err) {
+			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
 		}
 	}
@@ -129,8 +130,8 @@
 			quizToDelete = null
 			
 			setTimeout(() => success = null, 3000)
-		} catch (err: any) {
-			error = err.message || 'Failed to delete quiz'
+		} catch (err) {
+			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
 		} finally {
 			isDeleting = false
@@ -191,8 +192,8 @@
 			success = `${selectedQuizIds.size} quiz(zes) published successfully`
 			selectedQuizIds.clear()
 			setTimeout(() => success = null, 3000)
-		} catch (err: any) {
-			error = err.message || 'Failed to publish quizzes'
+		} catch (err) {
+			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
 		} finally {
 			bulkActionInProgress = false
@@ -223,8 +224,8 @@
 			success = `${selectedQuizIds.size} quiz(zes) unpublished successfully`
 			selectedQuizIds.clear()
 			setTimeout(() => success = null, 3000)
-		} catch (err: any) {
-			error = err.message || 'Failed to unpublish quizzes'
+		} catch (err) {
+			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
 		} finally {
 			bulkActionInProgress = false
@@ -254,8 +255,8 @@
 			selectedQuizIds.clear()
 			showBulkDeleteModal = false
 			setTimeout(() => success = null, 3000)
-		} catch (err: any) {
-			error = err.message || 'Failed to delete quizzes'
+		} catch (err) {
+			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
 		} finally {
 			bulkActionInProgress = false
