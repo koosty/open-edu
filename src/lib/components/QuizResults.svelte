@@ -10,7 +10,7 @@
 	import type { CertificateData } from '$lib/utils/certificate'
 	
 	// Props
-	let {
+	const {
 		quiz,
 		attempt,
 		showCorrectAnswers = true,
@@ -35,13 +35,13 @@
 	} = $props()
 	
 	// Derived state
-	let totalQuestions = $derived(quiz.questions.length)
-	let correctCount = $derived(attempt.answers.filter(a => a.isCorrect).length)
-	let incorrectCount = $derived(totalQuestions - correctCount)
-	let scoreColor = $derived(
+	const totalQuestions = $derived(quiz.questions.length)
+	const correctCount = $derived(attempt.answers.filter(a => a.isCorrect).length)
+	const incorrectCount = $derived(totalQuestions - correctCount)
+	const scoreColor = $derived(
 		attempt.isPassed ? 'text-green-600' : 'text-red-600'
 	)
-	let scoreBgColor = $derived(
+	const scoreBgColor = $derived(
 		attempt.isPassed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
 	)
 	

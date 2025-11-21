@@ -8,7 +8,7 @@
 	import { Clock, Trophy, Calendar } from 'lucide-svelte'
 	
 	// Props
-	let {
+	const {
 		attempts,
 		quiz,
 		onViewResults

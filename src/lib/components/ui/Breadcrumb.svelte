@@ -9,7 +9,7 @@
 		current?: boolean
 	}
 	
-	let { 
+	const { 
 		items = [],
 		showHome = true,
 		separator = 'chevron',
@@ -22,7 +22,7 @@
 	}>()
 	
 	// Add home item if requested
-	let breadcrumbItems = $derived(() => {
+	const breadcrumbItems = $derived(() => {
 		const allItems = showHome 
 			? [{ label: 'Home', href: `${base}/`, current: false }, ...items]
 			: items

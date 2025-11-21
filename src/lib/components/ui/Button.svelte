@@ -36,7 +36,7 @@
 			children?: import('svelte').Snippet
 		}
 
-	let { 
+	const { 
 		class: className, 
 		variant, 
 		size, 

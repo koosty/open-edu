@@ -10,7 +10,7 @@
 	import type { Course } from '$lib/types'
 
 	// Form state
-	let form = $state({
+	const form = $state({
 		title: '',
 		description: '',
 		category: '',
@@ -33,7 +33,7 @@
 	let success = $state(false)
 
 	// Validation
-	let isValid = $derived(
+	const isValid = $derived(
 		form.title.trim().length > 0 &&
 		form.description.trim().length > 0 &&
 		form.category.trim().length > 0 &&

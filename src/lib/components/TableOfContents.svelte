@@ -2,7 +2,7 @@
 	import { extractHeadings } from '$lib/services/markdown'
 	
 	// Props
-	let {
+	const {
 		markdown = '',
 		activeId = '',
 		maxLevel = 3,

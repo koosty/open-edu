@@ -6,7 +6,7 @@
 	import { Button } from '$lib/components/ui'
 	import { AlertCircle, RefreshCw, Home, ArrowLeft } from 'lucide-svelte'
 	
-	let {
+	const {
 		title = 'Something went wrong',
 		message,
 		errorCode,

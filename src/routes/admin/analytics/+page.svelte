@@ -20,8 +20,8 @@
 	let loadingAnalytics = $state(false)
 
 	// Access control
-	let hasAccess = $derived(authState.user && canManageCourses(authState.user))
-	let isFullAdmin = $derived(authState.user && isAdmin(authState.user))
+	const hasAccess = $derived(authState.user && canManageCourses(authState.user))
+	const isFullAdmin = $derived(authState.user && isAdmin(authState.user))
 
 	// Reactive effect for authentication and access control
 	$effect(() => {

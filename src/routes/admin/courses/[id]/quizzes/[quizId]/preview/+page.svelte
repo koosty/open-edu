@@ -9,8 +9,8 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAnswer } from '$lib/types/quiz'
 	
-	let courseId = $derived($page.params.id as string)
-	let quizId = $derived($page.params.quizId as string)
+	const courseId = $derived($page.params.id as string)
+	const quizId = $derived($page.params.quizId as string)
 	
 	// State
 	let quiz = $state<Quiz | null>(null)

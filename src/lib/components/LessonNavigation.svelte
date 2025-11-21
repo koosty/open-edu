@@ -11,7 +11,7 @@
 	} from 'lucide-svelte'
 
 	// Props
-	let {
+	const {
 		previousLesson = null,
 		nextLesson = null,
 		currentLessonIndex = 0,

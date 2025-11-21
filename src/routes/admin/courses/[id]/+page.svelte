@@ -11,7 +11,7 @@
 	import Loading from '$lib/components/Loading.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
-	let courseId = $derived($page.params.id as string)
+	const courseId = $derived($page.params.id as string)
 	
 	// Course data
 	let course = $state<Course | null>(null)
@@ -19,7 +19,7 @@
 	let error = $state<string | null>(null)
 	
 	// Form state
-	let form = $state({
+	const form = $state({
 		title: '',
 		description: '',
 		category: '',
@@ -44,7 +44,7 @@
 	let success = $state(false)
 	
 	// Validation
-	let isValid = $derived(
+	const isValid = $derived(
 		form.title.trim().length > 0 &&
 		form.description.trim().length > 0 &&
 		form.category.trim().length > 0 &&

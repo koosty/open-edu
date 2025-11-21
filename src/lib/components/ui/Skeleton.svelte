@@ -3,7 +3,7 @@
 	Animated loading placeholder for content
 -->
 <script lang="ts">
-	let {
+	const {
 		variant = 'default',
 		width = '100%',
 		height = 'auto',

@@ -10,11 +10,11 @@
 	import { isAdmin } from '$lib/utils/admin'
 	import { initTheme } from '$lib/config/theme'
 
-	let { children } = $props()
+	const { children } = $props()
 	let mobileMenuOpen = $state(false)
 
 	// Detect if we're on a lesson viewer page
-	let isLessonPage = $derived(
+	const isLessonPage = $derived(
 		$page.url.pathname.includes('/courses/') &&
 		$page.url.pathname.includes('/learn/')
 	)

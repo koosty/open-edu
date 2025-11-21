@@ -3,7 +3,7 @@
 	import { onMount } from 'svelte'
 	
 	// Props
-	let {
+	const {
 		content = '',
 		class: className = ''
 	} = $props<{
