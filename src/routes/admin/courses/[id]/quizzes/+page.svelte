@@ -11,6 +11,7 @@
 	import { CourseService } from '$lib/services/courses'
 	import type { Course } from '$lib/types'
 	import type { Quiz, QuizStatistics } from '$lib/types/quiz'
+	import { SvelteSet } from 'svelte/reactivity'
 	
 	const courseId = $derived($page.params.id as string)
 	
@@ -24,7 +25,7 @@
 	let success = $state<string | null>(null)
 	
 	// Bulk operations state
-	let selectedQuizIds = $state<Set<string>>(new Set())
+	const selectedQuizIds = new SvelteSet<string>()
 	let bulkActionInProgress = $state(false)
 	
 	// Delete modal state
@@ -149,10 +150,12 @@
 	// Bulk operations
 	function toggleSelectAll() {
 		if (selectedQuizIds.size === quizzes.length) {
-			selectedQuizIds = new Set()
+			selectedQuizIds.clear()
 		} else {
-			selectedQuizIds = new Set(quizzes.map(q => q.id))
+			selectedQuizIds.clear()
+			quizzes.forEach(q => selectedQuizIds.add(q.id))
 		}
+		// SvelteSet is already reactive
 	}
 	
 	function toggleSelectQuiz(quizId: string) {
@@ -161,7 +164,7 @@
 		} else {
 			selectedQuizIds.add(quizId)
 		}
-		selectedQuizIds = selectedQuizIds // Trigger reactivity
+		// SvelteSet is already reactive
 	}
 	
 	async function handleBulkPublish() {
@@ -186,7 +189,7 @@
 			)
 			
 			success = `${selectedQuizIds.size} quiz(zes) published successfully`
-			selectedQuizIds = new Set()
+			selectedQuizIds.clear()
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to publish quizzes'
@@ -218,7 +221,7 @@
 			)
 			
 			success = `${selectedQuizIds.size} quiz(zes) unpublished successfully`
-			selectedQuizIds = new Set()
+			selectedQuizIds.clear()
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
 			error = err.message || 'Failed to unpublish quizzes'
@@ -248,7 +251,7 @@
 			quizzes = quizzes.filter(q => !selectedQuizIds.has(q.id))
 			
 			success = `${count} quiz(zes) deleted successfully`
-			selectedQuizIds = new Set()
+			selectedQuizIds.clear()
 			showBulkDeleteModal = false
 			setTimeout(() => success = null, 3000)
 		} catch (err: any) {
@@ -405,7 +408,7 @@
 									{selectedQuizIds.size} quiz{selectedQuizIds.size > 1 ? 'zes' : ''} selected
 								</span>
 								<button
-									onclick={() => selectedQuizIds = new Set()}
+									onclick={() => selectedQuizIds.clear()}
 									class="text-sm text-primary-600 hover:text-primary-800 font-medium"
 								>
 									Clear selection

@@ -11,6 +11,7 @@
 	import type { Note, Bookmark, NoteColor } from '$lib/types/notes'
 	import { NOTE_COLORS } from '$lib/types/notes'
 	import { Search, StickyNote, Bookmark as BookmarkIcon } from 'lucide-svelte'
+	import { SvelteSet } from 'svelte/reactivity'
 	
 	interface Props {
 		courseId: string
@@ -40,7 +41,7 @@
 	let searchQuery = $state('')
 	let activeTab = $state<'all' | 'notes' | 'bookmarks'>('all')
 	let selectedColor = $state<NoteColor | 'all'>('all')
-	let expandedNotes = $state(new Set<string>())
+	const expandedNotes = new SvelteSet<string>()
 	
 	// Load notes and bookmarks
 	$effect(() => {
@@ -133,7 +134,7 @@
 		} else {
 			expandedNotes.add(noteId)
 		}
-		expandedNotes = new Set(expandedNotes)
+		// SvelteSet is already reactive, no need to reassign
 	}
 	
 	/**
