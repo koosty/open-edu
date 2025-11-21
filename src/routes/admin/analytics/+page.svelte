@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { AnalyticsService } from '$lib/services/analytics'
 	import { authState } from '$lib/auth.svelte'
@@ -30,12 +30,12 @@
 		}
 
 		if (!authState.user) {
-			goto('/auth/login')
+			navigate('/auth/login')
 			return
 		}
 
 		if (!hasAccess) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 
@@ -151,7 +151,7 @@
 			<CardContent class="p-8 text-center">
 				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
 				<p class="text-gray-600 mb-6">You don't have permission to access analytics.</p>
-				<Button onclick={() => goto('/dashboard')}>Go to Dashboard</Button>
+				<Button onclick={() => navigate('/dashboard')}>Go to Dashboard</Button>
 			</CardContent>
 		</Card>
 	</div>
@@ -165,7 +165,7 @@
 						<h1 class="text-3xl font-bold">Content Analytics</h1>
 						<p class="text-gray-600 mt-1">Student engagement and performance insights</p>
 					</div>
-					<Button variant="outline" onclick={() => goto('/admin')}>
+					<Button variant="outline" onclick={() => navigate('/admin')}>
 						<svg
 							class="w-4 h-4 mr-2"
 							fill="none"
