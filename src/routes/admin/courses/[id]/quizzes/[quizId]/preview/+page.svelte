@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
@@ -25,7 +25,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -60,7 +60,7 @@
 	}
 	
 	function handleExitPreview() {
-		goto(`/admin/courses/${courseId}/quizzes`)
+		navigate(`/admin/courses/${courseId}/quizzes`)
 	}
 </script>
 

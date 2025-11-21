@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Input, Card, CardHeader, CardTitle, CardDescription, CardContent } from '$lib/components/ui'
 	import { authState, updateUserProfile, logout } from '$lib/auth.svelte'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { User, Mail, Calendar, Save, LogOut, Pencil } from 'lucide-svelte'
 	
 	let displayName = $state('')
@@ -22,7 +22,7 @@
 	// Redirect if not logged in
 	$effect(() => {
 		if (!authState.loading && !authState.user) {
-			goto('/auth/login')
+			navigate('/auth/login')
 		}
 	})
 
@@ -52,7 +52,7 @@
 	async function handleLogout() {
 		try {
 			await logout()
-			goto('/')
+			navigate('/')
 		} catch (err: any) {
 			error = err.message || 'Failed to logout. Please try again.'
 		}
