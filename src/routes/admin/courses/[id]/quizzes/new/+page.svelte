@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { auth } from '$lib/firebase'
@@ -26,7 +26,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 		}
 	})
 	
@@ -63,7 +63,7 @@
 			)
 			
 			// Navigate back to quiz management
-			await goto(`/admin/courses/${courseId}/quizzes`)
+			await navigate(`/admin/courses/${courseId}/quizzes`)
 		} catch (err: any) {
 			error = err.message || 'Failed to create quiz'
 			console.error('Error creating quiz:', err)
@@ -73,7 +73,7 @@
 	}
 	
 	function handleCancel() {
-		goto(`/admin/courses/${courseId}/quizzes`)
+		navigate(`/admin/courses/${courseId}/quizzes`)
 	}
 	
 	function handleLessonFormContinue() {
