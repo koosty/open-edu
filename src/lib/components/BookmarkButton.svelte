@@ -21,7 +21,7 @@
 		existingBookmark?: Bookmark | null
 	}
 	
-	let {
+	const {
 		courseId,
 		lessonId,
 		currentHeadingId,

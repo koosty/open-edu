@@ -12,9 +12,9 @@
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
-	let courseId = $derived($page.params.id as string)
-	let lessonId = $derived($page.params.lessonId as string)
-	let isNewLesson = $derived(lessonId === 'new')
+	const courseId = $derived($page.params.id as string)
+	const lessonId = $derived($page.params.lessonId as string)
+	const isNewLesson = $derived(lessonId === 'new')
 	
 	// Data
 	let course = $state<Course | null>(null)
@@ -23,7 +23,7 @@
 	let error = $state<string | null>(null)
 	
 	// Form state
-	let form = $state({
+	const form = $state({
 		title: '',
 		description: '',
 		type: 'lesson' as 'lesson' | 'quiz',
@@ -37,11 +37,11 @@
 	// UI state
 	let submitting = $state(false)
 	let success = $state(false)
-	let showPreview = $state(true)
+	const showPreview = $state(true)
 	let previewMode = $state<'split' | 'preview' | 'edit'>('split')
 	
 	// Validation
-	let isValid = $derived(
+	const isValid = $derived(
 		form.title.trim().length > 0 &&
 		form.duration > 0 &&
 		(form.type === 'quiz' || form.content.trim().length > 0)

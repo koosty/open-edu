@@ -8,7 +8,7 @@
 	import { Clock, AlertCircle, CheckCircle } from 'lucide-svelte'
 	
 	// Props
-	let {
+	const {
 		quiz,
 		onSubmit,
 		isSubmitting = false,
@@ -31,27 +31,27 @@
 	let showTimeUpModal = $state(false)
 	
 	// Derived state
-	let currentQuestion = $derived(quiz.questions[currentQuestionIndex])
-	let totalQuestions = $derived(quiz.questions.length)
-	let answeredCount = $derived(Object.keys(answers).filter(key => answers[key] !== null && answers[key] !== undefined).length)
-	let canGoNext = $derived(currentQuestionIndex < totalQuestions - 1)
-	let canGoPrevious = $derived(currentQuestionIndex > 0)
-	let isLastQuestion = $derived(currentQuestionIndex === totalQuestions - 1)
-	let allAnswered = $derived(answeredCount === totalQuestions)
-	let timeLimitSeconds = $derived(quiz.timeLimit ? quiz.timeLimit * 60 : undefined)
-	let timeRemainingSeconds = $derived(
+	const currentQuestion = $derived(quiz.questions[currentQuestionIndex])
+	const totalQuestions = $derived(quiz.questions.length)
+	const answeredCount = $derived(Object.keys(answers).filter(key => answers[key] !== null && answers[key] !== undefined).length)
+	const canGoNext = $derived(currentQuestionIndex < totalQuestions - 1)
+	const canGoPrevious = $derived(currentQuestionIndex > 0)
+	const isLastQuestion = $derived(currentQuestionIndex === totalQuestions - 1)
+	const allAnswered = $derived(answeredCount === totalQuestions)
+	const timeLimitSeconds = $derived(quiz.timeLimit ? quiz.timeLimit * 60 : undefined)
+	const timeRemainingSeconds = $derived(
 		timeLimitSeconds ? timeLimitSeconds - timeElapsed : undefined
 	)
 	
 	// Timer warning states
-	let timerWarningLevel = $derived.by(() => {
+	const timerWarningLevel = $derived.by(() => {
 		if (!timeRemainingSeconds || !timeLimitSeconds) return 'none'
 		if (timeRemainingSeconds <= 60) return 'critical' // 1 min
 		if (timeRemainingSeconds <= 300) return 'warning' // 5 min
 		return 'normal'
 	})
 	
-	let timerProgress = $derived.by(() => {
+	const timerProgress = $derived.by(() => {
 		if (!timeRemainingSeconds || !timeLimitSeconds) return 100
 		return (timeRemainingSeconds / timeLimitSeconds) * 100
 	})

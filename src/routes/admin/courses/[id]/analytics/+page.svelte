@@ -13,14 +13,14 @@
 	import type { CourseAnalytics, StudentEngagementSummary } from '$lib/types/analytics'
 	import type { Quiz, QuizStatistics } from '$lib/types/quiz'
 	
-	let courseId = $derived($page.params.id as string)
+	const courseId = $derived($page.params.id as string)
 	
 	// State
 	let course = $state<Course | null>(null)
 	let analytics = $state<CourseAnalytics | null>(null)
 	let students = $state<StudentEngagementSummary[]>([])
 	let quizzes = $state<Quiz[]>([])
-	let quizStats = $state<Map<string, QuizStatistics>>(new Map())
+	const quizStats = $state<Map<string, QuizStatistics>>(new Map())
 	let loading = $state(true)
 	let error = $state<string | null>(null)
 	
@@ -85,13 +85,13 @@
 	}
 	
 	// Computed values
-	let filteredStudents = $derived(
+	const filteredStudents = $derived(
 		showAtRiskOnly ? students.filter(s => s.atRisk) : students
 	)
 	
-	let atRiskCount = $derived(students.filter(s => s.atRisk).length)
+	const atRiskCount = $derived(students.filter(s => s.atRisk).length)
 	
-	let averageQuizScore = $derived(() => {
+	const averageQuizScore = $derived(() => {
 		const scores = Array.from(quizStats.values()).map(s => s.averageScore)
 		return scores.length > 0 
 			? Math.round(scores.reduce((sum, s) => sum + s, 0) / scores.length)

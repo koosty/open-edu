@@ -4,7 +4,7 @@
 	import type { ReadingProgressState } from '$lib/services/readingProgress'
 	
 	// Props
-	let {
+	const {
 		totalWords = 0,
 		onProgressUpdate = undefined,
 		showTimeEstimate = true,

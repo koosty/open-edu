@@ -10,7 +10,7 @@
 		showLoading?: boolean
 	}
 	
-	let { 
+	const { 
 		children, 
 		redirectTo = '/auth/login',
 		requireAuth = true,

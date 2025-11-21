@@ -10,7 +10,7 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz } from '$lib/types/quiz'
 	
-	let courseId = $derived($page.params.id as string)
+	const courseId = $derived($page.params.id as string)
 	
 	let isSaving = $state(false)
 	let error = $state<string | null>(null)

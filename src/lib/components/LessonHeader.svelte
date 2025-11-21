@@ -11,7 +11,7 @@
 		estimatedReadingMinutes?: number // calculated from content
 	}
 	
-	let { 
+	const { 
 		lesson, 
 		isCompleted = false, 
 		lastAccessedAt = null,
@@ -20,7 +20,7 @@
 	}: Props = $props()
 	
 	// Calculate reading time from content if not provided
-	let readingTime = $derived(() => {
+	const readingTime = $derived(() => {
 		if (estimatedReadingMinutes > 0) {
 			return estimatedReadingMinutes
 		}
@@ -68,7 +68,7 @@
 	}
 	
 	// Lesson type badge
-	let lessonTypeBadge = $derived(
+	const lessonTypeBadge = $derived(
 		lesson.type === 'quiz' 
 			? { text: 'Quiz', class: 'bg-purple-100 text-purple-700 border-purple-200' }
 			: { text: 'Lesson', class: 'bg-blue-100 text-blue-700 border-blue-200' }

@@ -10,7 +10,7 @@
 	import { Plus, Trash2, MoveUp, MoveDown, Eye, Save, AlertCircle, CheckCircle2, GripVertical } from 'lucide-svelte'
 	
 	// Props
-	let {
+	const {
 		courseId,
 		lessonId,
 		initialQuiz,
@@ -31,7 +31,7 @@
 	let description = $state(initialQuiz?.description || '')
 	let instructions = $state(initialQuiz?.instructions || 'Answer all questions to the best of your ability.')
 	let questions = $state<QuizQuestion[]>(initialQuiz?.questions || [])
-	let settings = $state<QuizSettings>({
+	const settings = $state<QuizSettings>({
 		passingScore: initialQuiz?.passingScore || 70,
 		timeLimit: initialQuiz?.timeLimit,
 		allowMultipleAttempts: initialQuiz?.allowMultipleAttempts ?? true,

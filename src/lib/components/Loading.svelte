@@ -8,7 +8,7 @@
 		className?: string
 	}
 	
-	let { 
+	const { 
 		size = 'md',
 		message = 'Loading...',
 		fullScreen = false,

@@ -39,8 +39,8 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
-	let courseId = $derived($page.params.courseId as string)
-	let lessonId = $derived($page.params.lessonId as string)
+	const courseId = $derived($page.params.courseId as string)
+	const lessonId = $derived($page.params.lessonId as string)
 	
 	let course = $state<Course | null>(null)
 	let currentLesson = $state<Lesson | null>(null)
@@ -105,22 +105,22 @@
 	let mainElement = $state<HTMLElement | null>(null)
 	
 	// Derived states
-	let isCompleted = $derived(
+	const isCompleted = $derived(
 		progress?.completedLessons.includes(lessonId) || false
 	)
-	let canNavigateNext = $derived(
+	const canNavigateNext = $derived(
 		isCompleted || currentLesson?.type === 'lesson'
 	)
-	let isQuizLesson = $derived(currentLesson?.type === 'quiz')
+	const isQuizLesson = $derived(currentLesson?.type === 'quiz')
 	// Sorted lessons to prevent mutation in template
-	let sortedLessons = $derived(
+	const sortedLessons = $derived(
 		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
 	)
 	
 	/**
 	 * Filtered lessons based on search query
 	 */
-	let filteredLessons = $derived.by(() => {
+	const filteredLessons = $derived.by(() => {
 		if (!sidebarSearchQuery.trim()) {
 			return sortedLessons
 		}

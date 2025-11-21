@@ -15,7 +15,7 @@
 		scrollPosition?: number
 	}
 	
-	let {
+	const {
 		courseId,
 		lessonId,
 		onNoteCreated,
@@ -39,7 +39,7 @@
 	let isPrivate = $state(true)
 	
 	// Edit mode
-	let isEditMode = $derived(!!existingNote)
+	const isEditMode = $derived(!!existingNote)
 	
 	// Initialize form with existing note data
 	$effect(() => {

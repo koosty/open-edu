@@ -22,7 +22,7 @@
 		onDeleteBookmark?: (bookmarkId: string) => void
 	}
 	
-	let {
+	const {
 		courseId,
 		lessonId,
 		onJumpToNote,
@@ -76,7 +76,7 @@
 	}
 	
 	// Filtered notes based on search and filters
-	let filteredNotes = $derived.by(() => {
+	const filteredNotes = $derived.by(() => {
 		let result = notes
 		
 		// Filter by search query
@@ -98,7 +98,7 @@
 	})
 	
 	// Filtered bookmarks
-	let filteredBookmarks = $derived.by(() => {
+	const filteredBookmarks = $derived.by(() => {
 		let result = bookmarks
 		
 		// Filter by search query
@@ -119,10 +119,10 @@
 	})
 	
 	// Total counts
-	let totalNotes = $derived(filteredNotes.length)
-	let totalBookmarks = $derived(filteredBookmarks.length)
-	let showNotes = $derived(activeTab === 'all' || activeTab === 'notes')
-	let showBookmarks = $derived(activeTab === 'all' || activeTab === 'bookmarks')
+	const totalNotes = $derived(filteredNotes.length)
+	const totalBookmarks = $derived(filteredBookmarks.length)
+	const showNotes = $derived(activeTab === 'all' || activeTab === 'notes')
+	const showBookmarks = $derived(activeTab === 'all' || activeTab === 'bookmarks')
 	
 	/**
 	 * Toggle note expansion

@@ -11,7 +11,7 @@
 	import type { Course, Enrollment } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
 
-	let courseId = $derived($page.params.courseId as string)
+	const courseId = $derived($page.params.courseId as string)
 	let course = $state<Course | null>(null)
 	let enrollment = $state<Enrollment | null>(null)
 	let loading = $state(true)
@@ -19,23 +19,23 @@
 	let error = $state<string | null>(null)
 
 	// Derived states
-	let isEnrolled = $derived(enrollment !== null)
-	let canEnroll = $derived(
+	const isEnrolled = $derived(enrollment !== null)
+	const canEnroll = $derived(
 		authState.user && 
 		course && 
 		course.isPublished && 
 		!isEnrolled
 	)
-	let canStartLearning = $derived(
+	const canStartLearning = $derived(
 		authState.user && 
 		isEnrolled && 
 		course?.lessons && course.lessons.length > 0
 	)
-	let canEditCourse = $derived(
+	const canEditCourse = $derived(
 		authState.user && canManageCourses(authState.user)
 	)
 	// Sorted lessons to prevent mutation in template
-	let sortedLessons = $derived(
+	const sortedLessons = $derived(
 		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
 	)
 

@@ -14,7 +14,7 @@
 	let loading = $state(true)
 	let error = $state<string | null>(null)
 	let courses = $state<Course[]>([])
-	let analytics = $state({
+	const analytics = $state({
 		totalCourses: 0,
 		totalStudents: 0,
 		totalEnrollments: 0,
@@ -27,8 +27,8 @@
 	let popularCourses = $state<Course[]>([])
 
 	// Access control
-	let hasAccess = $derived(authState.user && canManageCourses(authState.user))
-	let isFullAdmin = $derived(authState.user && isAdmin(authState.user))
+	const hasAccess = $derived(authState.user && canManageCourses(authState.user))
+	const isFullAdmin = $derived(authState.user && isAdmin(authState.user))
 
 	// Reactive effect for authentication and access control
 	$effect(() => {

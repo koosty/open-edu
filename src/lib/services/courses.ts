@@ -89,7 +89,7 @@ export class CourseService {
     nextCursor?: string;
   }> {
     try {
-      let courseQuery = collection(db, COLLECTIONS.COURSES);
+      const courseQuery = collection(db, COLLECTIONS.COURSES);
       const queryConstraints: any[] = [];
 
       // Apply filters - prioritize categories due to Firestore query limitations
@@ -156,7 +156,7 @@ export class CourseService {
       const q = query(courseQuery, ...queryConstraints);
       const snapshot = await getDocs(q);
 
-      let allCourses: Course[] = [];
+      const allCourses: Course[] = [];
       let hasMoreDocs = false;
 
       snapshot.docs.forEach((doc, index) => {

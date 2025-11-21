@@ -12,12 +12,12 @@
 	import type { Course } from '$lib/types'
 	import type { Quiz, QuizStatistics } from '$lib/types/quiz'
 	
-	let courseId = $derived($page.params.id as string)
+	const courseId = $derived($page.params.id as string)
 	
 	// State
 	let quizzes = $state<Quiz[]>([])
 	let course = $state<Course | null>(null)
-	let quizStats = $state<Map<string, QuizStatistics>>(new Map())
+	const quizStats = $state<Map<string, QuizStatistics>>(new Map())
 	let loading = $state(true)
 	let loadingStats = $state(false)
 	let error = $state<string | null>(null)

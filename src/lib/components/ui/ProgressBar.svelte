@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { 
+	const { 
 		value = 0, 
 		max = 100, 
 		class: className = '', 
@@ -18,7 +18,7 @@
 	}>()
 
 	// Calculate percentage
-	let percentage = $derived(Math.min(100, Math.max(0, (value / max) * 100)))
+	const percentage = $derived(Math.min(100, Math.max(0, (value / max) * 100)))
 	
 	// Get size class
 	function getSizeClass(size: string): string {

@@ -23,7 +23,7 @@
 	})
 
 	// Computed values
-	let recentCourses = $derived(
+	const recentCourses = $derived(
 		enrollments
 			.slice(0, 5)
 			.map(enrollment => {
