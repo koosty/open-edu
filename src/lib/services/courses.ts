@@ -12,15 +12,7 @@ import {
   query,
   where,
   orderBy,
-  limit as firestoreLimit,
-  startAfter,
-  type Timestamp,
   serverTimestamp,
-  increment,
-  arrayUnion,
-  arrayRemove,
-  type QueryDocumentSnapshot,
-  type DocumentData,
 } from "firebase/firestore";
 import { db } from "$lib/firebase";
 import type { Course } from "$lib/types";
