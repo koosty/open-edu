@@ -7,8 +7,7 @@
 	import { ProgressService } from '$lib/services/progress'
 	import { CourseService } from '$lib/services/courses'
 	import { BookOpen, User, Clock, Award, Play, CheckCircle } from 'lucide-svelte'
-	import { base } from '$app/paths'
-	import { goto } from '$app/navigation'
+	import { getPath, navigate } from '$lib/utils/navigation'
 	
 	// State management
 	let loading = $state(true)
@@ -105,9 +104,9 @@
 		const lastLessonId = progress?.lastLessonId
 		
 		if (lastLessonId) {
-			goto(`${base}/courses/${courseId}/learn/${lastLessonId}`)
+			navigate(`/courses/${courseId}/learn/${lastLessonId}`)
 		} else {
-			goto(`${base}/courses/${courseId}`)
+			navigate(`/courses/${courseId}`)
 		}
 	}
 
@@ -267,7 +266,7 @@
 								<BookOpen class="h-12 w-12 text-slate-400 mx-auto mb-4" />
 								<p class="text-sm font-medium text-slate-900 mb-2">No enrolled courses yet</p>
 								<p class="text-xs text-slate-600 mb-4">Start your learning journey by browsing our course catalog</p>
-								<Button onclick={() => goto(`${base}/courses`)} class="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive">Browse Courses</Button>
+								<Button onclick={() => navigate('/courses')} class="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive">Browse Courses</Button>
 							</div>
 						{/if}
 					</CardContent>
@@ -283,7 +282,7 @@
 					<CardContent>
 						<div class="space-y-3">
 							<a 
-								href="{base}/courses" 
+								href={getPath('/courses')} 
 								class="block p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm"
 							>
 								<div class="flex items-center space-x-3">
@@ -298,7 +297,7 @@
 							</a>
 
 							<a 
-								href="{base}/auth/profile" 
+								href={getPath('/auth/profile')} 
 								class="block p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm"
 							>
 								<div class="flex items-center space-x-3">
