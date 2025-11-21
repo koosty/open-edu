@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -61,7 +61,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 		}
 	})
 
@@ -112,7 +112,7 @@
 
 			// Redirect to course detail page after a short delay
 			setTimeout(() => {
-				goto(`/courses/${courseId}`)
+				navigate(`/courses/${courseId}`)
 			}, 2000)
 
 		} catch (err: any) {
@@ -124,7 +124,7 @@
 	}
 
 	function handleCancel() {
-		goto('/admin')
+		navigate('/admin')
 	}
 
 	function handleReset() {
