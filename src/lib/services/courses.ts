@@ -25,17 +25,20 @@ import {
   type Pagination,
 } from "$lib/validation/course";
 import { COLLECTIONS } from "$lib/firebase/collections";
+import { hasToDate } from "$lib/utils/errors";
+import type { QueryConstraint } from "firebase/firestore";
 
 // Helper to convert Firestore timestamps to ISO strings
-function convertTimestamps(data: any): any {
+function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
   if (!data) return data;
 
   const converted = { ...data };
 
   // Convert Firestore Timestamps to ISO strings
   Object.keys(converted).forEach((key) => {
-    if (converted[key]?.toDate && typeof converted[key].toDate === "function") {
-      converted[key] = converted[key].toDate().toISOString();
+    const value = converted[key];
+    if (hasToDate(value)) {
+      converted[key] = value.toDate().toISOString() as T[Extract<keyof T, string>];
     }
   });
 
@@ -82,7 +85,7 @@ export class CourseService {
   }> {
     try {
       const courseQuery = collection(db, COLLECTIONS.COURSES);
-      const queryConstraints: any[] = [];
+      const queryConstraints: QueryConstraint[] = [];
 
       // Apply filters - prioritize categories due to Firestore query limitations
       if (filters.categories && filters.categories.length > 0) {
@@ -217,7 +220,7 @@ export class CourseService {
    * Create a new course
    */
   static async createCourse(
-    courseData: any,
+    courseData: Omit<Course, 'id' | 'enrolled' | 'rating' | 'ratingCount' | 'lessons' | 'chapters' | 'createdAt' | 'updatedAt'>,
     instructorId: string,
   ): Promise<string> {
     try {
@@ -259,7 +262,7 @@ export class CourseService {
   /**
    * Update an existing course
    */
-  static async updateCourse(courseId: string, updates: any): Promise<void> {
+  static async updateCourse(courseId: string, updates: Partial<Course>): Promise<void> {
     try {
       // Validate updates
       const validatedUpdates = updateCourseSchema.parse({
@@ -268,16 +271,16 @@ export class CourseService {
       });
 
       // Recursively remove undefined values (Firestore doesn't accept them)
-      const cleanUndefined = (obj: any): any => {
+      const cleanUndefined = <T>(obj: T): T => {
         if (Array.isArray(obj)) {
-          return obj.map(cleanUndefined);
+          return obj.map(cleanUndefined) as T;
         }
         if (obj !== null && typeof obj === 'object') {
           return Object.fromEntries(
             Object.entries(obj)
               .filter(([_, value]) => value !== undefined)
               .map(([key, value]) => [key, cleanUndefined(value)])
-          );
+          ) as T;
         }
         return obj;
       };
@@ -317,7 +320,7 @@ export class CourseService {
   ): Promise<void> {
     try {
       const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
-      const updateData: any = {
+      const updateData: Record<string, unknown> = {
         isPublished,
         updatedAt: serverTimestamp(),
       };
