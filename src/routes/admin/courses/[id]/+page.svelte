@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -75,7 +75,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -176,15 +176,15 @@
 	}
 	
 	function handleCancel() {
-		goto(`/courses/${courseId}`)
+		navigate(`/courses/${courseId}`)
 	}
 	
 	function handleAddLesson() {
-		goto(`/admin/courses/${courseId}/lessons/new`)
+		navigate(`/admin/courses/${courseId}/lessons/new`)
 	}
 	
 	function handleEditLesson(lessonId: string) {
-		goto(`/admin/courses/${courseId}/lessons/${lessonId}`)
+		navigate(`/admin/courses/${courseId}/lessons/${lessonId}`)
 	}
 	
 	async function handleDeleteLesson(lessonId: string) {
@@ -235,7 +235,7 @@
 				<CardContent class="p-8 text-center">
 					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
 					<p class="text-gray-600 mb-6">{error}</p>
-					<Button onclick={() => goto('/admin')}>
+					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
 				</CardContent>
@@ -614,7 +614,7 @@
 									<Button
 										variant="outline"
 										class="w-full justify-start"
-										onclick={() => goto(`/admin/courses/${courseId}/analytics`)}
+										onclick={() => navigate(`/admin/courses/${courseId}/analytics`)}
 									>
 										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
@@ -625,7 +625,7 @@
 									<Button
 										variant="outline"
 										class="w-full justify-start"
-										onclick={() => goto(`/admin/courses/${courseId}/quizzes`)}
+										onclick={() => navigate(`/admin/courses/${courseId}/quizzes`)}
 									>
 										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
@@ -636,7 +636,41 @@
 									<Button
 										variant="outline"
 										class="w-full justify-start"
-										onclick={() => goto(`/courses/${courseId}`)}
+										onclick={() => navigate(`/courses/${courseId}`)}
+									>
+										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+										</svg>
+										Preview Course
+									</Button>
+									
+									<Button
+										variant="outline"
+										class="w-full justify-start"
+										onclick={() => navigate('/admin')}
+									>
+										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+										</svg>
+										View Analytics
+									</Button>
+									
+									<Button
+										variant="outline"
+										class="w-full justify-start"
+										onclick={() => navigate(`/admin/courses/${courseId}/quizzes`)}
+									>
+										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+										</svg>
+										Manage Quizzes
+									</Button>
+									
+									<Button
+										variant="outline"
+										class="w-full justify-start"
+										onclick={() => navigate(`/courses/${courseId}`)}
 									>
 										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -648,7 +682,7 @@
 									<Button
 										variant="outline"
 										class="w-full justify-start"
-										onclick={() => goto('/admin')}
+										onclick={() => navigate('/admin')}
 									>
 										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
