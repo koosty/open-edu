@@ -122,7 +122,7 @@ function processMathExpressions(html: string): string {
 	})
 	
 	// Process inline math ($...$)
-	html = html.replace(/\$([^\$\n]+?)\$/g, (match, math) => {
+	html = html.replace(/\$([^$\n]+?)\$/g, (match, math) => {
 		try {
 			return katex.renderToString(math.trim(), {
 				displayMode: false,
@@ -168,7 +168,7 @@ function sanitizeHtml(html: string): string {
 			'controls', 'autoplay', 'loop', 'muted',
 			'colspan', 'rowspan', 'aria-*', 'data-*', 'role'
 		],
-		ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.\-]+(?:[^a-z+.\-:]|$))/i
+		ALLOWED_URI_REGEXP: /^(?:(?:(?:f|ht)tps?|mailto|tel|callto|sms|cid|xmpp):|[^a-z]|[a-z+.-]+(?:[^a-z+.-:]|$))/i
 	})
 }
 
@@ -210,7 +210,7 @@ export function estimateReadingTime(markdown: string): number {
 	const plainText = markdown
 		.replace(/```[\s\S]*?```/g, '') // Remove code blocks
 		.replace(/`[^`]+`/g, '') // Remove inline code
-		.replace(/[#*_\[\]()]/g, '') // Remove markdown syntax
+		.replace(/[#*_[\]()]/g, '') // Remove markdown syntax
 		.trim()
 	
 	const wordCount = plainText.split(/\s+/).length
@@ -230,7 +230,7 @@ export function getMarkdownPreview(markdown: string, maxLength = 200): string {
 	const plainText = markdown
 		.replace(/```[\s\S]*?```/g, '') // Remove code blocks
 		.replace(/`[^`]+`/g, '') // Remove inline code
-		.replace(/[#*_\[\]()]/g, '') // Remove markdown syntax
+		.replace(/[#*_[\]()]/g, '') // Remove markdown syntax
 		.replace(/\n+/g, ' ') // Replace newlines with spaces
 		.trim()
 	
