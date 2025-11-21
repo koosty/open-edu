@@ -4,7 +4,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { browser } from '$app/environment'
 	import { Search, Users, Clock, Star } from 'lucide-svelte'
 	
@@ -158,7 +158,7 @@
 		}
 		
 		// Update URL without triggering a page reload
-		goto(url.pathname + url.search, { 
+		navigate(url.pathname + url.search, { 
 			replaceState: true,
 			noScroll: true,
 			keepFocus: true
@@ -416,7 +416,7 @@
 	
 	// Navigate to course detail
 	function viewCourse(courseId: string) {
-		goto(`/courses/${courseId}`)
+		navigate(`/courses/${courseId}`)
 	}
 	
 	// Handle image loading errors
