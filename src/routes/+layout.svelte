@@ -6,9 +6,9 @@
 	import { initializeAuth, authState, logout } from '$lib/auth.svelte'
 	import { Button } from '$lib/components/ui'
 	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
-	import { base } from '$app/paths'
 	import { isAdmin } from '$lib/utils/admin'
 	import { initTheme } from '$lib/config/theme'
+	import { getPath } from '$lib/utils/navigation'
 
 	const { children } = $props()
 	let mobileMenuOpen = $state(false)
@@ -48,7 +48,7 @@
 		<div class="container mx-auto px-4 flex h-16 items-center justify-between max-w-7xl">
 			<!-- Logo -->
 			<div class="flex items-center">
-				<a href="{base}/" class="flex items-center space-x-2">
+				<a href={getPath('/')} class="flex items-center space-x-2">
 					<BookOpen class="h-6 w-6" />
 					<span class="font-bold text-xl">Open-EDU</span>
 				</a>
@@ -56,18 +56,18 @@
 
 			<!-- Desktop Navigation -->
 			<nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-				<a href="{base}/" class="transition-colors hover:text-foreground/80 text-foreground">
+				<a href={getPath('/')} class="transition-colors hover:text-foreground/80 text-foreground">
 					Home
 				</a>
-				<a href="{base}/courses" class="transition-colors hover:text-foreground/80 text-foreground/60">
+				<a href={getPath('/courses')} class="transition-colors hover:text-foreground/80 text-foreground/60">
 					Courses
 				</a>
 				{#if authState.user}
-					<a href="{base}/dashboard" class="transition-colors hover:text-foreground/80 text-foreground/60">
+					<a href={getPath('/dashboard')} class="transition-colors hover:text-foreground/80 text-foreground/60">
 						Dashboard
 					</a>
 					{#if isAdmin(authState.user)}
-						<a href="{base}/admin" class="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center space-x-1">
+						<a href={getPath('/admin')} class="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center space-x-1">
 							<Settings class="h-3 w-3" />
 							<span>Admin</span>
 						</a>
@@ -92,7 +92,7 @@
 				{:else}
 					<!-- Guest User Menu -->
 					<Button size="sm">
-						<a href="{base}/auth/login">Sign In with Google</a>
+						<a href={getPath('/auth/login')}>Sign In with Google</a>
 					</Button>
 				{/if}
 
@@ -107,18 +107,18 @@
 		{#if mobileMenuOpen}
 			<div class="border-t bg-background md:hidden">
 				<nav class="container mx-auto px-4 py-4 space-y-3 max-w-7xl">
-					<a href="{base}/" class="block py-2 text-sm font-medium">
+					<a href={getPath('/')} class="block py-2 text-sm font-medium">
 						Home
 					</a>
-					<a href="{base}/courses" class="block py-2 text-sm font-medium text-muted-foreground">
+					<a href={getPath('/courses')} class="block py-2 text-sm font-medium text-muted-foreground">
 						Courses
 					</a>
 					{#if authState.user}
-						<a href="{base}/dashboard" class="block py-2 text-sm font-medium text-muted-foreground">
+						<a href={getPath('/dashboard')} class="block py-2 text-sm font-medium text-muted-foreground">
 							Dashboard
 						</a>
 						{#if isAdmin(authState.user)}
-							<a href="{base}/admin" class="block py-2 text-sm font-medium text-muted-foreground flex items-center space-x-1">
+							<a href={getPath('/admin')} class="block py-2 text-sm font-medium text-muted-foreground flex items-center space-x-1">
 								<Settings class="h-3 w-3" />
 								<span>Admin</span>
 							</a>
@@ -151,25 +151,25 @@
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-slate-900">Platform</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="{base}/courses" class="text-slate-700 hover:text-primary-700 hover:underline">Browse Courses</a></li>
-						<li><a href="{base}/about" class="text-slate-700 hover:text-primary-700 hover:underline">About Us</a></li>
-						<li><a href="{base}/pricing" class="text-slate-700 hover:text-primary-700 hover:underline">Pricing</a></li>
+						<li><a href={getPath('/courses')} class="text-slate-700 hover:text-primary-700 hover:underline">Browse Courses</a></li>
+						<li><a href={getPath('/about')} class="text-slate-700 hover:text-primary-700 hover:underline">About Us</a></li>
+						<li><a href={getPath('/pricing')} class="text-slate-700 hover:text-primary-700 hover:underline">Pricing</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-slate-900">Support</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="{base}/help" class="text-slate-700 hover:text-primary-700 hover:underline">Help Center</a></li>
-						<li><a href="{base}/contact" class="text-slate-700 hover:text-primary-700 hover:underline">Contact</a></li>
-						<li><a href="{base}/community" class="text-slate-700 hover:text-primary-700 hover:underline">Community</a></li>
+						<li><a href={getPath('/help')} class="text-slate-700 hover:text-primary-700 hover:underline">Help Center</a></li>
+						<li><a href={getPath('/contact')} class="text-slate-700 hover:text-primary-700 hover:underline">Contact</a></li>
+						<li><a href={getPath('/community')} class="text-slate-700 hover:text-primary-700 hover:underline">Community</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-slate-900">Legal</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="{base}/privacy" class="text-slate-700 hover:text-primary-700 hover:underline">Privacy Policy</a></li>
-						<li><a href="{base}/terms" class="text-slate-700 hover:text-primary-700 hover:underline">Terms of Service</a></li>
-						<li><a href="{base}/cookies" class="text-slate-700 hover:text-primary-700 hover:underline">Cookie Policy</a></li>
+						<li><a href={getPath('/privacy')} class="text-slate-700 hover:text-primary-700 hover:underline">Privacy Policy</a></li>
+						<li><a href={getPath('/terms')} class="text-slate-700 hover:text-primary-700 hover:underline">Terms of Service</a></li>
+						<li><a href={getPath('/cookies')} class="text-slate-700 hover:text-primary-700 hover:underline">Cookie Policy</a></li>
 					</ul>
 				</div>
 			</div>
