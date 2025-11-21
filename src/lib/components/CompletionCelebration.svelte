@@ -9,7 +9,7 @@
 	
 	let {
 		show = $bindable(false),
-		lessonTitle = '',
+		lessonTitle,
 		isLastLesson = false,
 		nextLessonTitle = '',
 		courseProgress = 0,
