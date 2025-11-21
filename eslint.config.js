@@ -48,10 +48,10 @@ export default defineConfig(
 			'no-case-declarations': 'warn', // 2 occurrences in quiz service
 			'prefer-const': 'warn', // 2 occurrences - minor improvements
 			
-			// Svelte-specific relaxed rules for v1.4.0
-			'svelte/no-navigation-without-resolve': 'warn', // ~150 occurrences - using custom navigation helpers
-			'svelte/prefer-svelte-reactivity': 'warn', // 2 occurrences - SvelteSet usage
-			'svelte/require-each-key': 'warn' // ~10 occurrences in analytics pages
+		// Svelte-specific relaxed rules for v1.4.0
+		'svelte/no-navigation-without-resolve': 'off', // v1.5.0: Disabled - using custom navigation helpers (getPath/navigate)
+		'svelte/prefer-svelte-reactivity': 'warn', // 2 occurrences - SvelteSet usage
+		'svelte/require-each-key': 'warn' // ~10 occurrences in analytics pages
 		}
 	},
 	{
