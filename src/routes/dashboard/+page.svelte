@@ -7,12 +7,24 @@
 	import { CourseService } from '$lib/services/courses'
 	import { BookOpen, User, Clock, Award, CheckCircle } from 'lucide-svelte'
 	import { getPath, navigate } from '$lib/utils/navigation'
+	import { getErrorMessage } from '$lib/utils/errors'
+	import type { Enrollment, UserProgress } from '$lib/types'
+	
+	// Extended enrollment type that includes course details
+	interface EnrollmentWithCourse extends Enrollment {
+		title: string
+		description: string
+		level: string
+		duration: string | number
+		thumbnail: string | null
+		category: string
+	}
 	
 	// State management
 	let loading = $state(true)
 	let error = $state<string | null>(null)
-	let enrollments = $state<any[]>([])
-	let progressData = $state<any[]>([])
+	let enrollments = $state<EnrollmentWithCourse[]>([])
+	let progressData = $state<UserProgress[]>([])
 	let userStats = $state({
 		totalCourses: 0,
 		completedCourses: 0,
@@ -28,8 +40,8 @@
 				const progress = progressData.find(p => p.courseId === enrollment.courseId)
 				return {
 					...enrollment,
-					progress: progress ? Math.round(progress.overallProgress * 100) : 0,
-					lastAccessed: progress?.lastAccessed || enrollment.enrolledAt
+					progress: progress?.progressPercentage ?? 0,
+					lastAccessed: progress?.lastAccessedAt || enrollment.enrolledAt
 				}
 			})
 			.sort((a, b) => new Date(b.lastAccessed).getTime() - new Date(a.lastAccessed).getTime())
@@ -75,12 +87,12 @@
 			)
 			const progressResults = await Promise.allSettled(progressPromises)
 			progressData = progressResults
-				.filter(result => result.status === 'fulfilled')
-				.map(result => (result as PromiseFulfilledResult<any>).value)
-				.filter(progress => progress !== null)
+				.filter((result): result is PromiseFulfilledResult<UserProgress | null> => result.status === 'fulfilled')
+				.map(result => result.value)
+				.filter((progress): progress is UserProgress => progress !== null)
 
 			// Calculate user stats
-			const completedCourses = progressData.filter(p => p.overallProgress >= 1).length
+			const completedCourses = progressData.filter(p => p.progressPercentage >= 100).length
 			const totalStudyTime = progressData.reduce((total, p) => total + (p.totalTimeSpent || 0), 0)
 			
 			userStats = {
@@ -92,7 +104,7 @@
 
 		} catch (err) {
 			console.error('Failed to load dashboard data:', err)
-			error = 'Failed to load dashboard data'
+			error = getErrorMessage(err)
 		} finally {
 			loading = false
 		}
@@ -100,7 +112,7 @@
 
 	async function continueCourse(courseId: string) {
 		const progress = progressData.find(p => p.courseId === courseId)
-		const lastLessonId = progress?.lastLessonId
+		const lastLessonId = progress?.currentLesson
 		
 		if (lastLessonId) {
 			navigate(`/courses/${courseId}/learn/${lastLessonId}`)
