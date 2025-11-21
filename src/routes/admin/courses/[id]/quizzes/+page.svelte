@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
@@ -41,7 +41,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -144,7 +144,7 @@
 	
 	function handleCreateQuiz() {
 		// Navigate directly to quiz builder - lesson will be created automatically
-		goto(`/admin/courses/${courseId}/quizzes/new`)
+		navigate(`/admin/courses/${courseId}/quizzes/new`)
 	}
 	
 	// Bulk operations
@@ -333,7 +333,7 @@
 				<CardContent class="p-8 text-center">
 					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
 					<p class="text-gray-600 mb-6">{error}</p>
-					<Button onclick={() => goto('/admin')}>
+					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
 				</CardContent>
@@ -348,14 +348,14 @@
 						<div>
 							<div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
 								<button
-									onclick={() => goto('/admin')}
+									onclick={() => navigate('/admin')}
 									class="hover:text-blue-600"
 								>
 									Admin
 								</button>
 								<span>/</span>
 								<button
-									onclick={() => goto(`/admin/courses/${courseId}`)}
+									onclick={() => navigate(`/admin/courses/${courseId}`)}
 									class="hover:text-blue-600"
 								>
 									{course?.title}
@@ -371,7 +371,7 @@
 						<div class="flex gap-3">
 							<Button 
 								variant="outline" 
-								onclick={() => goto(`/admin/courses/${courseId}`)}
+								onclick={() => navigate(`/admin/courses/${courseId}`)}
 							>
 								Back to Course
 							</Button>
@@ -643,7 +643,7 @@
 												<Button
 													size="sm"
 													variant="outline"
-													onclick={() => goto(`/admin/courses/${courseId}/quizzes/${quiz.id}/preview`)}
+													onclick={() => navigate(`/admin/courses/${courseId}/quizzes/${quiz.id}/preview`)}
 												>
 													<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
@@ -655,7 +655,7 @@
 											<Button
 												size="sm"
 												variant="outline"
-												onclick={() => goto(`/admin/courses/${courseId}/quizzes/${quiz.id}/edit`)}
+												onclick={() => navigate(`/admin/courses/${courseId}/quizzes/${quiz.id}/edit`)}
 											>
 												<svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 													<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
