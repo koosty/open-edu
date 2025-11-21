@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button, Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
@@ -35,7 +35,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -153,7 +153,7 @@
 				<CardContent class="p-8 text-center">
 					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
 					<p class="text-gray-600 mb-6">{error}</p>
-					<Button onclick={() => goto('/admin')}>
+					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
 				</CardContent>
@@ -168,14 +168,14 @@
 						<div>
 							<div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
 								<button
-									onclick={() => goto('/admin')}
+									onclick={() => navigate('/admin')}
 									class="hover:text-blue-600"
 								>
 									Admin
 								</button>
 								<span>/</span>
 								<button
-									onclick={() => goto(`/admin/courses/${courseId}`)}
+									onclick={() => navigate(`/admin/courses/${courseId}`)}
 									class="hover:text-blue-600"
 								>
 									{course.title}
@@ -191,7 +191,7 @@
 						<div class="flex gap-3">
 							<Button 
 								variant="outline" 
-								onclick={() => goto(`/admin/courses/${courseId}`)}
+								onclick={() => navigate(`/admin/courses/${courseId}`)}
 							>
 								Back to Course
 							</Button>
