@@ -70,7 +70,7 @@
 	// Load course data
 	$effect(() => {
 		// Track courseId to trigger reload on navigation
-		const currentCourseId = courseId
+		const _currentCourseId = courseId
 		
 		if (!authState.initialized) return
 		

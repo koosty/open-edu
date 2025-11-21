@@ -19,8 +19,8 @@
 	
 	// Load quiz data
 	$effect(() => {
-		const currentCourseId = courseId
-		const currentQuizId = quizId
+		const _currentCourseId = courseId
+		const _currentQuizId = quizId
 		
 		if (!authState.initialized) return
 		

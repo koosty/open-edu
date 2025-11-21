@@ -138,7 +138,7 @@
 		// Only track auth state and route params (courseId, lessonId)
 		const isReady = authState.initialized && authState.user
 		const currentCourseId = courseId
-		const currentLessonId = lessonId
+		const _currentLessonId = lessonId
 		
 		// Wait for auth to initialize and user to be available
 		if (isReady) {

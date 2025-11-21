@@ -1,12 +1,11 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { AuthGuard, Loading } from '$lib/components'
 	import { Card, CardHeader, CardTitle, CardDescription, CardContent, Button } from '$lib/components/ui'
 	import { authState } from '$lib/auth.svelte'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { ProgressService } from '$lib/services/progress'
 	import { CourseService } from '$lib/services/courses'
-	import { BookOpen, User, Clock, Award, Play, CheckCircle } from 'lucide-svelte'
+	import { BookOpen, User, Clock, Award, CheckCircle } from 'lucide-svelte'
 	import { getPath, navigate } from '$lib/utils/navigation'
 	
 	// State management
