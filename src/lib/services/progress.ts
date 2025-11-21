@@ -33,10 +33,6 @@ function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
 
   return converted;
 }
-  });
-
-  return converted;
-}
 
 export class ProgressService {
   /**
