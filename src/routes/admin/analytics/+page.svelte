@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { AnalyticsService } from '$lib/services/analytics'

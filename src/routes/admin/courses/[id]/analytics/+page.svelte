@@ -30,7 +30,7 @@
 	
 	// Load data
 	$effect(() => {
-		const currentCourseId = courseId
+		const _currentCourseId = courseId
 		
 		if (!authState.initialized) return
 		

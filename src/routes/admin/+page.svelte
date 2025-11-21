@@ -1,8 +1,6 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { CourseService } from '$lib/services/courses'
 	import { navigate } from '$lib/utils/navigation'
-	import { EnrollmentService } from '$lib/services/enrollment'
 	import { authState } from '$lib/auth.svelte'
 	import { isAdmin, canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
@@ -23,7 +21,6 @@
 		featuredCourses: 0
 	})
 	
-	let recentEnrollments = $state<(Enrollment & { courseName?: string })[]>([])
 	let popularCourses = $state<Course[]>([])
 
 	// Access control
@@ -106,7 +103,7 @@
 		try {
 			// For demo purposes, we'll just show placeholder data
 			// In a real app, you'd have a service to get recent enrollments across all courses
-			recentEnrollments = []
+			// TODO: Implement enrollment tracking
 		} catch (err) {
 			console.error('Error loading recent enrollments:', err)
 		}

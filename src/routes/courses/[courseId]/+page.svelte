@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { onMount } from 'svelte'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
