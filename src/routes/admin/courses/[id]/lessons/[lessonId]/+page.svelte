@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -52,7 +52,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -156,7 +156,7 @@
 			
 			// Redirect to course edit page
 			setTimeout(() => {
-				goto(`/admin/courses/${courseId}`)
+				navigate(`/admin/courses/${courseId}`)
 			}, 1500)
 			
 		} catch (err: any) {
@@ -169,7 +169,7 @@
 	}
 	
 	function handleCancel() {
-		goto(`/admin/courses/${courseId}`)
+		navigate(`/admin/courses/${courseId}`)
 	}
 	
 	function insertMarkdown(syntax: string) {
@@ -241,7 +241,7 @@
 				<CardContent class="p-8 text-center">
 					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
 					<p class="text-slate-600 mb-6">{error}</p>
-					<Button onclick={() => goto('/admin')} class="shadow-sm">
+					<Button onclick={() => navigate('/admin')} class="shadow-sm">
 						← Back to Admin
 					</Button>
 				</CardContent>
@@ -568,7 +568,7 @@
 								{#if !isNewLesson && lesson}
 									<div class="mt-6 flex items-center justify-center">
 										<Button
-											onclick={() => goto(`/admin/courses/${courseId}/quizzes/new?lessonId=${lesson?.id || lessonId}`)}
+											onclick={() => navigate(`/admin/courses/${courseId}/quizzes/new?lessonId=${lesson?.id || lessonId}`)}
 											class="shadow-sm px-6"
 										>
 											<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
