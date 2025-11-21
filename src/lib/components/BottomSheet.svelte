@@ -12,7 +12,6 @@
 		open?: boolean
 		title?: string
 		height?: 'auto' | 'half' | 'full'
-		snapPoints?: number[] // Array of snap points as percentages [25, 50, 75, 90]
 		children?: import('svelte').Snippet
 	}
 	
@@ -20,9 +19,11 @@
 		open = $bindable(false),
 		title = '',
 		height = 'half',
-		snapPoints = [50, 90],
 		children
 	}: Props = $props()
+	
+	// Snap points for drag behavior (percentages)
+	const snapPoints = [50, 90]
 	
 	const dispatch = createEventDispatcher()
 	
