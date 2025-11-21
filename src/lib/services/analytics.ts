@@ -9,9 +9,7 @@ import {
 	getDocs,
 	getDoc,
 	query,
-	where,
-	orderBy,
-	Timestamp
+	where
 } from 'firebase/firestore'
 import { db } from '$lib/firebase'
 import { COLLECTIONS } from '$lib/firebase/collections'
@@ -86,7 +84,7 @@ export class AnalyticsService {
 	static async getLessonAnalytics(
 		courseId: string,
 		lessonId: string,
-		filters?: AnalyticsFilters
+		_filters?: AnalyticsFilters
 	): Promise<LessonAnalytics> {
 		try {
 			// Get course to get lesson details
@@ -224,7 +222,7 @@ export class AnalyticsService {
 	 */
 	static async getCourseAnalytics(
 		courseId: string,
-		filters?: AnalyticsFilters
+		_filters?: AnalyticsFilters
 	): Promise<CourseAnalytics> {
 		try {
 			// Get course details
@@ -328,9 +326,9 @@ export class AnalyticsService {
 							uniqueStudents: lessonData.uniqueStudents,
 							engagementScore
 						}
-					} catch (error) {
-						// Return default data if lesson analytics fails
-						return {
+				} catch (_error) {
+					// Return default data if lesson analytics fails
+					return {
 							lessonId: lesson.id,
 							lessonTitle: lesson.title,
 							order: lesson.order,
@@ -399,7 +397,7 @@ export class AnalyticsService {
 	 */
 	static async getStudentEngagement(
 		courseId: string,
-		filters?: AnalyticsFilters
+		_filters?: AnalyticsFilters
 	): Promise<StudentEngagementSummary[]> {
 		try {
 			// Get course

@@ -12,13 +12,10 @@ import {
   where,
   orderBy,
   serverTimestamp,
-  type QuerySnapshot,
-  type DocumentData,
 } from "firebase/firestore";
 import { db } from "$lib/firebase";
-import type { Enrollment, User, Course } from "$lib/types";
+import type { Enrollment } from "$lib/types";
 import { COLLECTIONS } from "$lib/firebase/collections";
-import { enrollmentSchema, courseProgressSchema } from "$lib/firebase/schemas";
 
 // Helper to convert Firestore timestamps
 function convertTimestamps(data: any): any {
