@@ -11,21 +11,28 @@ import {
   query,
   where,
   serverTimestamp,
+  limit,
 } from "firebase/firestore";
 import { db } from "$lib/firebase";
-import type { UserProgress, Course, Lesson } from "$lib/types";
+import type { UserProgress } from "$lib/types";
 import { COLLECTIONS } from "$lib/firebase/collections";
+import { hasToDate } from "$lib/utils/errors";
 
 // Helper to convert Firestore timestamps
-function convertTimestamps(data: any): any {
+function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
   if (!data) return data;
 
   const converted = { ...data };
 
   Object.keys(converted).forEach((key) => {
-    if (converted[key]?.toDate && typeof converted[key].toDate === "function") {
-      converted[key] = converted[key].toDate().toISOString();
+    const value = converted[key];
+    if (hasToDate(value)) {
+      converted[key] = value.toDate().toISOString() as T[Extract<keyof T, string>];
     }
+  });
+
+  return converted;
+}
   });
 
   return converted;
@@ -90,7 +97,7 @@ export class ProgressService {
         }
       }
 
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         currentLesson: lessonId,
         lastAccessedAt: serverTimestamp(),
       };
@@ -176,7 +183,7 @@ export class ProgressService {
         totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
       // Prepare updates
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         completedLessons: [...progress.completedLessons, lessonId],
         progressPercentage: Math.round(newProgressPercentage * 10) / 10, // Round to 1 decimal
         totalTimeSpent: (progress.totalTimeSpent || 0) + timeSpent,
@@ -244,7 +251,7 @@ export class ProgressService {
       const currentAttempts = progress.quizAttempts?.[lessonId] || 0;
       const currentBestScore = progress.quizScores?.[lessonId] || 0;
 
-      const updates: any = {
+      const updates: Record<string, unknown> = {
         [`quizAttempts.${lessonId}`]: currentAttempts + 1,
         totalTimeSpent: (progress.totalTimeSpent || 0) + timeSpent,
         lastAccessedAt: serverTimestamp(),

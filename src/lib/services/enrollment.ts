@@ -16,16 +16,18 @@ import {
 import { db } from "$lib/firebase";
 import type { Enrollment } from "$lib/types";
 import { COLLECTIONS } from "$lib/firebase/collections";
+import { hasToDate } from "$lib/utils/errors";
 
 // Helper to convert Firestore timestamps
-function convertTimestamps(data: any): any {
+function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
   if (!data) return data;
 
   const converted = { ...data };
 
   Object.keys(converted).forEach((key) => {
-    if (converted[key]?.toDate && typeof converted[key].toDate === "function") {
-      converted[key] = converted[key].toDate().toISOString();
+    const value = converted[key];
+    if (hasToDate(value)) {
+      converted[key] = value.toDate().toISOString() as T[Extract<keyof T, string>];
     }
   });
 
@@ -299,7 +301,7 @@ export class EnrollmentService {
   private static async updateProgress(
     userId: string,
     courseId: string,
-    updates: any,
+    updates: Record<string, unknown>,
   ): Promise<void> {
     try {
       const q = query(

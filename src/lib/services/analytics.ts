@@ -25,14 +25,18 @@ import type {
 	AnalyticsFilters
 } from '$lib/types/analytics'
 import type { Course, UserProgress, User } from '$lib/types'
+import { hasToDate } from '$lib/utils/errors'
 
 // Helper to convert Firestore timestamps
-function convertTimestamp(timestamp: any): string {
+function convertTimestamp(timestamp: unknown): string {
 	if (!timestamp) return new Date().toISOString()
-	if (timestamp.toDate && typeof timestamp.toDate === 'function') {
+	if (hasToDate(timestamp)) {
 		return timestamp.toDate().toISOString()
 	}
-	return timestamp
+	if (typeof timestamp === 'string') {
+		return timestamp
+	}
+	return new Date().toISOString()
 }
 
 /**
