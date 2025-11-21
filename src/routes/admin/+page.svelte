@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
 	import { CourseService } from '$lib/services/courses'
+	import { navigate } from '$lib/utils/navigation'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { authState } from '$lib/auth.svelte'
 	import { isAdmin, canManageCourses } from '$lib/utils/admin'
@@ -39,13 +39,13 @@
 
 		// If no user after loading is complete, redirect to login
 		if (!authState.user) {
-			goto('/auth/login')
+			navigate('/auth/login')
 			return
 		}
 
 		// If user doesn't have admin/instructor access, redirect to dashboard
 		if (!hasAccess) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 
@@ -175,7 +175,7 @@
 			<CardContent class="p-8 text-center">
 				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
 				<p class="text-gray-600 mb-6">You don't have permission to access the admin dashboard.</p>
-				<Button onclick={() => goto('/dashboard')}>
+				<Button onclick={() => navigate('/dashboard')}>
 					Go to Dashboard
 				</Button>
 			</CardContent>
@@ -193,7 +193,7 @@
 							{isFullAdmin ? 'Platform Administrator' : 'Course Instructor'}
 						</p>
 					</div>
-					<Button onclick={() => goto('/admin/courses/new')} class="flex items-center gap-2">
+					<Button onclick={() => navigate('/admin/courses/new')} class="flex items-center gap-2">
 						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 						</svg>
@@ -302,7 +302,7 @@
 						<CardHeader>
 							<div class="flex items-center justify-between">
 								<CardTitle>Course Management</CardTitle>
-								<Button variant="outline" onclick={() => goto('/courses')}>
+								<Button variant="outline" onclick={() => navigate('/courses')}>
 									View All Courses
 								</Button>
 							</div>
@@ -315,7 +315,7 @@
 									</svg>
 									<h3 class="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
 									<p class="text-gray-600 mb-4">Get started by creating your first course.</p>
-									<Button onclick={() => goto('/admin/courses/new')}>
+									<Button onclick={() => navigate('/admin/courses/new')}>
 										Create Course
 									</Button>
 								</div>
@@ -369,7 +369,7 @@
 												<Button 
 													variant="ghost" 
 													size="sm"
-													onclick={() => goto(`/courses/${course.id}`)}
+													onclick={() => navigate(`/courses/${course.id}`)}
 												>
 													View
 												</Button>
@@ -379,7 +379,7 @@
 
 									{#if courses.length > 6}
 										<div class="text-center pt-4">
-											<Button variant="outline" onclick={() => goto('/courses')}>
+											<Button variant="outline" onclick={() => navigate('/courses')}>
 												View All {courses.length} Courses
 											</Button>
 										</div>
@@ -398,25 +398,25 @@
 							<CardTitle>Quick Actions</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-3">
-							<Button onclick={() => goto('/admin/courses/new')} class="w-full justify-start">
+							<Button onclick={() => navigate('/admin/courses/new')} class="w-full justify-start">
 								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
 								</svg>
 								Create New Course
 							</Button>
-							<Button variant="outline" onclick={() => goto('/admin/analytics')} class="w-full justify-start">
+							<Button variant="outline" onclick={() => navigate('/admin/analytics')} class="w-full justify-start">
 								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
 								</svg>
 								Content Analytics
 							</Button>
-							<Button variant="outline" onclick={() => goto('/courses')} class="w-full justify-start">
+							<Button variant="outline" onclick={() => navigate('/courses')} class="w-full justify-start">
 								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
 								</svg>
 								Browse Courses
 							</Button>
-							<Button variant="outline" onclick={() => goto('/dashboard')} class="w-full justify-start">
+							<Button variant="outline" onclick={() => navigate('/dashboard')} class="w-full justify-start">
 								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
 								</svg>
@@ -443,7 +443,7 @@
 											<Button 
 												variant="ghost" 
 												size="sm"
-												onclick={() => goto(`/courses/${course.id}`)}
+												onclick={() => navigate(`/courses/${course.id}`)}
 											>
 												View
 											</Button>
@@ -481,7 +481,7 @@
 							</div>
 							<Button 
 								variant="outline" 
-								onclick={() => goto('/auth/profile')} 
+								onclick={() => navigate('/auth/profile')} 
 								class="w-full"
 							>
 								Profile Settings
