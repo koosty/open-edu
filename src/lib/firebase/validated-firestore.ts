@@ -13,15 +13,12 @@ import {
   collection,
   query,
   getDocs,
-  where,
-  orderBy,
-  limit,
   type Firestore,
   type DocumentReference,
   type QueryConstraint,
 } from "firebase/firestore";
 import type { z } from "zod";
-import { COLLECTIONS, type CollectionName } from "./collections";
+import { type CollectionName } from "./collections";
 
 // Error class for validation errors
 export class ValidationError extends Error {
@@ -36,24 +33,31 @@ export class ValidationError extends Error {
   }
 }
 
+// Check if a value is a Firestore Timestamp
+function isFirestoreTimestamp(value: unknown): value is { toDate: () => Date, _seconds?: number, _nanoseconds?: number } {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "toDate" in value &&
+    typeof value.toDate === "function" &&
+    "_seconds" in value &&
+    "_nanoseconds" in value
+  );
+}
+
 // Utility to convert Firestore timestamps to ISO strings
-function convertTimestamps(data: any): any {
+function convertTimestamps<T extends Record<string, unknown>>(data: T | null): T | null {
   if (!data) return data;
 
-  const converted = { ...data };
+  const converted = { ...data } as Record<string, unknown>;
   for (const key in converted) {
     const value = converted[key];
     // Check if it's a Firestore Timestamp
-    if (
-      value &&
-      typeof value === "object" &&
-      value.toDate &&
-      typeof value.toDate === "function"
-    ) {
+    if (isFirestoreTimestamp(value)) {
       converted[key] = value.toDate().toISOString();
     }
   }
-  return converted;
+  return converted as T;
 }
 
 export class ValidatedFirestore {
@@ -76,11 +80,11 @@ export class ValidatedFirestore {
       } as T;
 
       const validated = schema.parse(dataWithTimestamp);
-      await setDoc(doc(this.db, collectionName, docId), validated as any);
-    } catch (error: any) {
-      const isZodError = error.name === "ZodError";
+      await setDoc(doc(this.db, collectionName, docId), validated as Record<string, unknown>);
+    } catch (error) {
+      const isZodError = error instanceof Error && error.name === "ZodError";
       throw new ValidationError(
-        `Schema validation failed for ${collectionName}/${docId}: ${error.message}`,
+        `Schema validation failed for ${collectionName}/${docId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         collectionName,
         docId,
         isZodError ? (error as z.ZodError) : undefined,
@@ -107,13 +111,13 @@ export class ValidatedFirestore {
       const validated = schema.parse(dataWithTimestamps);
       const docRef = await addDoc(
         collection(this.db, collectionName),
-        validated as any,
+        validated as Record<string, unknown>,
       );
       return docRef.id;
-    } catch (error: any) {
-      const isZodError = error.name === "ZodError";
+    } catch (error) {
+      const isZodError = error instanceof Error && error.name === "ZodError";
       throw new ValidationError(
-        `Schema validation failed for ${collectionName}: ${error.message}`,
+        `Schema validation failed for ${collectionName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         collectionName,
         undefined,
         isZodError ? (error as z.ZodError) : undefined,
@@ -128,7 +132,8 @@ export class ValidatedFirestore {
     collectionName: CollectionName,
     docId: string,
     updates: Partial<T>,
-    schema: z.ZodSchema<T>,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    schema?: z.ZodSchema<T>,
   ): Promise<void> {
     try {
       // For updates, we'll validate what we can without requiring the full object
@@ -140,11 +145,11 @@ export class ValidatedFirestore {
       // Skip validation for partial updates - just ensure it's safe data
       await updateDoc(
         doc(this.db, collectionName, docId),
-        updatesWithTimestamp as any,
+        updatesWithTimestamp as Record<string, unknown>,
       );
-    } catch (error: any) {
+    } catch (error) {
       throw new ValidationError(
-        `Update failed for ${collectionName}/${docId}: ${error.message}`,
+        `Update failed for ${collectionName}/${docId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         collectionName,
         docId,
         undefined,
@@ -167,10 +172,10 @@ export class ValidatedFirestore {
       const rawData = snapshot.data();
       const data = convertTimestamps({ id: snapshot.id, ...rawData });
       return schema.parse(data);
-    } catch (error: any) {
-      const isZodError = error.name === "ZodError";
+    } catch (error) {
+      const isZodError = error instanceof Error && error.name === "ZodError";
       throw new ValidationError(
-        `Read validation failed for ${collectionName}/${docId}: ${error.message}`,
+        `Read validation failed for ${collectionName}/${docId}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         collectionName,
         docId,
         isZodError ? (error as z.ZodError) : undefined,
@@ -199,10 +204,10 @@ export class ValidatedFirestore {
       }
 
       return results;
-    } catch (error: any) {
-      const isZodError = error.name === "ZodError";
+    } catch (error) {
+      const isZodError = error instanceof Error && error.name === "ZodError";
       throw new ValidationError(
-        `Query validation failed for ${collectionName}: ${error.message}`,
+        `Query validation failed for ${collectionName}: ${error instanceof Error ? error.message : 'Unknown error'}`,
         collectionName,
         undefined,
         isZodError ? (error as z.ZodError) : undefined,

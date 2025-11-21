@@ -1,3 +1,4 @@
+import { SvelteDate } from 'svelte/reactivity';
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -11,7 +12,7 @@ import type { User } from "./types";
 import { browser } from "$app/environment";
 
 // Convert Firebase User to our User type
-function mapFirebaseUser(firebaseUser: FirebaseUser, userData?: any): User {
+function mapFirebaseUser(firebaseUser: FirebaseUser, userData?: Record<string, unknown>): User {
   return {
     id: firebaseUser.uid,
     email: firebaseUser.email!,
@@ -23,15 +24,19 @@ function mapFirebaseUser(firebaseUser: FirebaseUser, userData?: any): User {
       firebaseUser.metadata.lastSignInTime || new Date().toISOString(),
 
     // v1.1.0 additions with defaults
-    role: userData?.role || "student",
-    enrolledCourses: userData?.enrolledCourses || [],
-    completedCourses: userData?.completedCourses || [],
-    achievements: userData?.achievements || [],
-    totalPoints: userData?.totalPoints || 0,
-    streakDays: userData?.streakDays || 0,
-    preferences: userData?.preferences || {
+    role: (userData?.role as "student" | "instructor" | "admin") || "student",
+    enrolledCourses: (userData?.enrolledCourses as string[]) || [],
+    completedCourses: (userData?.completedCourses as string[]) || [],
+    achievements: (userData?.achievements as string[]) || [],
+    totalPoints: (userData?.totalPoints as number) || 0,
+    streakDays: (userData?.streakDays as number) || 0,
+    preferences: (userData?.preferences as {
+      notifications: boolean;
+      theme: "light" | "dark" | "system";
+      language: string;
+    }) || {
       notifications: true,
-      theme: "system",
+      theme: "system" as const,
       language: "en",
     },
   };
@@ -98,14 +103,15 @@ export async function signInWithGoogle(): Promise<User> {
     const user = mapFirebaseUser(result.user, existingUserData);
 
     // Create or update user document in Firestore
+    const now = new SvelteDate().toISOString()
     const userUpdateData = {
       email: user.email,
       displayName: user.displayName,
       photoURL: user.photoURL,
-      lastLoginAt: new Date().toISOString(),
+      lastLoginAt: now,
       // v1.1.0 defaults for new users
       ...(isNewUser && {
-        createdAt: new Date().toISOString(),
+        createdAt: now,
         role: "student",
         enrolledCourses: [],
         completedCourses: [],
@@ -123,8 +129,9 @@ export async function signInWithGoogle(): Promise<User> {
     await setDoc(userDocRef, userUpdateData, { merge: true });
 
     return user;
-  } catch (error: any) {
-    authState.error = error.message;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred'
+    authState.error = message;
     throw error;
   }
 }
@@ -136,8 +143,9 @@ export async function logout(): Promise<void> {
   try {
     authState.error = null;
     await signOut(auth);
-  } catch (error: any) {
-    authState.error = error.message;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred'
+    authState.error = message;
     throw error;
   }
 }
@@ -164,8 +172,9 @@ export async function updateUserProfile(
     if (authState.user) {
       authState.user = { ...authState.user, ...updates };
     }
-  } catch (error: any) {
-    authState.error = error.message;
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'An unknown error occurred'
+    authState.error = message;
     throw error;
   }
 }

@@ -130,8 +130,7 @@ function validateCollectionConsistency(tsCollections, jsCollections) {
 
 function validateSchemaAlignment(collections, schemas) {
 	const warnings = []
-	const collectionNames = Object.values(collections)
-	
+
 	// Check if we have schemas for major collections
 	const expectedSchemas = ['user', 'course', 'enrollment', 'courseProgress']
 	for (const expected of expectedSchemas) {

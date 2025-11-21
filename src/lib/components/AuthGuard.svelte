@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { authState } from '$lib/auth.svelte'
-	import { goto } from '$app/navigation'
+	import { navigate, getPath } from '$lib/utils/navigation'
 	import { Shield, LoaderCircle } from 'lucide-svelte'
-	
+
 	type Props = {
 		children: import('svelte').Snippet
 		redirectTo?: string
@@ -25,10 +25,10 @@
 		}
 		
 		if (requireAuth && !authState.user) {
-			goto(redirectTo)
+			navigate(redirectTo)
 		} else if (!requireAuth && authState.user) {
 			// For login page when user is already logged in
-			goto('/dashboard')
+			navigate('/dashboard')
 		}
 	})
 
@@ -67,12 +67,12 @@
 			<p class="text-muted-foreground">
 				You need to be signed in to access this page.
 			</p>
-			<a 
-				href={redirectTo} 
-				class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
-			>
-				Sign In
-			</a>
+		<a
+			href={getPath(redirectTo || '/')}
+			class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2"
+		>
+			Sign In
+		</a>
 		</div>
 	</div>
 {/if}

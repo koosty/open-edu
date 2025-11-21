@@ -13,7 +13,7 @@
 		title?: string
 		height?: 'auto' | 'half' | 'full'
 		snapPoints?: number[] // Array of snap points as percentages [25, 50, 75, 90]
-		children?: any
+		children?: import('svelte').Snippet
 	}
 	
 	let {
@@ -29,7 +29,6 @@
 	// Drag state
 	let isDragging = $state(false)
 	let startY = $state(0)
-	let currentY = $state(0)
 	let translateY = $state(0)
 	let sheetElement = $state<HTMLDivElement | null>(null)
 	let currentSnapIndex = $state(0)
@@ -60,7 +59,6 @@
 			startY = event.clientY
 		}
 		
-		currentY = startY
 		translateY = 0
 	}
 	
@@ -223,7 +221,9 @@
 		
 		<!-- Content -->
 		<div class="overflow-y-auto {sheetHeight} overscroll-contain">
-			{@render children()}
+			{#if children}
+				{@render children()}
+			{/if}
 		</div>
 	</div>
 {/if}

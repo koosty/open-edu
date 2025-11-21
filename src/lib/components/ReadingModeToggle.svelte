@@ -120,7 +120,7 @@
 		
 		{#if showFontMenu}
 			<div class="dropdown-menu">
-				{#each fontSizes as size}
+				{#each fontSizes as size (size.value)}
 					<button
 						onclick={() => changeFontSize(size.value)}
 						class="dropdown-item"
@@ -153,7 +153,7 @@
 		
 		{#if showThemeMenu}
 			<div class="dropdown-menu">
-				{#each themes as themeOption}
+				{#each themes as themeOption (themeOption.value)}
 					{@const ThemeIcon = themeOption.icon}
 					<button
 						onclick={() => changeTheme(themeOption.value)}

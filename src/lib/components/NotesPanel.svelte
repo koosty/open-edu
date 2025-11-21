@@ -10,7 +10,7 @@
 	import { authState } from '$lib/auth.svelte'
 	import type { Note, Bookmark, NoteColor } from '$lib/types/notes'
 	import { NOTE_COLORS } from '$lib/types/notes'
-	import { Search, StickyNote, Bookmark as BookmarkIcon, X, Edit, Trash2, ChevronDown } from 'lucide-svelte'
+	import { Search, StickyNote, Bookmark as BookmarkIcon } from 'lucide-svelte'
 	
 	interface Props {
 		courseId: string
@@ -40,13 +40,10 @@
 	let searchQuery = $state('')
 	let activeTab = $state<'all' | 'notes' | 'bookmarks'>('all')
 	let selectedColor = $state<NoteColor | 'all'>('all')
-	let expandedNotes = $state<Set<string>>(new Set())
+	let expandedNotes = $state(new Set<string>())
 	
 	// Load notes and bookmarks
 	$effect(() => {
-		const currentCourseId = courseId
-		const currentLessonId = lessonId
-		
 		if (authState.initialized && authState.user) {
 			loadData()
 		}
@@ -241,9 +238,9 @@
 	/**
 	 * Format date
 	 */
-	function formatDate(timestamp: any): string {
+	function formatDate(timestamp: unknown): string {
 		if (!timestamp) return ''
-		const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp)
+		const date = (timestamp as { toDate?: () => Date }).toDate ? (timestamp as { toDate: () => Date }).toDate() : new Date(timestamp as string | number | Date)
 		const now = new Date()
 		const diffMs = now.getTime() - date.getTime()
 		const diffMins = Math.floor(diffMs / 60000)
@@ -327,7 +324,7 @@
 						</svg>
 					{/if}
 				</button>
-			{#each Object.keys(NOTE_COLORS) as color}
+			{#each Object.keys(NOTE_COLORS) as color (color)}
 				<button
 					onclick={() => selectedColor = color as NoteColor}
 					class="w-6 h-6 rounded-full border-2 transition-all {selectedColor === color 
@@ -395,7 +392,7 @@
 										
 										{#if note.tags && note.tags.length > 0}
 											<div class="flex flex-wrap gap-1 mt-2">
-												{#each note.tags as tag}
+												{#each note.tags as tag (tag)}
 													<span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
 														{tag}
 													</span>

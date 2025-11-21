@@ -365,7 +365,7 @@
 					<div>
 						<h3 class="font-semibold text-red-900 mb-2">Please fix the following errors:</h3>
 						<ul class="list-disc list-inside space-y-1 text-red-800">
-							{#each validationErrors as error}
+							{#each validationErrors as error (error)}
 								<li>{error}</li>
 							{/each}
 						</ul>
@@ -676,7 +676,7 @@
 															<select
 																id="difficulty-{index}"
 																value={question.difficulty}
-																onchange={(e) => updateQuestion(index, { difficulty: e.currentTarget.value as any })}
+																onchange={(e) => updateQuestion(index, { difficulty: e.currentTarget.value as 'easy' | 'medium' | 'hard' })}
 																class="w-full px-3 py-2 border rounded-md"
 															>
 																<option value="easy">Easy</option>
@@ -923,7 +923,7 @@
 					<div class="border-t pt-4">
 						<h3 class="font-semibold mb-4">Questions Preview</h3>
 						<div class="space-y-6">
-							{#each questions as question, index}
+							{#each questions as question, index (question.id || index)}
 								<div class="border-l-4 border-blue-500 pl-4">
 									<div class="flex items-start justify-between mb-2">
 										<span class="font-medium">Question {index + 1}</span>
@@ -933,7 +933,7 @@
 									
 									{#if question.type === 'multiple_choice' || question.type === 'multiple_select'}
 										<div class="space-y-2 ml-4">
-											{#each question.options || [] as option}
+											{#each question.options || [] as option (option.id || option.text)}
 												<div class="flex items-center gap-2">
 													<div class="w-4 h-4 border rounded {option.isCorrect ? 'bg-green-100 border-green-500' : 'border-gray-300'}"></div>
 													<span class={option.isCorrect ? 'text-green-700 font-medium' : ''}>

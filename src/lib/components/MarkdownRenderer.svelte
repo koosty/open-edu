@@ -61,6 +61,7 @@
 		class="markdown-content prose prose-slate dark:prose-invert max-w-none {className}"
 		role="article"
 	>
+		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
 		{@html html}
 	</div>
 {/if}

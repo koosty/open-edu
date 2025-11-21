@@ -131,7 +131,7 @@
 		}
 		
 		// Convert answers to QuizAnswer format
-		const quizAnswers: QuizAnswer[] = quiz.questions.map((question, index) => ({
+		const quizAnswers: QuizAnswer[] = quiz.questions.map((question) => ({
 			questionId: question.id,
 			questionType: question.type,
 			answer: answers[question.id] ?? null,

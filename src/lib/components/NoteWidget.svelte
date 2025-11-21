@@ -311,7 +311,7 @@
 				<div>
 					<span class="block text-sm font-medium mb-2">Color</span>
 					<div class="flex flex-wrap gap-2">
-						{#each colorOptions as color}
+						{#each colorOptions as color (color)}
 							<button
 								type="button"
 								onclick={() => selectedColor = color}
@@ -337,7 +337,7 @@
 					
 					{#if tags.length > 0}
 						<div class="flex flex-wrap gap-2 mb-2">
-							{#each tags as tag}
+							{#each tags as tag (tag)}
 								<span class="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-sm">
 									{tag}
 									<button

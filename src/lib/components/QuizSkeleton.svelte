@@ -72,7 +72,7 @@
 		<div class="max-w-4xl mx-auto">
 			<!-- Question navigator -->
 			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2">
-				{#each Array(5) as _}
+				{#each Array(5) as __, index (index)}
 					<Skeleton width="44px" height="44px" className="shrink-0" />
 				{/each}
 			</div>

@@ -206,7 +206,7 @@
 					Color
 				</span>
 				<div class="flex gap-2">
-					{#each colors as color}
+					{#each colors as color (color)}
 						<button
 							type="button"
 							onclick={() => (selectedColor = color)}

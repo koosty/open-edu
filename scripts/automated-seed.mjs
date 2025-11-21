@@ -30,7 +30,7 @@ function loadEnvFile() {
     });
     
     return envVars;
-  } catch (error) {
+  } catch {
     console.warn('⚠️  Could not load .env.local file, using environment variables');
     return {};
   }

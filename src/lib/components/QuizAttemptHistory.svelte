@@ -14,7 +14,7 @@
 		onViewResults
 	}: {
 		attempts: QuizAttempt[]
-		quiz: { title: string; passingScore: number }
+		quiz: { passingScore: number }
 		onViewResults: (attemptId: string) => void
 	} = $props()
 	

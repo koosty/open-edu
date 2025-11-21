@@ -119,7 +119,7 @@
 						💡 What you can try:
 					</p>
 					<ul class="space-y-1.5">
-						{#each suggestions as suggestion}
+						{#each suggestions as suggestion (suggestion)}
 							<li class="text-xs md:text-sm text-slate-600 flex items-start gap-2">
 								<span class="text-red-500 mt-0.5">•</span>
 								<span>{suggestion}</span>

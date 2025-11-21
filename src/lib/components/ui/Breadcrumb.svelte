@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { ChevronRight, Home } from 'lucide-svelte'
 	import { base } from '$app/paths'
-	
+	import { getPath } from '$lib/utils/navigation'
+
 	export interface BreadcrumbItem {
 		label: string
 		href?: string
@@ -49,7 +50,7 @@
 
 <nav aria-label="Breadcrumb" class="flex items-center space-x-1 text-sm {className}">
 	<ol class="flex items-center space-x-1">
-		{#each breadcrumbItems() as item, index}
+		{#each breadcrumbItems() as item, index (item.href || index)}
 			<li class="flex items-center">
 				{#if index > 0}
 					<span class="mx-2 text-muted-foreground" aria-hidden="true">
@@ -76,10 +77,10 @@
 						{/if}
 					</span>
 				{:else}
-					<a 
-						href={item.href} 
-						class="text-muted-foreground hover:text-foreground transition-colors"
-					>
+				<a
+					href={getPath(item.href || '/')}
+					class="text-muted-foreground hover:text-foreground transition-colors"
+				>
 						{#if index === 0 && showHome}
 							<span class="flex items-center gap-1">
 								<Home class="h-4 w-4" />

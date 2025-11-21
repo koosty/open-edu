@@ -97,7 +97,7 @@
 	<div class="code-block-content">
 		{#if showLineNumbers}
 			<div class="line-numbers" aria-hidden="true">
-				{#each lines as _, index (index)}
+				{#each lines as __, index (index)}
 					<span class="line-number">{index + 1}</span>
 				{/each}
 			</div>

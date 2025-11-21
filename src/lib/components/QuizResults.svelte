@@ -38,7 +38,6 @@
 	let totalQuestions = $derived(quiz.questions.length)
 	let correctCount = $derived(attempt.answers.filter(a => a.isCorrect).length)
 	let incorrectCount = $derived(totalQuestions - correctCount)
-	let accuracy = $derived((correctCount / totalQuestions) * 100)
 	let scoreColor = $derived(
 		attempt.isPassed ? 'text-green-600' : 'text-red-600'
 	)

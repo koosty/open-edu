@@ -34,7 +34,7 @@ vi.mock('firebase/firestore', () => ({
 	orderBy: (...args: any[]) => mockOrderBy(...args),
 	limit: vi.fn(),
 	serverTimestamp: () => mockServerTimestamp(),
-	arrayUnion: (...args: any[]) => mockArrayUnion(...args),
+	arrayUnion: (args: any) => mockArrayUnion(args),
 	Timestamp: { now: () => ({ toDate: () => new Date() }) }
 }))
 
@@ -71,7 +71,12 @@ function createMockQuiz(overrides: Partial<Quiz> = {}): Quiz {
 				id: 'q1',
 				type: 'multiple_choice',
 				question: 'What is 2 + 2?',
-				options: ['3', '4', '5', '6'],
+				options: [
+					{ id: 'opt1', text: '3', isCorrect: false },
+					{ id: 'opt2', text: '4', isCorrect: true },
+					{ id: 'opt3', text: '5', isCorrect: false },
+					{ id: 'opt4', text: '6', isCorrect: false }
+				],
 				correctAnswer: '4',
 				points: 10,
 				order: 1
@@ -80,7 +85,10 @@ function createMockQuiz(overrides: Partial<Quiz> = {}): Quiz {
 				id: 'q2',
 				type: 'true_false',
 				question: 'JavaScript is a compiled language',
-				options: ['True', 'False'],
+				options: [
+					{ id: 'opt1', text: 'True', isCorrect: false },
+					{ id: 'opt2', text: 'False', isCorrect: true }
+				],
 				correctAnswer: 'False',
 				points: 10,
 				order: 2
@@ -89,9 +97,12 @@ function createMockQuiz(overrides: Partial<Quiz> = {}): Quiz {
 		timeLimit: 30,
 		passingScore: 70,
 		maxAttempts: 3,
+		allowMultipleAttempts: true,
 		isPublished: true,
-		shuffleQuestions: false,
+		randomizeQuestions: false,
+		randomizeOptions: false,
 		showCorrectAnswers: true,
+		showExplanations: false,
 		allowReview: true,
 		createdAt: '2024-01-01T00:00:00.000Z',
 		updatedAt: '2024-01-01T00:00:00.000Z',
@@ -245,10 +256,12 @@ describe('Quiz Service', () => {
 			
 			const answer: QuizAnswer = {
 				questionId: 'q1',
+				questionType: 'multiple_choice',
 				answer: '4',
 				isCorrect: false,
 				pointsEarned: 0,
-				pointsPossible: 0
+				pointsPossible: 0,
+				answeredAt: new Date().toISOString()
 			}
 			
 			await saveQuizAnswer('attempt-1', answer)
@@ -266,10 +279,12 @@ describe('Quiz Service', () => {
 			
 			const answer: QuizAnswer = {
 				questionId: 'q1',
+				questionType: 'multiple_choice',
 				answer: '4',
 				isCorrect: false,
 				pointsEarned: 0,
-				pointsPossible: 0
+				pointsPossible: 0,
+				answeredAt: new Date().toISOString()
 			}
 			
 			await expect(
@@ -280,10 +295,12 @@ describe('Quiz Service', () => {
 		it('should update existing answer when answering same question', async () => {
 			const existingAnswer: QuizAnswer = {
 				questionId: 'q1',
+				questionType: 'multiple_choice',
 				answer: '3',
 				isCorrect: false,
 				pointsEarned: 0,
-				pointsPossible: 10
+				pointsPossible: 10,
+				answeredAt: new Date().toISOString()
 			}
 			
 			const mockAttempt = {
@@ -295,10 +312,12 @@ describe('Quiz Service', () => {
 			
 			const newAnswer: QuizAnswer = {
 				questionId: 'q1',
+				questionType: 'multiple_choice',
 				answer: '4',
 				isCorrect: false,
 				pointsEarned: 0,
-				pointsPossible: 10
+				pointsPossible: 10,
+				answeredAt: new Date().toISOString()
 			}
 			
 			await saveQuizAnswer('attempt-1', newAnswer)
@@ -319,7 +338,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: '4', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_choice', answer: '4', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -341,7 +360,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: '3', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_choice', answer: '3', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -364,7 +383,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q2', answer: 'False', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q2', questionType: 'true_false', answer: 'False', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -387,8 +406,13 @@ describe('Quiz Service', () => {
 						id: 'q1',
 						type: 'multiple_select',
 						question: 'Select all prime numbers',
-						options: ['2', '3', '4', '5'],
-						correctAnswer: ['2', '3', '5'],
+						options: [
+							{ id: 'opt1', text: '2', isCorrect: true },
+							{ id: 'opt2', text: '3', isCorrect: true },
+							{ id: 'opt3', text: '4', isCorrect: false },
+							{ id: 'opt4', text: '5', isCorrect: true }
+						],
+						correctAnswer: ['opt1', 'opt2', 'opt4'],
 						points: 10,
 						order: 1
 					}
@@ -400,7 +424,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: ['2', '3', '5'], isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_select', answer: ['opt1', 'opt2', 'opt4'], isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -421,8 +445,13 @@ describe('Quiz Service', () => {
 						id: 'q1',
 						type: 'multiple_select',
 						question: 'Select all prime numbers',
-						options: ['2', '3', '4', '5'],
-						correctAnswer: ['2', '3', '5'],
+						options: [
+							{ id: 'opt1', text: '2', isCorrect: true },
+							{ id: 'opt2', text: '3', isCorrect: true },
+							{ id: 'opt3', text: '4', isCorrect: false },
+							{ id: 'opt4', text: '5', isCorrect: true }
+						],
+						correctAnswer: ['opt1', 'opt2', 'opt4'],
 						points: 10,
 						order: 1
 					}
@@ -435,7 +464,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: ['5', '2', '3'], isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_select', answer: ['opt4', 'opt1', 'opt2'], isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -456,8 +485,13 @@ describe('Quiz Service', () => {
 						id: 'q1',
 						type: 'multiple_select',
 						question: 'Select all prime numbers',
-						options: ['2', '3', '4', '5'],
-						correctAnswer: ['2', '3', '5'],
+						options: [
+							{ id: 'opt1', text: '2', isCorrect: true },
+							{ id: 'opt2', text: '3', isCorrect: true },
+							{ id: 'opt3', text: '4', isCorrect: false },
+							{ id: 'opt4', text: '5', isCorrect: true }
+						],
+						correctAnswer: ['opt1', 'opt2', 'opt4'],
 						points: 10,
 						order: 1
 					}
@@ -469,7 +503,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: ['2', '3'], isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_select', answer: ['opt1', 'opt2'], isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -505,7 +539,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: 'paris', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'short_answer', answer: 'paris', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -538,7 +572,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: 'paris', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'short_answer', answer: 'paris', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -572,7 +606,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: 'four', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'short_answer', answer: 'four', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -607,7 +641,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: 'Programming', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'fill_blank', answer: 'Programming', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -629,7 +663,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: null, isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_choice', answer: null, isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -653,8 +687,8 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: '4', isCorrect: false, pointsEarned: 0, pointsPossible: 0 },
-					{ questionId: 'q2', answer: 'False', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_choice', answer: '4', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() },
+					{ questionId: 'q2', questionType: 'true_false', answer: 'False', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
@@ -677,7 +711,7 @@ describe('Quiz Service', () => {
 				quizId: 'quiz-1',
 				status: 'in_progress',
 				answers: [
-					{ questionId: 'q1', answer: '3', isCorrect: false, pointsEarned: 0, pointsPossible: 0 }
+					{ questionId: 'q1', questionType: 'multiple_choice', answer: '3', isCorrect: false, pointsEarned: 0, pointsPossible: 0, answeredAt: new Date().toISOString() }
 				]
 			}
 			
