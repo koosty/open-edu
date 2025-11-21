@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
@@ -25,7 +25,7 @@
 		if (!authState.initialized) return
 		
 		if (!authState.user || !canManageCourses(authState.user)) {
-			goto('/dashboard')
+			navigate('/dashboard')
 			return
 		}
 		
@@ -66,7 +66,7 @@
 			await QuizService.updateQuiz(quizId, quizData)
 			
 			// Navigate back to quiz management
-			goto(`/admin/courses/${courseId}/quizzes`)
+			navigate(`/admin/courses/${courseId}/quizzes`)
 		} catch (err: any) {
 			error = err.message || 'Failed to update quiz'
 			console.error('Error updating quiz:', err)
@@ -76,7 +76,7 @@
 	}
 	
 	function handleCancel() {
-		goto(`/admin/courses/${courseId}/quizzes`)
+		navigate(`/admin/courses/${courseId}/quizzes`)
 	}
 </script>
 
@@ -117,21 +117,21 @@
 						<div>
 							<div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
 								<button
-									onclick={() => goto('/admin')}
+									onclick={() => navigate('/admin')}
 									class="hover:text-primary-600"
 								>
 									Admin
 								</button>
 								<span>/</span>
 								<button
-									onclick={() => goto(`/admin/courses/${courseId}`)}
+									onclick={() => navigate(`/admin/courses/${courseId}`)}
 									class="hover:text-primary-600"
 								>
 									Course
 								</button>
 								<span>/</span>
 								<button
-									onclick={() => goto(`/admin/courses/${courseId}/quizzes`)}
+									onclick={() => navigate(`/admin/courses/${courseId}/quizzes`)}
 									class="hover:text-primary-600"
 								>
 									Quizzes
