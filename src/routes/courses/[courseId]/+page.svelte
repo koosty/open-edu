@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { onMount } from 'svelte'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { authState } from '$lib/auth.svelte'
@@ -121,7 +121,7 @@
 		// Find the first lesson
 		const firstLesson = course.lessons.find(lesson => lesson.order === 1) || course.lessons[0]
 		if (firstLesson) {
-			goto(`/courses/${courseId}/learn/${firstLesson.id}`)
+			navigate(`/courses/${courseId}/learn/${firstLesson.id}`)
 		}
 	}
 
@@ -153,7 +153,7 @@
 			<CardContent class="p-8 text-center">
 				<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
 				<p class="text-gray-600 mb-6">{error}</p>
-				<Button onclick={() => goto('/courses')}>
+				<Button onclick={() => navigate('/courses')}>
 					Back to Courses
 				</Button>
 			</CardContent>
@@ -165,7 +165,7 @@
 			<CardContent class="p-8 text-center">
 				<h2 class="text-2xl font-bold mb-4">Course Not Found</h2>
 				<p class="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
-				<Button onclick={() => goto('/courses')}>
+				<Button onclick={() => navigate('/courses')}>
 					Back to Courses
 				</Button>
 			</CardContent>
@@ -260,7 +260,7 @@
 							{#if canEditCourse}
 								<Button 
 									variant="outline"
-									onclick={() => goto(`/admin/courses/${courseId}`)}
+									onclick={() => navigate(`/admin/courses/${courseId}`)}
 								>
 									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -269,7 +269,7 @@
 								</Button>
 							{/if}
 							{#if !authState.user}
-								<Button onclick={() => goto('/auth/login')}>
+								<Button onclick={() => navigate('/auth/login')}>
 									Sign In to Enroll
 								</Button>
 							{:else if canEnroll}
