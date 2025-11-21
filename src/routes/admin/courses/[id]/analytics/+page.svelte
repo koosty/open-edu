@@ -352,7 +352,7 @@
 							<CardContent class="p-6">
 								{#if analytics.mostPopularLessons.length > 0}
 									<div class="space-y-4">
-										{#each analytics.mostPopularLessons as lesson, i}
+										{#each analytics.mostPopularLessons as lesson, i (lesson.lessonId)}
 											<div class="flex items-center gap-3">
 												<div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-semibold text-sm">
 													{i + 1}
@@ -385,7 +385,7 @@
 							<CardContent class="p-6">
 								{#if analytics.leastEngagingLessons.length > 0}
 									<div class="space-y-4">
-										{#each analytics.leastEngagingLessons as lesson, i}
+										{#each analytics.leastEngagingLessons as lesson, i (lesson.lessonId)}
 											<div class="flex items-center gap-3">
 												<div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-semibold text-sm">
 													{i + 1}
@@ -470,7 +470,7 @@
 											</tr>
 										</thead>
 										<tbody class="divide-y divide-gray-200">
-											{#each filteredStudents as student}
+											{#each filteredStudents as student (student.userId)}
 												<tr class="hover:bg-gray-50">
 													<td class="px-6 py-4">
 														<div class="flex items-center gap-3">
@@ -560,7 +560,7 @@
 											</tr>
 										</thead>
 										<tbody class="divide-y divide-gray-200">
-											{#each analytics.lessonsAnalytics as lesson}
+											{#each analytics.lessonsAnalytics as lesson (lesson.lessonId)}
 												<tr class="hover:bg-gray-50">
 													<td class="px-6 py-4 text-sm text-gray-500">{lesson.order}</td>
 													<td class="px-6 py-4">
@@ -631,7 +631,7 @@
 											</tr>
 										</thead>
 										<tbody class="divide-y divide-gray-200">
-											{#each quizzes as quiz}
+											{#each quizzes as quiz (quiz.id)}
 												{@const stats = quizStats.get(quiz.id)}
 												<tr class="hover:bg-gray-50">
 													<td class="px-6 py-4">
