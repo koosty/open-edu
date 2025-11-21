@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/stores'
 	import { onDestroy, untrack } from 'svelte'
-	import { goto } from '$app/navigation'
+	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { ProgressService } from '$lib/services/progress'
@@ -428,10 +428,10 @@
 		showCompletionCelebration = false
 		
 		if (nextLesson) {
-			goto(`/courses/${courseId}/learn/${nextLesson.id}`)
+			navigate(`/courses/${courseId}/learn/${nextLesson.id}`)
 		} else {
 			// Course completed
-			goto(`/courses/${courseId}?completed=true`)
+			navigate(`/courses/${courseId}?completed=true`)
 		}
 	}
 	
@@ -620,9 +620,9 @@
 	function handleQuizContinue() {
 		// Navigate to next lesson or back to course
 		if (nextLesson) {
-			goto(`/courses/${courseId}/learn/${nextLesson.id}`)
+			navigate(`/courses/${courseId}/learn/${nextLesson.id}`)
 		} else {
-			goto(`/courses/${courseId}`)
+			navigate(`/courses/${courseId}`)
 		}
 	}
 
@@ -654,7 +654,7 @@
 
 	function handleNavigateToLesson(lesson: Lesson) {
 		showMobileSidebar = false // Close mobile sidebar on navigation
-		goto(`/courses/${courseId}/learn/${lesson.id}`)
+		navigate(`/courses/${courseId}/learn/${lesson.id}`)
 	}
 
 	function formatTime(seconds: number): string {
@@ -695,7 +695,7 @@
 		isSwipeNavigating = true
 		
 		// Navigate to the lesson
-		await goto(`/courses/${courseId}/learn/${targetLesson.id}`)
+		await navigate(`/courses/${courseId}/learn/${targetLesson.id}`)
 		
 		// Reset state after navigation
 		setTimeout(() => {
@@ -755,8 +755,8 @@
 		<ErrorAlert 
 			message={error}
 			onRetry={loadLessonData}
-			onGoBack={() => goto(`/courses/${courseId}`)}
-			onGoHome={() => goto('/courses')}
+			onGoBack={() => navigate(`/courses/${courseId}`)}
+			onGoHome={() => navigate('/courses')}
 			showRetry={true}
 			showGoBack={true}
 			showGoHome={true}
@@ -798,7 +798,7 @@
 				<div class="p-6 border-b border-slate-200 bg-gradient-to-br from-primary-50 via-white to-secondary-50">
 				<Button 
 					variant="ghost" 
-					onclick={() => goto(`/courses/${courseId}`)}
+					onclick={() => navigate(`/courses/${courseId}`)}
 					class="mb-3 -ml-2"
 				>
 					<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1146,7 +1146,7 @@
 										<ErrorAlert 
 											message="Quiz not available. This quiz could not be loaded."
 											onRetry={loadQuizData}
-											onGoBack={() => goto(`/courses/${courseId}`)}
+											onGoBack={() => navigate(`/courses/${courseId}`)}
 											showRetry={true}
 											showGoBack={true}
 										/>
@@ -1175,7 +1175,7 @@
 						{completing}
 						onNavigate={handleNavigateToLesson}
 						onComplete={handleCompleteLesson}
-						onCourseComplete={() => goto(`/courses/${courseId}?completed=true`)}
+						onCourseComplete={() => navigate(`/courses/${courseId}?completed=true`)}
 						showMarkComplete={!isQuizLesson}
 					/>
 					{/if}
