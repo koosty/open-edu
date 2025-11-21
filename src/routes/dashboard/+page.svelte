@@ -224,7 +224,7 @@
 					<CardContent>
 						{#if recentCourses.length > 0}
 							<div class="space-y-4">
-								{#each recentCourses as course}
+								{#each recentCourses as course (course.id)}
 									<div class="flex items-center justify-between space-x-4 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm">
 										<div class="flex items-center space-x-4 flex-1">
 											<div class="w-10 h-10 rounded-lg flex items-center justify-center {course.progress >= 100 ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 shadow-md' : 'bg-primary-100'}">

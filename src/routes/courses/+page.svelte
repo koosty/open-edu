@@ -495,7 +495,7 @@
 				{#if showCategoryModal}
 					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[240px] z-10">
 						<div class="space-y-2" role="group" aria-label="Category filter options">
-							{#each categories as category}
+							{#each categories as category (category)}
 								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
@@ -544,7 +544,7 @@
 				{#if showDifficultyModal}
 					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[180px] z-10">
 						<div class="space-y-2" role="group" aria-label="Difficulty filter options">
-							{#each difficulties as difficulty}
+							{#each difficulties as difficulty (difficulty)}
 								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
@@ -593,7 +593,7 @@
 				{#if showLevelModal}
 					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[140px] z-10">
 						<div class="space-y-2" role="group" aria-label="Type filter options">
-							{#each levels as level}
+							{#each levels as level (level)}
 								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
