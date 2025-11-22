@@ -24,6 +24,7 @@ vite.config.ts.timestamp-*
 
 # Firebase
 firebase-debug.log
+firestore.rules
 *-debug.log
 /.idea/
 
