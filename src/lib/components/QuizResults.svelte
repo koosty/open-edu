@@ -39,10 +39,10 @@
 	const correctCount = $derived(attempt.answers.filter(a => a.isCorrect).length)
 	const incorrectCount = $derived(totalQuestions - correctCount)
 	const scoreColor = $derived(
-		attempt.isPassed ? 'text-green-600' : 'text-red-600'
+		attempt.isPassed ? 'text-secondary' : 'text-destructive'
 	)
 	const scoreBgColor = $derived(
-		attempt.isPassed ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
+		attempt.isPassed ? 'bg-secondary/10 border-green-200' : 'bg-destructive/10 border-red-200'
 	)
 	
 	// Get question by ID
@@ -207,11 +207,11 @@
 					<!-- Icon -->
 					<div class="mb-4">
 						{#if attempt.isPassed}
-							<div class="w-20 h-20 bg-green-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+							<div class="w-20 h-20 bg-secondary/100 rounded-full flex items-center justify-center mx-auto shadow-lg">
 								<Trophy class="w-10 h-10 text-white" />
 							</div>
 						{:else}
-							<div class="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto shadow-lg">
+							<div class="w-20 h-20 bg-destructive/100 rounded-full flex items-center justify-center mx-auto shadow-lg">
 								<X class="w-10 h-10 text-white" />
 							</div>
 						{/if}
@@ -298,8 +298,8 @@
 									class="gap-2 bg-gradient-to-r from-blue-50 to-purple-50 border-blue-200 hover:border-blue-300"
 								>
 									{#if copySuccess}
-										<CheckCheck class="w-4 h-4 text-green-600" />
-										<span class="text-green-600">Copied!</span>
+										<CheckCheck class="w-4 h-4 text-secondary" />
+										<span class="text-secondary">Copied!</span>
 									{:else}
 										<Share2 class="w-4 h-4" />
 										Share Certificate
@@ -307,26 +307,26 @@
 								</Button>
 								
 								{#if showShareMenu}
-									<div class="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-gray-200 py-2 min-w-[200px] z-10 animate-in fade-in zoom-in-95 duration-150">
+									<div class="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-10 animate-in fade-in zoom-in-95 duration-150">
 										<button
 											onclick={handleDownloadHTML}
-											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+											class="w-full px-4 py-2 text-left hover:bg-muted/30 flex items-center gap-3 text-sm transition-colors"
 										>
-											<Download class="w-4 h-4 text-gray-600" />
+											<Download class="w-4 h-4 text-muted-foreground" />
 											<span>Download HTML</span>
 										</button>
 										<button
 											onclick={handleCopyText}
-											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+											class="w-full px-4 py-2 text-left hover:bg-muted/30 flex items-center gap-3 text-sm transition-colors"
 										>
-											<Copy class="w-4 h-4 text-gray-600" />
+											<Copy class="w-4 h-4 text-muted-foreground" />
 											<span>Copy as Text</span>
 										</button>
 										<button
 											onclick={handleShareURL}
-											class="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-3 text-sm transition-colors"
+											class="w-full px-4 py-2 text-left hover:bg-muted/30 flex items-center gap-3 text-sm transition-colors"
 										>
-											<Share2 class="w-4 h-4 text-gray-600" />
+											<Share2 class="w-4 h-4 text-muted-foreground" />
 											<span>Copy Share Link</span>
 										</button>
 									</div>
@@ -353,11 +353,11 @@
 				<h3 class="text-2xl font-bold text-slate-900">Question Review</h3>
 				<div class="flex items-center gap-4 text-sm">
 					<div class="flex items-center gap-2">
-						<Check class="w-4 h-4 text-green-600" />
+						<Check class="w-4 h-4 text-secondary" />
 						<span class="text-slate-600">{correctCount} Correct</span>
 					</div>
 					<div class="flex items-center gap-2">
-						<X class="w-4 h-4 text-red-600" />
+						<X class="w-4 h-4 text-destructive" />
 						<span class="text-slate-600">{incorrectCount} Incorrect</span>
 					</div>
 				</div>
@@ -372,8 +372,8 @@
 							<div class="flex items-start gap-4 mb-4">
 								<div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0 {
 									answer.isCorrect 
-										? 'bg-green-500 text-white' 
-										: 'bg-red-500 text-white'
+										? 'bg-secondary/100 text-white' 
+										: 'bg-destructive/100 text-white'
 								}">
 									{#if answer.isCorrect}
 										<Check class="w-5 h-5" />
@@ -386,7 +386,7 @@
 									<div class="flex items-center gap-2 mb-2">
 										<span class="text-sm font-semibold text-slate-900">Question {index + 1}</span>
 										<span class="text-xs px-2 py-0.5 rounded-full {
-											answer.isCorrect ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+											answer.isCorrect ? 'bg-green-100 text-secondary' : 'bg-red-100 text-destructive'
 										}">
 											{answer.isCorrect ? 'Correct' : 'Incorrect'}
 										</span>
@@ -409,8 +409,8 @@
 									
 									<!-- Correct Answer -->
 									{#if showCorrectAnswers && !answer.isCorrect}
-										<div class="bg-green-50 rounded-lg p-4 mb-3">
-											<div class="text-sm font-semibold text-green-700 mb-1">Correct Answer:</div>
+										<div class="bg-secondary/10 rounded-lg p-4 mb-3">
+											<div class="text-sm font-semibold text-secondary mb-1">Correct Answer:</div>
 											<div class="text-sm text-green-900">
 												{getCorrectAnswerText(question)}
 											</div>

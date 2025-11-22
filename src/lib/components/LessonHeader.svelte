@@ -75,7 +75,7 @@
 	)
 </script>
 
-<header class="bg-white border-b border-gray-200 sticky top-20 z-20 shadow-sm">
+<header class="bg-white border-b border-border sticky top-20 z-20 shadow-sm">
 	<div class="max-w-5xl mx-auto px-6 py-6">
 		<!-- Title and Type Badge -->
 		<div class="flex items-start justify-between gap-4 mb-4">
@@ -91,11 +91,11 @@
 						</span>
 					{/if}
 				</div>
-				<h1 class="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+				<h1 class="text-2xl md:text-3xl font-bold text-foreground leading-tight">
 					{lesson.title}
 				</h1>
 				{#if lesson.description}
-					<p class="mt-2 text-sm md:text-base text-gray-600 line-clamp-2">
+					<p class="mt-2 text-sm md:text-base text-muted-foreground line-clamp-2">
 						{lesson.description}
 					</p>
 				{/if}
@@ -110,10 +110,10 @@
 					<Clock class="w-4 h-4 text-blue-600" />
 				</div>
 				<div class="min-w-0">
-					<div class="text-xs text-gray-500 font-medium">
+					<div class="text-xs text-muted-foreground font-medium">
 						{lesson.type === 'quiz' ? 'Est. Time' : 'Reading Time'}
 					</div>
-					<div class="text-sm font-semibold text-gray-900 truncate">
+					<div class="text-sm font-semibold text-foreground truncate">
 						{readingTime()} min
 					</div>
 				</div>
@@ -126,8 +126,8 @@
 						<BookOpen class="w-4 h-4 text-green-600" />
 					</div>
 					<div class="min-w-0">
-						<div class="text-xs text-gray-500 font-medium">Time Spent</div>
-						<div class="text-sm font-semibold text-gray-900 truncate">
+						<div class="text-xs text-muted-foreground font-medium">Time Spent</div>
+						<div class="text-sm font-semibold text-foreground truncate">
 							{formatTimeSpent(timeSpent)}
 						</div>
 					</div>
@@ -141,8 +141,8 @@
 						<Calendar class="w-4 h-4 text-purple-600" />
 					</div>
 					<div class="min-w-0">
-						<div class="text-xs text-gray-500 font-medium">Last Read</div>
-						<div class="text-sm font-semibold text-gray-900 truncate">
+						<div class="text-xs text-muted-foreground font-medium">Last Read</div>
+						<div class="text-sm font-semibold text-foreground truncate">
 							{formatLastAccessed(lastAccessedAt)}
 						</div>
 					</div>
@@ -155,8 +155,8 @@
 					<span class="text-xs font-bold text-gray-700">#{lesson.order}</span>
 				</div>
 				<div class="min-w-0">
-					<div class="text-xs text-gray-500 font-medium">Lesson</div>
-					<div class="text-sm font-semibold text-gray-900 truncate">
+					<div class="text-xs text-muted-foreground font-medium">Lesson</div>
+					<div class="text-sm font-semibold text-foreground truncate">
 						Lesson {lesson.order}
 					</div>
 				</div>

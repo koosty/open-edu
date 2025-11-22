@@ -4,11 +4,14 @@
 	import { AnalyticsService } from '$lib/services/analytics'
 	import { authState } from '$lib/auth.svelte'
 	import { isAdmin, canManageCourses } from '$lib/utils/admin'
-	import { Button } from '$lib/components/ui'
+	import { Button, Label } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
+	import * as Select from '$lib/components/ui/select'
 	import type { Course } from '$lib/types'
 	import type { CourseAnalytics } from '$lib/types/analytics'
 	import Loading from '$lib/components/Loading.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
+	import { ArrowLeft, Users, CheckCircle, Clock, Zap } from 'lucide-svelte'
 
 	// State management
 	let loading = $state(true)
@@ -113,25 +116,25 @@
 		return num.toLocaleString()
 	}
 
-	function getActivityColor(level: string): string {
+	function _getActivityColor(level: string): string {
 		switch (level) {
 			case 'high':
-				return 'bg-green-100 text-green-800'
+				return 'bg-green-500/10 text-green-700 dark:text-green-400'
 			case 'medium':
-				return 'bg-blue-100 text-blue-800'
+				return 'bg-primary/10 text-primary'
 			case 'low':
-				return 'bg-yellow-100 text-yellow-800'
+				return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400'
 			case 'inactive':
-				return 'bg-gray-100 text-gray-800'
+				return 'bg-muted text-muted-foreground'
 			default:
-				return 'bg-gray-100 text-gray-800'
+				return 'bg-muted text-muted-foreground'
 		}
 	}
 
 	function getEngagementColor(score: number): string {
-		if (score >= 70) return 'text-green-600'
-		if (score >= 40) return 'text-yellow-600'
-		return 'text-red-600'
+		if (score >= 70) return 'text-green-600 dark:text-green-500'
+		if (score >= 40) return 'text-yellow-600 dark:text-yellow-500'
+		return 'text-red-600 dark:text-red-500'
 	}
 </script>
 
@@ -148,36 +151,33 @@
 	<div class="container mx-auto px-4 py-8">
 		<Card>
 			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
-				<p class="text-gray-600 mb-6">You don't have permission to access analytics.</p>
+				<h2 class="text-2xl font-bold text-destructive mb-4">Access Denied</h2>
+				<p class="text-muted-foreground mb-6">You don't have permission to access analytics.</p>
 				<Button onclick={() => navigate('/dashboard')}>Go to Dashboard</Button>
 			</CardContent>
 		</Card>
 	</div>
 {:else}
-	<div class="min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-background">
 		<!-- Header -->
-		<div class="bg-white border-b">
+		<div class="bg-card border-b">
 			<div class="container mx-auto px-4 py-6">
+				<!-- Breadcrumb -->
+				<DynamicBreadcrumb 
+					items={[
+						{ label: 'Admin', href: '/admin' },
+						{ label: 'Analytics', current: true }
+					]} 
+					class="mb-4"
+				/>
+				
 				<div class="flex items-center justify-between">
 					<div>
-						<h1 class="text-3xl font-bold">Content Analytics</h1>
-						<p class="text-gray-600 mt-1">Student engagement and performance insights</p>
+						<h1 class="text-3xl font-bold text-foreground">Content Analytics</h1>
+						<p class="text-muted-foreground mt-1">Student engagement and performance insights</p>
 					</div>
 					<Button variant="outline" onclick={() => navigate('/admin')}>
-						<svg
-							class="w-4 h-4 mr-2"
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
-						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M10 19l-7-7m0 0l7-7m-7 7h18"
-							/>
-						</svg>
+						<ArrowLeft class="w-4 h-4 mr-2" />
 						Back to Admin
 					</Button>
 				</div>
@@ -185,24 +185,26 @@
 		</div>
 
 		<div class="container mx-auto px-4 py-8">
-			<!-- Course Selector -->
-			<div class="mb-6">
-				<label for="course-select" class="block text-sm font-medium text-gray-700 mb-2">
-					Select Course
-				</label>
-				<select
-					id="course-select"
-					bind:value={selectedCourseId}
-					onchange={(e) => handleCourseChange((e.target as HTMLSelectElement).value)}
-					class="w-full max-w-md px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-				>
-					{#each courses as course (course.id)}
-						<option value={course.id}>
-							{course.title} ({course.enrolled} students)
-						</option>
-					{/each}
-				</select>
-			</div>
+	<!-- Course Selector -->
+	<div class="mb-6">
+		<Label for="course-select" class="mb-2">Select Course</Label>
+	<Select.Root
+			type="single" 
+			value={selectedCourseId ?? undefined}
+			onValueChange={(v) => v && handleCourseChange(v)}
+		>
+			<Select.Trigger class="w-full max-w-md">
+				{courses.find(c => c.id === selectedCourseId)?.title || 'Select a course'}
+			</Select.Trigger>
+			<Select.Content>
+				{#each courses as course (course.id)}
+					<Select.Item value={course.id} label="{course.title} ({course.enrolled} students)">
+						{course.title} ({course.enrolled} students)
+					</Select.Item>
+				{/each}
+			</Select.Content>
+		</Select.Root>
+		</div>
 
 			{#if loadingAnalytics}
 				<div class="flex justify-center items-center py-12">
@@ -215,27 +217,15 @@
 						<CardContent class="p-6">
 							<div class="flex items-center justify-between">
 								<div>
-									<p class="text-sm font-medium text-gray-600">Total Enrolled</p>
-									<p class="text-3xl font-bold">{formatNumber(courseAnalytics.totalEnrolled)}</p>
+									<p class="text-sm font-medium text-muted-foreground">Total Enrolled</p>
+									<p class="text-3xl font-bold text-foreground">{formatNumber(courseAnalytics.totalEnrolled)}</p>
 								</div>
-								<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-									<svg
-										class="w-6 h-6 text-blue-600"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
-										/>
-									</svg>
+								<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+									<Users class="w-6 h-6 text-primary" />
 								</div>
 							</div>
 							<div class="mt-2">
-								<span class="text-sm text-gray-500">
+								<span class="text-sm text-muted-foreground">
 									{formatNumber(courseAnalytics.activeStudents)} active (last 7 days)
 								</span>
 							</div>
@@ -246,27 +236,15 @@
 						<CardContent class="p-6">
 							<div class="flex items-center justify-between">
 								<div>
-									<p class="text-sm font-medium text-gray-600">Completion Rate</p>
-									<p class="text-3xl font-bold">{courseAnalytics.completionRate.toFixed(1)}%</p>
+									<p class="text-sm font-medium text-muted-foreground">Completion Rate</p>
+									<p class="text-3xl font-bold text-foreground">{courseAnalytics.completionRate.toFixed(1)}%</p>
 								</div>
-								<div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-									<svg
-										class="w-6 h-6 text-green-600"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-										/>
-									</svg>
+								<div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+									<CheckCircle class="w-6 h-6 text-green-600 dark:text-green-500" />
 								</div>
 							</div>
 							<div class="mt-2">
-								<span class="text-sm text-gray-500">
+								<span class="text-sm text-muted-foreground">
 									Avg progress: {courseAnalytics.averageCourseProgress.toFixed(1)}%
 								</span>
 							</div>
@@ -277,27 +255,15 @@
 						<CardContent class="p-6">
 							<div class="flex items-center justify-between">
 								<div>
-									<p class="text-sm font-medium text-gray-600">Avg Time to Complete</p>
-									<p class="text-3xl font-bold">{formatTime(courseAnalytics.averageCourseTime)}</p>
+									<p class="text-sm font-medium text-muted-foreground">Avg Time to Complete</p>
+									<p class="text-3xl font-bold text-foreground">{formatTime(courseAnalytics.averageCourseTime)}</p>
 								</div>
-								<div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-									<svg
-										class="w-6 h-6 text-purple-600"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
-										/>
-									</svg>
+								<div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+									<Clock class="w-6 h-6 text-purple-600 dark:text-purple-500" />
 								</div>
 							</div>
 							<div class="mt-2">
-								<span class="text-sm text-gray-500">
+								<span class="text-sm text-muted-foreground">
 									Median: {formatTime(courseAnalytics.medianCourseTime)}
 								</span>
 							</div>
@@ -308,29 +274,17 @@
 						<CardContent class="p-6">
 							<div class="flex items-center justify-between">
 								<div>
-									<p class="text-sm font-medium text-gray-600">Avg Session</p>
-									<p class="text-3xl font-bold">
+									<p class="text-sm font-medium text-muted-foreground">Avg Session</p>
+									<p class="text-3xl font-bold text-foreground">
 										{formatTime(courseAnalytics.averageSessionDuration)}
 									</p>
 								</div>
-								<div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-									<svg
-										class="w-6 h-6 text-yellow-600"
-										fill="none"
-										stroke="currentColor"
-										viewBox="0 0 24 24"
-									>
-										<path
-											stroke-linecap="round"
-											stroke-linejoin="round"
-											stroke-width="2"
-											d="M13 10V3L4 14h7v7l9-11h-7z"
-										/>
-									</svg>
+								<div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+									<Zap class="w-6 h-6 text-yellow-600 dark:text-yellow-500" />
 								</div>
 							</div>
 							<div class="mt-2">
-								<span class="text-sm text-gray-500">Per student session</span>
+								<span class="text-sm text-muted-foreground">Per student session</span>
 							</div>
 						</CardContent>
 					</Card>
@@ -350,12 +304,12 @@
 										<div class="flex items-center justify-between p-3 border rounded-lg">
 											<div class="flex-1">
 												<div class="flex items-center gap-2 mb-1">
-													<span class="text-xs font-medium text-gray-500"
+													<span class="text-xs font-medium text-muted-foreground"
 														>#{lesson.order}</span
 													>
-													<h4 class="font-medium text-sm">{lesson.lessonTitle}</h4>
+													<h4 class="font-medium text-sm text-foreground">{lesson.lessonTitle}</h4>
 												</div>
-												<div class="flex items-center gap-4 text-xs text-gray-600">
+												<div class="flex items-center gap-4 text-xs text-muted-foreground">
 													<span>{lesson.views} students</span>
 													<span>{lesson.completionRate.toFixed(1)}% completed</span>
 												</div>
@@ -364,13 +318,13 @@
 												<p class="text-lg font-bold {getEngagementColor(lesson.engagementScore)}">
 													{lesson.engagementScore}
 												</p>
-												<p class="text-xs text-gray-500">score</p>
+												<p class="text-xs text-muted-foreground">score</p>
 											</div>
 										</div>
 									{/each}
 								</div>
 							{:else}
-								<p class="text-gray-500 text-center py-4">No data available</p>
+								<p class="text-muted-foreground text-center py-4">No data available</p>
 							{/if}
 						</CardContent>
 					</Card>
@@ -388,12 +342,12 @@
 										<div class="flex items-center justify-between p-3 border rounded-lg">
 											<div class="flex-1">
 												<div class="flex items-center gap-2 mb-1">
-													<span class="text-xs font-medium text-gray-500"
+													<span class="text-xs font-medium text-muted-foreground"
 														>#{lesson.order}</span
 													>
-													<h4 class="font-medium text-sm">{lesson.lessonTitle}</h4>
+													<h4 class="font-medium text-sm text-foreground">{lesson.lessonTitle}</h4>
 												</div>
-												<div class="flex items-center gap-4 text-xs text-gray-600">
+												<div class="flex items-center gap-4 text-xs text-muted-foreground">
 													<span>{lesson.views} students</span>
 													<span>{lesson.completionRate.toFixed(1)}% completed</span>
 												</div>
@@ -402,13 +356,13 @@
 												<p class="text-lg font-bold {getEngagementColor(lesson.engagementScore)}">
 													{lesson.engagementScore}
 												</p>
-												<p class="text-xs text-gray-500">score</p>
+												<p class="text-xs text-muted-foreground">score</p>
 											</div>
 										</div>
 									{/each}
 								</div>
 							{:else}
-								<p class="text-gray-500 text-center py-4">No data available</p>
+								<p class="text-muted-foreground text-center py-4">No data available</p>
 							{/if}
 						</CardContent>
 					</Card>
@@ -423,40 +377,40 @@
 					<CardContent>
 						<div class="overflow-x-auto">
 							<table class="w-full">
-								<thead class="bg-gray-50 border-b">
+								<thead class="bg-muted border-b">
 									<tr>
-										<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase"
 											>#</th
 										>
-										<th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase"
 											>Lesson</th
 										>
-										<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase"
 											>Students</th
 										>
-										<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase"
 											>Completion</th
 										>
-										<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase"
 											>Avg Time</th
 										>
-										<th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase"
+										<th class="px-4 py-3 text-right text-xs font-medium text-muted-foreground uppercase"
 											>Engagement</th
 										>
 									</tr>
 								</thead>
 								<tbody class="divide-y">
 									{#each courseAnalytics.lessonsAnalytics as lesson (lesson.lessonId)}
-										<tr class="hover:bg-gray-50">
-											<td class="px-4 py-3 text-sm text-gray-500">{lesson.order}</td>
-											<td class="px-4 py-3 text-sm font-medium">{lesson.lessonTitle}</td>
-											<td class="px-4 py-3 text-sm text-gray-600 text-right">
+										<tr class="hover:bg-muted/50">
+											<td class="px-4 py-3 text-sm text-muted-foreground">{lesson.order}</td>
+											<td class="px-4 py-3 text-sm font-medium text-foreground">{lesson.lessonTitle}</td>
+											<td class="px-4 py-3 text-sm text-muted-foreground text-right">
 												{formatNumber(lesson.uniqueStudents)}
 											</td>
-											<td class="px-4 py-3 text-sm text-gray-600 text-right">
+											<td class="px-4 py-3 text-sm text-muted-foreground text-right">
 												{lesson.completionRate.toFixed(1)}%
 											</td>
-											<td class="px-4 py-3 text-sm text-gray-600 text-right">
+											<td class="px-4 py-3 text-sm text-muted-foreground text-right">
 												{formatTime(lesson.averageTimeSpent)}
 											</td>
 											<td class="px-4 py-3 text-sm text-right">
@@ -477,13 +431,13 @@
 				</Card>
 
 				<!-- Last Updated -->
-				<p class="text-sm text-gray-500 text-center mt-4">
+				<p class="text-sm text-muted-foreground text-center mt-4">
 					Last updated: {new Date(courseAnalytics.lastUpdated).toLocaleString()}
 				</p>
 			{:else if error}
 				<Card>
 					<CardContent class="p-8 text-center">
-						<div class="text-red-600 mb-4">
+						<div class="text-destructive mb-4">
 							<svg
 								class="w-12 h-12 mx-auto"
 								fill="none"
@@ -498,15 +452,15 @@
 								/>
 							</svg>
 						</div>
-						<h3 class="text-lg font-medium text-gray-900 mb-2">Error Loading Analytics</h3>
-						<p class="text-gray-600 mb-4">{error}</p>
+						<h3 class="text-lg font-medium text-foreground mb-2">Error Loading Analytics</h3>
+						<p class="text-muted-foreground mb-4">{error}</p>
 						<Button onclick={() => loadAnalytics(selectedCourseId!)}>Try Again</Button>
 					</CardContent>
 				</Card>
 			{:else}
 				<Card>
 					<CardContent class="p-8 text-center">
-						<p class="text-gray-600">Select a course to view analytics</p>
+						<p class="text-muted-foreground">Select a course to view analytics</p>
 					</CardContent>
 				</Card>
 			{/if}

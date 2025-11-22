@@ -180,7 +180,7 @@
 	<!-- Bottom Sheet -->
 	<div
 		bind:this={sheetElement}
-		class="fixed left-0 right-0 bottom-0 bg-white dark:bg-gray-900 rounded-t-2xl shadow-2xl z-50 transition-transform duration-300 {open ? 'translate-y-0' : 'translate-y-full'}"
+		class="fixed left-0 right-0 bottom-0 bg-card dark:bg-gray-900 rounded-t-2xl shadow-2xl z-50 transition-transform duration-300 {open ? 'translate-y-0' : 'translate-y-full'}"
 		style="transform: translateY({translateY}px); max-height: {currentSnapPoint}vh;"
 		role="dialog"
 		aria-modal="true"
@@ -204,7 +204,7 @@
 		{#if title}
 			<div class="px-6 pb-4 border-b border-gray-200 dark:border-gray-700">
 				<div class="flex items-center justify-between">
-					<h2 class="text-lg font-semibold text-gray-900 dark:text-gray-100">
+					<h2 class="text-lg font-semibold text-foreground dark:text-gray-100">
 						{title}
 					</h2>
 					<button

@@ -3,11 +3,12 @@
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
-	import { Button } from '$lib/components/ui'
+	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
-	import { Input } from '$lib/components/ui'
+	import * as Select from '$lib/components/ui/select'
+	import * as RadioGroup from '$lib/components/ui/radio-group'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
-	import type { Course } from '$lib/types'
+
 
 	// Form state
 	const form = $state({
@@ -151,14 +152,14 @@
 </svelte:head>
 
 <AuthGuard>
-	<div class="min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-muted/30">
 		<!-- Header -->
-		<div class="bg-white border-b">
+		<div class="bg-card border-b border-border">
 			<div class="container mx-auto px-4 py-6">
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 class="text-3xl font-bold">Create New Course</h1>
-						<p class="text-gray-600 mt-1">Build an engaging learning experience for your students</p>
+						<p class="text-muted-foreground mt-1">Build an engaging learning experience for your students</p>
 					</div>
 					<div class="flex gap-3">
 						<Button variant="outline" onclick={handleCancel}>
@@ -186,73 +187,62 @@
 							<CardTitle>Basic Information</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
-							<div>
-								<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-									Course Title *
-								</label>
-								<Input
+						<div>
+							<Label for="title" class="mb-2">Course Title *</Label>
+							<Input
 									id="title"
 									bind:value={form.title}
 									placeholder="Enter a compelling course title"
 									class="w-full"
 									required
 								/>
-								<p class="text-xs text-gray-500 mt-1">Make it clear and descriptive</p>
+								<p class="text-xs text-muted-foreground mt-1">Make it clear and descriptive</p>
 							</div>
 
-							<div>
-								<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-									Course Description *
-								</label>
-								<textarea
+						<div>
+							<Label for="description" class="mb-2">Course Description *</Label>
+							<Textarea
 									id="description"
 									bind:value={form.description}
 									placeholder="Describe what students will learn and achieve..."
-									rows="4"
-									class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+									rows={4}
 									required
-								></textarea>
-								<p class="text-xs text-gray-500 mt-1">Explain the value and outcomes</p>
+								/>
+								<p class="text-xs text-muted-foreground mt-1">Explain the value and outcomes</p>
 							</div>
 
-							<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-								<div>
-									<label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-										Category *
-									</label>
-									<select
-										id="category"
-										bind:value={form.category}
-										class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-										required
-									>
-										<option value="">Select a category</option>
+						<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+						<div>
+							<Label for="category" class="mb-2">Category *</Label>
+							<Select.Root type="single" bind:value={form.category} required>
+									<Select.Trigger class="w-full">
+										{form.category || 'Select a category'}
+									</Select.Trigger>
+									<Select.Content>
 										{#each categories as category (category)}
-											<option value={category}>{category}</option>
+											<Select.Item value={category} label={category}>{category}</Select.Item>
 										{/each}
-									</select>
-								</div>
+									</Select.Content>
+								</Select.Root>
+							</div>
 
-								<div>
-									<label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-										Difficulty Level *
-									</label>
-									<select
-										id="difficulty"
-										bind:value={form.difficulty}
-										class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-									>
-										<option value="Beginner">Beginner</option>
-										<option value="Intermediate">Intermediate</option>
-										<option value="Advanced">Advanced</option>
-									</select>
-								</div>
+						<div>
+							<Label for="difficulty" class="mb-2">Difficulty Level *</Label>
+							<Select.Root type="single" bind:value={form.difficulty}>
+									<Select.Trigger class="w-full">
+										{form.difficulty}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="Beginner" label="Beginner">Beginner</Select.Item>
+										<Select.Item value="Intermediate" label="Intermediate">Intermediate</Select.Item>
+										<Select.Item value="Advanced" label="Advanced">Advanced</Select.Item>
+									</Select.Content>
+								</Select.Root>
+							</div>
 
-								<div>
-									<label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
-										Duration *
-									</label>
-									<Input
+							<div>
+								<Label for="duration" class="mb-2">Duration *</Label>
+								<Input
 										id="duration"
 										bind:value={form.duration}
 										placeholder="e.g., 8 weeks, 20 hours"
@@ -262,17 +252,15 @@
 								</div>
 							</div>
 
-							<div>
-								<label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
-									Thumbnail URL
-								</label>
-								<Input
+						<div>
+							<Label for="thumbnail" class="mb-2">Thumbnail URL</Label>
+							<Input
 									id="thumbnail"
 									bind:value={form.thumbnail}
 									placeholder="https://example.com/course-thumbnail.jpg"
 									class="w-full"
 								/>
-								<p class="text-xs text-gray-500 mt-1">Recommended size: 400x225 pixels</p>
+								<p class="text-xs text-muted-foreground mt-1">Recommended size: 400x225 pixels</p>
 								{#if form.thumbnail}
 									<img 
 										src={form.thumbnail} 
@@ -294,11 +282,9 @@
 							<CardTitle>Course Content</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
-							<div>
-								<label for="learning-outcomes" class="block text-sm font-medium text-gray-700 mb-2">
-									Learning Outcomes
-								</label>
-								<textarea
+						<div>
+							<Label for="learning-outcomes" class="mb-2">Learning Outcomes</Label>
+							<Textarea
 									id="learning-outcomes"
 									bind:value={form.learningOutcomes}
 									placeholder="What will students learn? (One outcome per line)
@@ -306,17 +292,15 @@ Example:
 Build responsive web applications
 Master React fundamentals
 Deploy to production"
-									rows="6"
-									class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-								></textarea>
-								<p class="text-xs text-gray-500 mt-1">Enter one learning outcome per line</p>
+									rows={6}
+									class="font-mono text-sm"
+								/>
+								<p class="text-xs text-muted-foreground mt-1">Enter one learning outcome per line</p>
 							</div>
 
-							<div>
-								<label for="prerequisites" class="block text-sm font-medium text-gray-700 mb-2">
-									Prerequisites
-								</label>
-								<textarea
+						<div>
+							<Label for="prerequisites" class="mb-2">Prerequisites</Label>
+							<Textarea
 									id="prerequisites"
 									bind:value={form.prerequisites}
 									placeholder="What should students know before taking this course? (One prerequisite per line)
@@ -324,23 +308,21 @@ Example:
 Basic HTML/CSS knowledge
 JavaScript fundamentals
 Familiarity with command line"
-									rows="4"
-									class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono text-sm"
-								></textarea>
-								<p class="text-xs text-gray-500 mt-1">Enter one prerequisite per line</p>
+									rows={4}
+									class="font-mono text-sm"
+								/>
+								<p class="text-xs text-muted-foreground mt-1">Enter one prerequisite per line</p>
 							</div>
 
-							<div>
-								<label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
-									Tags
-								</label>
-								<Input
+						<div>
+							<Label for="tags" class="mb-2">Tags</Label>
+							<Input
 									id="tags"
 									bind:value={form.tags}
 									placeholder="react, javascript, frontend, web development"
 									class="w-full"
 								/>
-								<p class="text-xs text-gray-500 mt-1">Separate tags with commas</p>
+								<p class="text-xs text-muted-foreground mt-1">Separate tags with commas</p>
 							</div>
 						</CardContent>
 					</Card>
@@ -351,37 +333,25 @@ Familiarity with command line"
 							<CardTitle>Pricing & Settings</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
-							<fieldset>
-								<legend class="block text-sm font-medium text-gray-700 mb-3">Course Type</legend>
-								<div class="flex gap-4">
-									<label class="flex items-center gap-2">
-										<input
-											type="radio"
-											bind:group={form.level}
-											value="free"
-											class="text-blue-600 focus:ring-blue-500"
-										/>
-										<span>Free Course</span>
-									</label>
-									<label class="flex items-center gap-2">
-										<input
-											type="radio"
-											bind:group={form.level}
-											value="premium"
-											class="text-blue-600 focus:ring-blue-500"
-										/>
-										<span>Premium Course</span>
-									</label>
+						<fieldset>
+							<legend class="block text-sm font-medium text-foreground mb-3">Course Type</legend>
+							<RadioGroup.Root bind:value={form.level} class="flex gap-4">
+								<div class="flex items-center gap-2">
+									<RadioGroup.Item value="free" id="free" />
+									<Label for="free" class="font-normal cursor-pointer">Free Course</Label>
 								</div>
-							</fieldset>
+								<div class="flex items-center gap-2">
+									<RadioGroup.Item value="premium" id="premium" />
+									<Label for="premium" class="font-normal cursor-pointer">Premium Course</Label>
+								</div>
+							</RadioGroup.Root>
+						</fieldset>
 
 							{#if form.level === 'premium'}
 								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-									<div>
-										<label for="price" class="block text-sm font-medium text-gray-700 mb-2">
-											Price
-										</label>
-										<Input
+								<div>
+									<Label for="price" class="mb-2">Price</Label>
+									<Input
 											id="price"
 											type="number"
 											bind:value={form.price}
@@ -391,47 +361,46 @@ Familiarity with command line"
 											class="w-full"
 										/>
 									</div>
-									<div>
-										<label for="currency" class="block text-sm font-medium text-gray-700 mb-2">
-											Currency
-										</label>
-										<select
-											id="currency"
-											bind:value={form.currency}
-											class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-										>
-											<option value="USD">USD ($)</option>
-											<option value="EUR">EUR (€)</option>
-											<option value="GBP">GBP (£)</option>
-										</select>
-									</div>
+							<div>
+								<Label for="currency" class="mb-2">Currency</Label>
+								<Select.Root type="single" bind:value={form.currency}>
+										<Select.Trigger class="w-full">
+											{form.currency === 'USD' ? 'USD ($)' : form.currency === 'EUR' ? 'EUR (€)' : 'GBP (£)'}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Item value="USD" label="USD ($)">USD ($)</Select.Item>
+											<Select.Item value="EUR" label="EUR (€)">EUR (€)</Select.Item>
+											<Select.Item value="GBP" label="GBP (£)">GBP (£)</Select.Item>
+										</Select.Content>
+									</Select.Root>
+								</div>
 								</div>
 							{/if}
 
 							<div class="space-y-4">
-								<label class="flex items-center gap-3">
-									<input
-										type="checkbox"
+								<div class="flex items-start gap-3">
+									<Checkbox
+										id="is-published"
 										bind:checked={form.isPublished}
-										class="text-blue-600 focus:ring-blue-500"
+										class="mt-1"
 									/>
-									<div>
+									<Label for="is-published" class="cursor-pointer">
 										<span class="font-medium">Publish immediately</span>
-										<p class="text-sm text-gray-600">Make this course visible to students</p>
-									</div>
-								</label>
+										<p class="text-sm text-muted-foreground font-normal">Make this course visible to students</p>
+									</Label>
+								</div>
 
-								<label class="flex items-center gap-3">
-									<input
-										type="checkbox"
+								<div class="flex items-start gap-3">
+									<Checkbox
+										id="is-featured"
 										bind:checked={form.isFeatured}
-										class="text-blue-600 focus:ring-blue-500"
+										class="mt-1"
 									/>
-									<div>
+									<Label for="is-featured" class="cursor-pointer">
 										<span class="font-medium">Feature this course</span>
-										<p class="text-sm text-gray-600">Highlight in featured courses section</p>
-									</div>
-								</label>
+										<p class="text-sm text-muted-foreground font-normal">Highlight in featured courses section</p>
+									</Label>
+								</div>
 							</div>
 						</CardContent>
 					</Card>
@@ -465,13 +434,13 @@ Familiarity with command line"
 					<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
 						<Card class="max-w-md w-full mx-4">
 							<CardContent class="p-8 text-center">
-								<div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-									<svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<div class="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
+									<svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 									</svg>
 								</div>
 								<h3 class="text-lg font-semibold mb-2">Course Created Successfully!</h3>
-								<p class="text-gray-600">Redirecting to course page...</p>
+								<p class="text-muted-foreground">Redirecting to course page...</p>
 							</CardContent>
 						</Card>
 					</div>
@@ -479,14 +448,14 @@ Familiarity with command line"
 
 				<!-- Error Display -->
 				{#if error}
-					<div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+					<div class="mt-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
 						<div class="flex items-start gap-3">
-							<svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-destructive mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 							<div>
-								<h3 class="text-sm font-medium text-red-800">Error Creating Course</h3>
-								<p class="text-sm text-red-700 mt-1">{error}</p>
+								<h3 class="text-sm font-medium text-destructive">Error Creating Course</h3>
+								<p class="text-sm text-destructive/90 mt-1">{error}</p>
 							</div>
 						</div>
 					</div>

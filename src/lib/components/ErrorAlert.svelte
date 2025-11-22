@@ -87,16 +87,16 @@
 	}
 </script>
 
-<div class="error-alert bg-red-50 border border-red-200 rounded-xl p-4 md:p-6 shadow-sm {className}">
+<div class="error-alert bg-destructive/10 border border-destructive/30 rounded-xl p-4 md:p-6 shadow-sm {className}">
 	<div class="flex items-start gap-3 md:gap-4">
 		<!-- Error Icon -->
 		<div class="w-10 h-10 md:w-12 md:h-12 bg-red-100 rounded-full flex items-center justify-center shrink-0">
-			<AlertCircle class="w-5 h-5 md:w-6 md:h-6 text-red-600" />
+			<AlertCircle class="w-5 h-5 md:w-6 md:h-6 text-destructive" />
 		</div>
 		
 		<div class="flex-1 min-w-0">
 			<!-- Title -->
-			<h3 class="text-base md:text-lg font-semibold text-red-900 mb-1">
+			<h3 class="text-base md:text-lg font-semibold text-destructive mb-1">
 				{title}
 			</h3>
 			
@@ -107,7 +107,7 @@
 			
 			<!-- Error Code (if provided) -->
 			{#if errorCode}
-				<p class="text-xs text-red-600 font-mono mb-3">
+				<p class="text-xs text-destructive font-mono mb-3">
 					Error Code: {errorCode}
 				</p>
 			{/if}
@@ -148,7 +148,7 @@
 						onclick={onGoBack}
 						variant="outline"
 						size="sm"
-						class="border-red-300 text-red-700 hover:bg-red-50"
+						class="border-red-300 text-red-700 hover:bg-destructive/10"
 					>
 						<ArrowLeft class="w-4 h-4 mr-2" />
 						Go Back
@@ -160,7 +160,7 @@
 						onclick={onGoHome}
 						variant="outline"
 						size="sm"
-						class="border-red-300 text-red-700 hover:bg-red-50"
+						class="border-red-300 text-red-700 hover:bg-destructive/10"
 					>
 						<Home class="w-4 h-4 mr-2" />
 						Go Home

@@ -142,14 +142,14 @@ export class TouchGestureManager {
 		}
 	}
 
-	private handleTouchEnd(e: TouchEvent) {
+	private handleTouchEnd(_e: TouchEvent) {
 		if (!this.state.isTracking) return
 
 		this.processSwipe()
 		this.resetState()
 	}
 
-	private handleTouchCancel(e: TouchEvent) {
+	private handleTouchCancel(_e: TouchEvent) {
 		if (!this.state.isTracking) return
 		
 		this.options.onSwipeEnd()

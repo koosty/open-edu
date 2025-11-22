@@ -4,11 +4,12 @@
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
-	import { Button } from '$lib/components/ui'
+	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
-	import { Input } from '$lib/components/ui'
+	import * as Select from '$lib/components/ui/select'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
 	const courseId = $derived($page.params.id as string)
@@ -230,11 +231,11 @@
 			<Loading />
 		</div>
 	{:else if error && !course}
-		<div class="min-h-screen bg-gray-50 flex items-center justify-center">
+		<div class="min-h-screen bg-muted/30 flex items-center justify-center">
 			<Card class="max-w-md">
 				<CardContent class="p-8 text-center">
-					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-					<p class="text-gray-600 mb-6">{error}</p>
+					<h2 class="text-2xl font-bold text-destructive mb-4">Error</h2>
+					<p class="text-muted-foreground mb-6">{error}</p>
 					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
@@ -242,14 +243,24 @@
 			</Card>
 		</div>
 	{:else}
-		<div class="min-h-screen bg-gray-50">
+		<div class="min-h-screen bg-muted/30">
 			<!-- Header -->
-			<div class="bg-white border-b">
+			<div class="bg-card border-b border-border">
 				<div class="container mx-auto px-4 py-6">
+					<!-- Breadcrumb -->
+					<DynamicBreadcrumb 
+						items={[
+							{ label: 'Admin', href: '/admin' },
+							{ label: 'Courses', href: '/admin' },
+							{ label: course?.title || 'Edit Course', current: true }
+						]} 
+						class="mb-4"
+					/>
+					
 					<div class="flex items-center justify-between">
 						<div>
 							<h1 class="text-3xl font-bold">Edit Course</h1>
-							<p class="text-gray-600 mt-1">Update your course information and manage lessons</p>
+							<p class="text-muted-foreground mt-1">Update your course information and manage lessons</p>
 						</div>
 						<div class="flex gap-3">
 							<Button variant="outline" onclick={handleCancel}>
@@ -271,24 +282,24 @@
 				<div class="max-w-6xl mx-auto">
 					<!-- Success Message -->
 					{#if success}
-						<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+						<div class="mb-6 p-4 bg-secondary/10 border border-secondary/30 rounded-lg">
 							<div class="flex items-center gap-3">
-								<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 								</svg>
-								<p class="text-green-800 font-medium">Course updated successfully!</p>
+								<p class="text-secondary font-medium">Course updated successfully!</p>
 							</div>
 						</div>
 					{/if}
 
 					<!-- Error Message -->
 					{#if error}
-						<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+						<div class="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
 							<div class="flex items-center gap-3">
-								<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-5 h-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 								</svg>
-								<p class="text-red-800">{error}</p>
+								<p class="text-destructive">{error}</p>
 							</div>
 						</div>
 					{/if}
@@ -303,101 +314,88 @@
 										<CardTitle>Basic Information</CardTitle>
 									</CardHeader>
 									<CardContent class="space-y-6">
-										<div>
-											<label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-												Course Title *
-											</label>
-											<Input
-												id="title"
-												bind:value={form.title}
-												placeholder="Enter a compelling course title"
-												class="w-full"
-												required
-											/>
-										</div>
+								<div>
+									<Label for="title" class="mb-2">Course Title *</Label>
+									<Input
+											id="title"
+											bind:value={form.title}
+											placeholder="Enter a compelling course title"
+											class="w-full"
+											required
+										/>
+									</div>
 
-										<div>
-											<label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-												Course Description *
-											</label>
-											<textarea
-												id="description"
-												bind:value={form.description}
-												placeholder="Describe what students will learn and achieve..."
-												rows="4"
-												class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												required
-											></textarea>
-										</div>
+								<div>
+									<Label for="description" class="mb-2">Course Description *</Label>
+									<Textarea
+											id="description"
+											bind:value={form.description}
+											placeholder="Describe what students will learn and achieve..."
+											rows={4}
+											class="w-full"
+											required
+										/>
+									</div>
 
-										<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-											<div>
-												<label for="category" class="block text-sm font-medium text-gray-700 mb-2">
-													Category *
-												</label>
-												<select
-													id="category"
-													bind:value={form.category}
-													class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-													required
-												>
-													<option value="">Select a category</option>
-													{#each categories as category (category)}
-														<option value={category}>{category}</option>
-													{/each}
-												</select>
-											</div>
+								<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+								<div>
+									<Label for="category" class="mb-2">Category *</Label>
+									<Select.Root type="single" bind:value={form.category} required>
+											<Select.Trigger class="w-full">
+												{form.category || 'Select a category'}
+											</Select.Trigger>
+											<Select.Content>
+												{#each categories as category (category)}
+													<Select.Item value={category} label={category}>{category}</Select.Item>
+												{/each}
+											</Select.Content>
+										</Select.Root>
+									</div>
 
-											<div>
-												<label for="difficulty" class="block text-sm font-medium text-gray-700 mb-2">
-													Difficulty Level *
-												</label>
-												<select
-													id="difficulty"
-													bind:value={form.difficulty}
-													class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												>
-													<option value="Beginner">Beginner</option>
-													<option value="Intermediate">Intermediate</option>
-													<option value="Advanced">Advanced</option>
-												</select>
-											</div>
+								<div>
+									<Label for="difficulty" class="mb-2">Difficulty Level *</Label>
+									<Select.Root type="single" bind:value={form.difficulty}>
+											<Select.Trigger class="w-full">
+												{form.difficulty}
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Item value="Beginner" label="Beginner">Beginner</Select.Item>
+												<Select.Item value="Intermediate" label="Intermediate">Intermediate</Select.Item>
+												<Select.Item value="Advanced" label="Advanced">Advanced</Select.Item>
+											</Select.Content>
+										</Select.Root>
+									</div>
 
-											<div>
-												<label for="duration" class="block text-sm font-medium text-gray-700 mb-2">
-													Duration *
-												</label>
-												<Input
-													id="duration"
-													bind:value={form.duration}
-													placeholder="e.g., 8 weeks, 20 hours"
-													class="w-full"
-													required
-												/>
-											</div>
+								<div>
+									<Label for="duration" class="mb-2">Duration *</Label>
+									<Input
+											id="duration"
+											bind:value={form.duration}
+											placeholder="e.g., 8 weeks, 20 hours"
+											class="w-full"
+											required
+										/>
+									</div>
 
-											<div>
-												<label for="level" class="block text-sm font-medium text-gray-700 mb-2">
-													Course Level *
-												</label>
-												<select
-													id="level"
-													bind:value={form.level}
-													class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-												>
-													<option value="free">Free</option>
-													<option value="premium">Premium</option>
-												</select>
-											</div>
-										</div>
+								<div>
+									<Label for="level" class="mb-2">Course Level *</Label>
+									<Select.Root type="single" bind:value={form.level}>
+											<Select.Trigger class="w-full">
+												{form.level === 'free' ? 'Free' : 'Premium'}
+											</Select.Trigger>
+											<Select.Content>
+												<Select.Item value="free" label="Free">Free</Select.Item>
+												<Select.Item value="premium" label="Premium">Premium</Select.Item>
+											</Select.Content>
+										</Select.Root>
+									</div>
+								</div>
 
 										{#if form.level === 'premium'}
 											<div class="grid grid-cols-2 gap-6">
-												<div>
-													<label for="price" class="block text-sm font-medium text-gray-700 mb-2">
-														Price *
-													</label>
-													<Input
+											<div>
+												<Label for="price" class="mb-2">Price *</Label>
+												<Input
 														id="price"
 														type="number"
 														bind:value={form.price}
@@ -409,104 +407,93 @@
 													/>
 												</div>
 
-												<div>
-													<label for="currency" class="block text-sm font-medium text-gray-700 mb-2">
-														Currency *
-													</label>
-													<select
-														id="currency"
-														bind:value={form.currency}
-														class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-													>
-														<option value="USD">USD</option>
-														<option value="EUR">EUR</option>
-														<option value="GBP">GBP</option>
-													</select>
-												</div>
+										<div>
+											<Label for="currency" class="mb-2">Currency *</Label>
+											<Select.Root type="single" bind:value={form.currency}>
+													<Select.Trigger class="w-full">
+														{form.currency === 'USD' ? 'USD ($)' : form.currency === 'EUR' ? 'EUR (€)' : 'GBP (£)'}
+													</Select.Trigger>
+													<Select.Content>
+														<Select.Item value="USD" label="USD ($)">USD ($)</Select.Item>
+														<Select.Item value="EUR" label="EUR (€)">EUR (€)</Select.Item>
+														<Select.Item value="GBP" label="GBP (£)">GBP (£)</Select.Item>
+													</Select.Content>
+												</Select.Root>
+											</div>
 											</div>
 										{/if}
 
-										<div>
-											<label for="thumbnail" class="block text-sm font-medium text-gray-700 mb-2">
-												Thumbnail URL
-											</label>
-											<Input
-												id="thumbnail"
-												bind:value={form.thumbnail}
-												placeholder="https://example.com/course-thumbnail.jpg"
-												class="w-full"
+								<div>
+									<Label for="thumbnail" class="mb-2">Thumbnail URL</Label>
+									<Input
+											id="thumbnail"
+											bind:value={form.thumbnail}
+											placeholder="https://example.com/course-thumbnail.jpg"
+											class="w-full"
+										/>
+										{#if form.thumbnail}
+											<img 
+												src={form.thumbnail} 
+												alt="Course thumbnail preview"
+												class="mt-3 w-48 h-27 object-cover rounded-lg border"
+												onerror={(e) => {
+													const target = e.currentTarget as HTMLImageElement
+													target.src = 'https://via.placeholder.com/400x225/6366f1/white?text=Invalid+Image'
+												}}
 											/>
-											{#if form.thumbnail}
-												<img 
-													src={form.thumbnail} 
-													alt="Course thumbnail preview"
-													class="mt-3 w-48 h-27 object-cover rounded-lg border"
-													onerror={(e) => {
-														const target = e.currentTarget as HTMLImageElement
-														target.src = 'https://via.placeholder.com/400x225/6366f1/white?text=Invalid+Image'
-													}}
-												/>
-											{/if}
-										</div>
+										{/if}
+									</div>
 
-										<div>
-											<label for="tags" class="block text-sm font-medium text-gray-700 mb-2">
-												Tags
-											</label>
-											<Input
-												id="tags"
-												bind:value={form.tags}
-												placeholder="javascript, react, web development"
-												class="w-full"
+								<div>
+									<Label for="tags" class="mb-2">Tags</Label>
+									<Input
+											id="tags"
+											bind:value={form.tags}
+										placeholder="javascript, react, web development"
+										class="w-full"
+									/>
+										<p class="text-xs text-muted-foreground mt-1">Comma-separated tags</p>
+									</div>
+
+								<div>
+									<Label for="prerequisites" class="mb-2">Prerequisites</Label>
+									<Textarea
+											id="prerequisites"
+											bind:value={form.prerequisites}
+											placeholder="Enter each prerequisite on a new line"
+											rows={3}
+											class="w-full"
+										/>
+									</div>
+
+								<div>
+									<Label for="learning-outcomes" class="mb-2">Learning Outcomes</Label>
+									<Textarea
+											id="learning-outcomes"
+											bind:value={form.learningOutcomes}
+											placeholder="Enter each learning outcome on a new line"
+											rows={4}
+											class="w-full"
+										/>
+									</div>
+
+									<div class="flex items-center gap-6">
+										<div class="flex items-center gap-2">
+											<Checkbox
+												id="published"
+												bind:checked={form.isPublished}
 											/>
-											<p class="text-xs text-gray-500 mt-1">Comma-separated tags</p>
+											<Label for="published" class="font-normal cursor-pointer">Published</Label>
 										</div>
 
-										<div>
-											<label for="prerequisites" class="block text-sm font-medium text-gray-700 mb-2">
-												Prerequisites
-											</label>
-											<textarea
-												id="prerequisites"
-												bind:value={form.prerequisites}
-												placeholder="Enter each prerequisite on a new line"
-												rows="3"
-												class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-											></textarea>
+										<div class="flex items-center gap-2">
+											<Checkbox
+												id="featured"
+												bind:checked={form.isFeatured}
+											/>
+											<Label for="featured" class="font-normal cursor-pointer">Featured</Label>
 										</div>
-
-										<div>
-											<label for="learning-outcomes" class="block text-sm font-medium text-gray-700 mb-2">
-												Learning Outcomes
-											</label>
-											<textarea
-												id="learning-outcomes"
-												bind:value={form.learningOutcomes}
-												placeholder="Enter each learning outcome on a new line"
-												rows="4"
-												class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-											></textarea>
-										</div>
-
-										<div class="flex items-center gap-6">
-											<label class="flex items-center gap-2">
-												<input
-													type="checkbox"
-													bind:checked={form.isPublished}
-													class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-												/>
-												<span class="text-sm font-medium text-gray-700">Published</span>
-											</label>
-
-											<label class="flex items-center gap-2">
-												<input
-													type="checkbox"
-													bind:checked={form.isFeatured}
-													class="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
-												/>
-												<span class="text-sm font-medium text-gray-700">Featured</span>
-											</label>
-										</div>
+									</div>
 									</CardContent>
 								</Card>
 							</form>
@@ -530,22 +517,22 @@
 								<CardContent>
 									{#if lessons.length === 0}
 										<div class="text-center py-8">
-											<svg class="w-12 h-12 mx-auto text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<svg class="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
 											</svg>
-											<p class="text-gray-600 text-sm">No lessons yet</p>
-											<p class="text-gray-500 text-xs mt-1">Click "Add Lesson" to get started</p>
+											<p class="text-muted-foreground text-sm">No lessons yet</p>
+											<p class="text-muted-foreground/70 text-xs mt-1">Click "Add Lesson" to get started</p>
 										</div>
 									{:else}
 										<div class="space-y-2">
 											{#each lessons as lesson, index (lesson.id)}
-												<div class="border border-gray-200 rounded-lg p-3 hover:bg-gray-50 transition-colors">
+												<div class="border border-border rounded-lg p-3 hover:bg-muted/50 transition-colors">
 													<div class="flex items-start gap-3">
 														<div class="flex flex-col gap-1">
 															<button
 																onclick={() => handleReorderLesson(index, 'up')}
 																disabled={index === 0}
-																class="p-1 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+																class="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
 																aria-label="Move up"
 															>
 																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -555,7 +542,7 @@
 															<button
 																onclick={() => handleReorderLesson(index, 'down')}
 																disabled={index === lessons.length - 1}
-																class="p-1 hover:bg-gray-200 rounded disabled:opacity-30 disabled:cursor-not-allowed"
+																class="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
 																aria-label="Move down"
 															>
 																<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -566,13 +553,13 @@
 														
 														<div class="flex-1 min-w-0">
 															<div class="flex items-center gap-2">
-																<span class="text-xs font-medium text-gray-500">{lesson.order}</span>
+																<span class="text-xs font-medium text-muted-foreground">{lesson.order}</span>
 																<h4 class="font-medium text-sm truncate">{lesson.title}</h4>
 															</div>
 															<div class="flex items-center gap-2 mt-1">
-																<span class="text-xs text-gray-500 capitalize">{lesson.type}</span>
+																<span class="text-xs text-muted-foreground capitalize">{lesson.type}</span>
 																{#if lesson.duration}
-																	<span class="text-xs text-gray-400">• {lesson.duration} min</span>
+																	<span class="text-xs text-muted-foreground/70">• {lesson.duration} min</span>
 																{/if}
 															</div>
 														</div>
@@ -580,7 +567,7 @@
 														<div class="flex gap-1">
 															<button
 																onclick={() => handleEditLesson(lesson.id)}
-																class="p-1.5 hover:bg-blue-50 rounded text-blue-600"
+																class="p-1.5 hover:bg-primary/10 rounded text-primary"
 																aria-label="Edit lesson"
 															>
 																<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -589,7 +576,7 @@
 															</button>
 															<button
 																onclick={() => handleDeleteLesson(lesson.id)}
-																class="p-1.5 hover:bg-red-50 rounded text-red-600"
+																class="p-1.5 hover:bg-destructive/10 rounded text-destructive"
 																aria-label="Delete lesson"
 															>
 																<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

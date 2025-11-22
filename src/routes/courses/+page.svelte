@@ -8,12 +8,7 @@
 	import { browser } from '$app/environment'
 	import { Search, Users, Clock, Star } from 'lucide-svelte'
 	
-	import Button from '$lib/components/ui/Button.svelte'
-	import Input from '$lib/components/ui/Input.svelte'
-	import Card from '$lib/components/ui/Card.svelte'
-	import CardContent from '$lib/components/ui/CardContent.svelte'
-	import CardFooter from '$lib/components/ui/CardFooter.svelte'
-	import CardHeader from '$lib/components/ui/CardHeader.svelte'
+	import { Button, Input, Card, CardContent, CardFooter, CardHeader } from '$lib/components/ui'
 	
 	import { CourseService } from '$lib/services/courses'
 	import type { Course } from '$lib/types'
@@ -60,7 +55,7 @@
 	const levels = ['free', 'premium'] as const
 	
 	// Derived filter counts and labels  
-	const activeFilterCount = $derived(() => {
+	const _activeFilterCount = $derived(() => {
 		return selectedCategories.length + selectedDifficulties.length + selectedLevels.length
 	})
 	
@@ -434,16 +429,16 @@
 
 <div class="container mx-auto px-4 py-8">
 	<!-- Skip to main content link for accessibility -->
-	<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white px-4 py-2 rounded-lg shadow-lg">
+	<a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 bg-primary text-primary-foreground px-4 py-2 rounded-lg shadow-lg">
 		Skip to main content
 	</a>
 
 	<!-- Hero Section -->
 	<header class="mb-12 text-center">
-		<h1 class="text-4xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-4">
+		<h1 class="text-4xl font-bold text-primary mb-4">
 			Explore Our Course Catalog
 		</h1>
-		<p class="text-lg text-slate-600 max-w-2xl mx-auto">
+		<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
 			Discover thousands of courses taught by industry experts. Learn new skills and advance your career.
 		</p>
 	</header>
@@ -453,7 +448,7 @@
 		<!-- Search Bar -->
 		<div class="relative flex gap-2">
 			<div class="relative flex-1">
-				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-400" aria-hidden="true" />
+				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				<Input
 					type="text"
 					placeholder="Search courses..."
@@ -465,7 +460,7 @@
 					role="searchbox"
 				/>
 			</div>
-			<Button onclick={handleSearch} class="px-6 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800" aria-label="Search courses">
+			<Button onclick={handleSearch} class="px-6" aria-label="Search courses">
 				Search
 			</Button>
 		</div>
@@ -477,7 +472,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleCategoryModal}
-					class="gap-2 interactive rounded-lg {selectedCategories.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedCategories.length > 0 ? 'bg-primary/10 border-primary' : ''}"
 					aria-label="Filter by category"
 				>
 					{#if selectedCategories.length === 0}
@@ -493,25 +488,25 @@
 				</Button>
 				
 				{#if showCategoryModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[240px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-popover rounded-xl shadow-lg border p-4 min-w-[240px] z-10">
 						<div class="space-y-2" role="group" aria-label="Category filter options">
 							{#each categories as category (category)}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedCategories.includes(category)}
 										onchange={() => toggleCategory(category)}
-										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
+										class="h-4 w-4 text-primary focus:ring-primary rounded"
 									/>
-									<span class="text-slate-700 text-sm">{category}</span>
+									<span class="text-popover-foreground text-sm">{category}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedCategories.length > 0}
-							<div class="mt-3 pt-3 border-t border-slate-200">
+							<div class="mt-3 pt-3 border-t">
 								<button 
 									onclick={() => { selectedCategories = []; handleCategoryChange(); }}
-									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
+									class="text-sm text-primary hover:text-primary/80 font-medium interactive"
 								>
 									Clear categories
 								</button>
@@ -526,7 +521,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleDifficultyModal}
-					class="gap-2 interactive rounded-lg {selectedDifficulties.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedDifficulties.length > 0 ? 'bg-primary/10 border-primary' : ''}"
 					aria-label="Filter by difficulty"
 				>
 					{#if selectedDifficulties.length === 0}
@@ -542,25 +537,25 @@
 				</Button>
 				
 				{#if showDifficultyModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[180px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-popover rounded-xl shadow-lg border p-4 min-w-[180px] z-10">
 						<div class="space-y-2" role="group" aria-label="Difficulty filter options">
 							{#each difficulties as difficulty (difficulty)}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedDifficulties.includes(difficulty)}
 										onchange={() => toggleDifficulty(difficulty)}
-										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
+										class="h-4 w-4 text-primary focus:ring-primary rounded"
 									/>
-									<span class="text-slate-700 text-sm">{difficulty}</span>
+									<span class="text-popover-foreground text-sm">{difficulty}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedDifficulties.length > 0}
-							<div class="mt-3 pt-3 border-t border-slate-200">
+							<div class="mt-3 pt-3 border-t">
 								<button 
 									onclick={() => { selectedDifficulties = []; handleDifficultyChange(); }}
-									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
+									class="text-sm text-primary hover:text-primary/80 font-medium interactive"
 								>
 									Clear difficulties
 								</button>
@@ -575,7 +570,7 @@
 				<Button 
 					variant="outline" 
 					onclick={toggleLevelModal}
-					class="gap-2 interactive rounded-lg {selectedLevels.length > 0 ? 'bg-primary-50 border-primary-300 text-primary-700' : ''}"
+					class="gap-2 interactive rounded-lg {selectedLevels.length > 0 ? 'bg-primary/10 border-primary' : ''}"
 					aria-label="Filter by course type"
 				>
 					{#if selectedLevels.length === 0}
@@ -591,25 +586,25 @@
 				</Button>
 				
 				{#if showLevelModal}
-					<div class="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border border-slate-200 p-4 min-w-[140px] z-10">
+					<div class="absolute top-full left-0 mt-2 bg-popover rounded-xl shadow-lg border p-4 min-w-[140px] z-10">
 						<div class="space-y-2" role="group" aria-label="Type filter options">
 							{#each levels as level (level)}
-								<label class="flex items-center space-x-2 cursor-pointer hover:bg-slate-50 p-2 rounded-lg interactive">
+								<label class="flex items-center space-x-2 cursor-pointer hover:bg-muted p-2 rounded-lg interactive">
 									<input 
 										type="checkbox" 
 										checked={selectedLevels.includes(level)}
 										onchange={() => toggleLevel(level)}
-										class="h-4 w-4 text-primary-600 focus:ring-primary-500 border-slate-300 rounded"
+										class="h-4 w-4 text-primary focus:ring-primary rounded"
 									/>
-									<span class="text-slate-700 text-sm">{level === 'free' ? 'Free' : 'Premium'}</span>
+									<span class="text-popover-foreground text-sm">{level === 'free' ? 'Free' : 'Premium'}</span>
 								</label>
 							{/each}
 						</div>
 						{#if selectedLevels.length > 0}
-							<div class="mt-3 pt-3 border-t border-slate-200">
+							<div class="mt-3 pt-3 border-t">
 								<button 
 									onclick={() => { selectedLevels = []; handleLevelChange(); }}
-									class="text-sm text-primary-600 hover:text-primary-800 font-medium interactive"
+									class="text-sm text-primary hover:text-primary/80 font-medium interactive"
 								>
 									Clear types
 								</button>
@@ -621,7 +616,7 @@
 			
 			<!-- Clear All Button -->
 			{#if hasActiveFilters()}
-				<Button variant="outline" onclick={clearFilters} class="text-slate-600 hover:text-slate-800 interactive rounded-lg">
+				<Button variant="outline" onclick={clearFilters} class="interactive rounded-lg">
 					Clear all
 				</Button>
 			{/if}
@@ -630,7 +625,7 @@
 
 	<!-- Results Count -->
 	<div class="mb-6" aria-live="polite">
-		<p class="text-slate-600 font-medium">
+		<p class="text-muted-foreground font-medium">
 			{#if loading}
 				Loading courses...
 			{:else}
@@ -644,11 +639,11 @@
 
 	<!-- Error Message -->
 	{#if error}
-		<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm" role="alert" aria-live="assertive">
-			<h3 class="font-semibold text-red-800 mb-2">
+		<div class="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl" role="alert" aria-live="assertive">
+			<h3 class="font-semibold text-destructive mb-2">
 				{error.includes('Network') ? 'Connection Error' : 'Loading Error'}
 			</h3>
-			<p class="text-red-700">{error}</p>
+			<p class="text-destructive">{error}</p>
 			<Button variant="outline" onclick={loadCourses} class="mt-2 interactive">
 				Try Again
 			</Button>
@@ -664,13 +659,13 @@
 					<div class="animate-pulse" aria-hidden="true">
 						<Card class="h-full card rounded-xl">
 							<CardHeader class="p-0">
-								<div class="aspect-video bg-slate-200 rounded-t-xl"></div>
+								<div class="aspect-video bg-muted rounded-t-xl"></div>
 							</CardHeader>
 							<CardContent class="pt-4">
 								<div class="space-y-2">
-									<div class="h-4 bg-slate-200 rounded w-3/4"></div>
-									<div class="h-3 bg-slate-200 rounded w-1/2"></div>
-									<div class="h-3 bg-slate-200 rounded w-2/3"></div>
+									<div class="h-4 bg-muted rounded w-3/4"></div>
+									<div class="h-3 bg-muted rounded w-1/2"></div>
+									<div class="h-3 bg-muted rounded w-2/3"></div>
 								</div>
 							</CardContent>
 						</Card>
@@ -703,41 +698,41 @@
 									<CardContent class="pt-4">
 										<!-- Category and Difficulty Badges -->
 										<div class="flex items-center gap-2 mb-2 flex-wrap" role="group" aria-label="Course tags">
-											<span class="px-2 py-1 bg-primary-100 text-primary-800 text-xs font-medium rounded-lg">
+											<span class="px-2 py-1 bg-primary/10 text-primary text-xs font-medium rounded-lg">
 												{course.category}
 											</span>
-											<span class="px-2 py-1 text-xs font-medium rounded-lg {course.difficultyColor === 'bg-green-100 text-green-800' ? 'bg-secondary-100 text-secondary-800' : course.difficultyColor === 'bg-yellow-100 text-yellow-800' ? 'bg-accent-100 text-accent-800' : 'bg-red-100 text-red-800'}">
+											<span class="px-2 py-1 text-xs font-medium rounded-lg {course.difficultyColor === 'bg-green-100 text-green-800' ? 'bg-secondary/10 text-secondary-foreground' : course.difficultyColor === 'bg-yellow-100 text-yellow-800' ? 'bg-accent/10 text-accent-foreground' : 'bg-destructive/10 text-destructive'}">
 												{course.difficulty}
 											</span>
 											{#if course.level === 'premium'}
-												<span class="px-2 py-1 bg-gradient-to-r from-purple-100 to-pink-100 text-purple-800 text-xs font-medium rounded-lg">
+												<span class="px-2 py-1 bg-purple-500/10 text-purple-700 dark:text-purple-400 text-xs font-medium rounded-lg">
 													Premium
 												</span>
 											{/if}
 										</div>
 										
 										<!-- Course Title -->
-										<h3 class="text-lg font-semibold text-slate-900 mb-2 line-clamp-2">
+										<h3 class="text-lg font-semibold text-foreground mb-2 line-clamp-2">
 											{course.title}
 										</h3>
 										
 										<!-- Course Description -->
-										<p class="text-slate-600 text-sm line-clamp-2 mb-4">
+										<p class="text-muted-foreground text-sm line-clamp-2 mb-4">
 											{course.description}
 										</p>
 										
 										<!-- Instructor -->
-										<p class="text-sm font-medium text-slate-700 mb-3">
+										<p class="text-sm font-medium text-foreground mb-3">
 											Instructor: {course.instructor}
 										</p>
 									</CardContent>
 									
-									<CardFooter class="flex items-center justify-between text-sm text-slate-600 pt-0">
+									<CardFooter class="flex items-center justify-between text-sm text-muted-foreground pt-0">
 										<!-- Rating -->
 										<div class="flex items-center gap-1" aria-label="Rating: {course.rating} out of 5 stars">
-											<Star class="h-4 w-4 fill-accent-400 text-accent-400" aria-hidden="true" />
-											<span class="font-medium text-slate-900">{course.rating}</span>
-											<span class="text-slate-500">({course.ratingCount})</span>
+											<Star class="h-4 w-4 fill-accent-foreground text-accent-foreground" aria-hidden="true" />
+											<span class="font-medium text-foreground">{course.rating}</span>
+											<span>({course.ratingCount})</span>
 										</div>
 										
 										<!-- Enrollment Count -->
@@ -764,7 +759,7 @@
 						<Button 
 							onclick={() => handlePageChange(currentPage + 1)}
 							disabled={loading}
-							class="px-8 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive"
+							class="px-8"
 							aria-label="Load more courses"
 						>
 							{loading ? 'Loading...' : 'Load More Courses'}
@@ -777,10 +772,10 @@
 			<section class="text-center py-12" aria-label="No courses found">
 				<div class="max-w-md mx-auto">
 					<div class="mb-4">
-						<Search class="h-16 w-16 text-slate-400 mx-auto" aria-hidden="true" />
+						<Search class="h-16 w-16 text-muted-foreground mx-auto" aria-hidden="true" />
 					</div>
-					<h2 class="text-lg font-semibold text-slate-900 mb-2">No courses found</h2>
-					<p class="text-slate-600 mb-4">
+					<h2 class="text-lg font-semibold text-foreground mb-2">No courses found</h2>
+					<p class="text-muted-foreground mb-4">
 						We couldn't find any courses matching your criteria. Try adjusting your filters or search terms.
 					</p>
 					<Button variant="outline" onclick={clearFilters} class="interactive rounded-lg">

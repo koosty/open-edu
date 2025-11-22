@@ -264,7 +264,7 @@ describe("CourseService", () => {
         title: "New Course",
         description: "A new course",
         category: "Programming",
-      };
+      } as any;
 
       mockFirestore.collection.mockReturnValue("mock-collection");
       mockFirestore.addDoc.mockResolvedValue({
@@ -283,7 +283,7 @@ describe("CourseService", () => {
     });
 
     test("should include instructor information in course data", async () => {
-      const newCourseData = { title: "New Course" };
+      const newCourseData = { title: "New Course" } as any;
 
       mockFirestore.collection.mockReturnValue("mock-collection");
       mockFirestore.addDoc.mockResolvedValue(mockDocRef);
@@ -309,7 +309,7 @@ describe("CourseService", () => {
       mockFirestore.addDoc.mockRejectedValue(error);
 
       await expect(
-        CourseService.createCourse({ title: "Test" }, "instructor-123"),
+        CourseService.createCourse({ title: "Test" } as any, "instructor-123"),
       ).rejects.toThrow("Failed to create course");
     });
   });

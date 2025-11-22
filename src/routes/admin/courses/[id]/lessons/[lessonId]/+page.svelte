@@ -4,12 +4,13 @@
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
-	import { Button } from '$lib/components/ui'
+	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
-	import { Input } from '$lib/components/ui'
+	import * as Select from '$lib/components/ui/select'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
 	const courseId = $derived($page.params.id as string)
@@ -37,7 +38,6 @@
 	// UI state
 	let submitting = $state(false)
 	let success = $state(false)
-	const showPreview = $state(true)
 	let previewMode = $state<'split' | 'preview' | 'edit'>('split')
 	
 	// Validation
@@ -236,11 +236,11 @@
 			<Loading />
 		</div>
 	{:else if error && !course}
-		<div class="min-h-screen bg-slate-50 flex items-center justify-center">
+		<div class="min-h-screen bg-muted/30 flex items-center justify-center">
 			<Card class="max-w-md shadow-lg">
 				<CardContent class="p-8 text-center">
-					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-					<p class="text-slate-600 mb-6">{error}</p>
+					<h2 class="text-2xl font-bold text-destructive mb-4">Error</h2>
+					<p class="text-muted-foreground mb-6">{error}</p>
 					<Button onclick={() => navigate('/admin')} class="shadow-sm">
 						← Back to Admin
 					</Button>
@@ -248,14 +248,24 @@
 			</Card>
 		</div>
 	{:else}
-		<div class="min-h-screen bg-slate-50">
+		<div class="min-h-screen bg-muted/30">
 			<!-- Header -->
-			<div class="bg-white border-b border-slate-200 sticky top-0 z-10 shadow-sm">
+			<div class="bg-card border-b border-border sticky top-0 z-10 shadow-sm">
 				<div class="container mx-auto px-4 py-4">
+					<!-- Breadcrumb -->
+					<DynamicBreadcrumb 
+						items={[
+							{ label: 'Admin', href: '/admin' },
+							{ label: course?.title || 'Course', href: `/admin/courses/${courseId}` },
+							{ label: isNewLesson ? 'New Lesson' : lesson?.title || 'Edit Lesson', current: true }
+						]} 
+						class="mb-3"
+					/>
+					
 					<div class="flex items-center justify-between">
 						<div>
-							<h1 class="text-2xl font-bold text-slate-900">{isNewLesson ? 'Create' : 'Edit'} Lesson</h1>
-							<p class="text-sm text-slate-600 mt-1">{course?.title}</p>
+							<h1 class="text-2xl font-bold text-foreground">{isNewLesson ? 'Create' : 'Edit'} Lesson</h1>
+							<p class="text-sm text-muted-foreground mt-1">{course?.title}</p>
 						</div>
 						<div class="flex gap-3">
 							<Button variant="outline" onclick={handleCancel} class="shadow-sm">
@@ -288,12 +298,12 @@
 
 				<!-- Error Message -->
 				{#if error}
-					<div class="mb-6 p-5 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+					<div class="mb-6 p-5 bg-destructive/10 border border-destructive/30 rounded-xl shadow-sm">
 						<div class="flex items-center gap-3">
-							<svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
-							<p class="text-red-900 font-medium">{error}</p>
+							<p class="text-destructive font-medium">{error}</p>
 						</div>
 					</div>
 				{/if}
@@ -305,11 +315,9 @@
 							<CardTitle>Lesson Information</CardTitle>
 						</CardHeader>
 						<CardContent class="space-y-6">
-							<div>
-								<label for="title" class="block text-sm font-semibold text-slate-900 mb-2">
-									Lesson Title *
-								</label>
-								<Input
+						<div>
+							<Label for="title" class="mb-2">Lesson Title *</Label>
+							<Input
 									id="title"
 									bind:value={form.title}
 									placeholder="Enter lesson title"
@@ -318,39 +326,34 @@
 								/>
 							</div>
 
-							<div>
-								<label for="description" class="block text-sm font-semibold text-slate-900 mb-2">
-									Description
-								</label>
-								<textarea
+						<div>
+							<Label for="description" class="mb-2">Description</Label>
+							<Textarea
 									id="description"
 									bind:value={form.description}
 									placeholder="Brief description of what students will learn"
-									rows="2"
-									class="input w-full"
-								></textarea>
+									rows={2}
+									class="w-full"
+								/>
 							</div>
 
 							<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-								<div>
-									<label for="type" class="block text-sm font-semibold text-slate-900 mb-2">
-										Type *
-									</label>
-									<select
-										id="type"
-										bind:value={form.type}
-										class="input w-full h-10"
-									>
-										<option value="lesson">Lesson</option>
-										<option value="quiz">Quiz</option>
-									</select>
-								</div>
+						<div>
+							<Label for="type" class="mb-2">Type *</Label>
+							<Select.Root type="single" bind:value={form.type}>
+									<Select.Trigger class="w-full">
+										{form.type === 'lesson' ? 'Lesson' : 'Quiz'}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Item value="lesson" label="Lesson">Lesson</Select.Item>
+										<Select.Item value="quiz" label="Quiz">Quiz</Select.Item>
+									</Select.Content>
+								</Select.Root>
+							</div>
 
-								<div>
-									<label for="duration" class="block text-sm font-semibold text-slate-900 mb-2">
-										Duration (minutes) *
-									</label>
-									<Input
+							<div>
+								<Label for="duration" class="mb-2">Duration (minutes) *</Label>
+								<Input
 										id="duration"
 										type="number"
 										value={form.duration.toString()}
@@ -362,11 +365,9 @@
 									/>
 								</div>
 
-								<div>
-									<label for="order" class="block text-sm font-semibold text-slate-900 mb-2">
-										Order *
-									</label>
-									<Input
+							<div>
+								<Label for="order" class="mb-2">Order *</Label>
+								<Input
 										id="order"
 										type="number"
 										value={form.order.toString()}
@@ -379,11 +380,9 @@
 								</div>
 							</div>
 
-							<div>
-								<label for="videoUrl" class="block text-sm font-semibold text-slate-900 mb-2">
-									Video URL (optional)
-								</label>
-								<Input
+						<div>
+							<Label for="videoUrl" class="mb-2">Video URL (optional)</Label>
+							<Input
 									id="videoUrl"
 									bind:value={form.videoUrl}
 									placeholder="https://youtube.com/watch?v=..."
@@ -392,15 +391,14 @@
 							</div>
 
 							<div>
-								<label class="flex items-center gap-2 cursor-pointer">
-									<input
-										type="checkbox"
+								<div class="flex items-center gap-2">
+									<Checkbox
+										id="required"
 										bind:checked={form.isRequired}
-										class="w-4 h-4 text-primary-600 rounded focus:ring-primary-500 focus:ring-2"
 									/>
-									<span class="text-sm font-medium text-slate-900">Required Lesson</span>
-								</label>
-								<p class="text-xs text-slate-500 mt-1">Students must complete this to progress</p>
+									<Label for="required" class="font-normal cursor-pointer">Required Lesson</Label>
+								</div>
+								<p class="text-xs text-muted-foreground mt-1">Students must complete this to progress</p>
 							</div>
 						</CardContent>
 					</Card>
@@ -441,11 +439,11 @@
 							</CardHeader>
 							<CardContent>
 								<!-- Toolbar -->
-								<div class="flex flex-wrap gap-2 mb-4 p-3 bg-slate-50 rounded-xl border border-slate-200">
+								<div class="flex flex-wrap gap-2 mb-4 p-3 bg-muted/30 rounded-xl border border-border">
 									<button
 										type="button"
 										onclick={() => insertMarkdown('heading')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-medium shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm font-medium shadow-sm transition-all"
 										title="Heading"
 									>
 										H2
@@ -453,7 +451,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('bold')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-bold shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm font-bold shadow-sm transition-all"
 										title="Bold"
 									>
 										B
@@ -461,7 +459,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('italic')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm italic shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm italic shadow-sm transition-all"
 										title="Italic"
 									>
 										I
@@ -469,7 +467,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('code')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm font-mono shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm font-mono shadow-sm transition-all"
 										title="Inline Code"
 									>
 										&lt;/&gt;
@@ -477,7 +475,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('codeblock')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm shadow-sm transition-all"
 										title="Code Block"
 									>
 										```
@@ -485,7 +483,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('link')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm shadow-sm transition-all"
 										title="Link"
 									>
 										🔗
@@ -493,7 +491,7 @@
 									<button
 										type="button"
 										onclick={() => insertMarkdown('list')}
-										class="interactive px-3 py-1.5 bg-white border border-slate-300 rounded-lg hover:bg-slate-50 hover:border-primary-300 active:scale-95 text-sm shadow-sm transition-all"
+										class="interactive px-3 py-1.5 bg-card border border-input rounded-lg hover:bg-muted/30 hover:border-primary/30 active:scale-95 text-sm shadow-sm transition-all"
 										title="List"
 									>
 										• List
@@ -505,19 +503,19 @@
 									<!-- Editor -->
 									{#if previewMode !== 'preview'}
 										<div>
-											<textarea
+											<Textarea
 												name="content"
 												bind:value={form.content}
 												placeholder="Write your lesson content in Markdown..."
-												rows="25"
-												class="input w-full font-mono text-sm"
-											></textarea>
+												rows={25}
+												class="w-full font-mono text-sm"
+											/>
 										</div>
 									{/if}
 
 									<!-- Preview -->
 									{#if previewMode !== 'edit'}
-										<div class="border border-slate-300 rounded-xl p-6 bg-white overflow-auto max-h-[600px] shadow-sm">
+										<div class="border border-input rounded-xl p-6 bg-white overflow-auto max-h-[600px] shadow-sm">
 											<div class="prose prose-slate max-w-none">
 												<MarkdownRenderer content={form.content} />
 											</div>
@@ -525,7 +523,7 @@
 									{/if}
 								</div>
 
-								<p class="text-xs text-slate-600 mt-3 bg-primary-50/50 p-3 rounded-lg border border-primary-100">
+								<p class="text-xs text-muted-foreground mt-3 bg-primary/5 p-3 rounded-lg border border-primary/20">
 									💡 <span class="font-medium">Tip:</span> Use Markdown syntax for formatting. Supports code highlighting, math formulas, and more!
 								</p>
 							</CardContent>
@@ -537,24 +535,24 @@
 									<svg class="w-16 h-16 mx-auto text-primary-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
 									</svg>
-									<h3 class="text-lg font-semibold text-slate-900 mb-2">📋 Create Quiz Content</h3>
-									<p class="text-slate-600">This lesson is marked as a Quiz. To add quiz questions:</p>
+									<h3 class="text-lg font-semibold text-foreground mb-2">📋 Create Quiz Content</h3>
+									<p class="text-muted-foreground">This lesson is marked as a Quiz. To add quiz questions:</p>
 								</div>
 
 								<div class="bg-primary-50 border border-primary-200 rounded-xl p-6 text-left space-y-4">
 									<div class="flex items-start gap-3">
 										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
 										<div>
-											<p class="font-medium text-slate-900">Save this lesson first</p>
-											<p class="text-sm text-slate-600 mt-1">Click "Create Lesson" or "Save Changes" above to create the lesson placeholder</p>
+											<p class="font-medium text-foreground">Save this lesson first</p>
+											<p class="text-sm text-muted-foreground mt-1">Click "Create Lesson" or "Save Changes" above to create the lesson placeholder</p>
 										</div>
 									</div>
 									
 									<div class="flex items-start gap-3">
 										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
 										<div>
-											<p class="font-medium text-slate-900">Create Quiz with Visual Builder</p>
-											<p class="text-sm text-slate-600 mt-1">
+											<p class="font-medium text-foreground">Create Quiz with Visual Builder</p>
+											<p class="text-sm text-muted-foreground mt-1">
 												{#if !isNewLesson && lesson}
 													Click the button below to create a quiz for this lesson using our visual builder
 												{:else}
@@ -578,15 +576,15 @@
 										</Button>
 									</div>
 								{:else}
-									<div class="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center">
-										<p class="text-sm text-yellow-800">
+									<div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
+										<p class="text-sm text-yellow-600 dark:text-yellow-400">
 											💡 Save this lesson first, then you can create the quiz using our visual builder
 										</p>
 									</div>
 								{/if}
 
-								<div class="mt-6 p-4 bg-slate-100 border border-slate-200 rounded-lg">
-									<p class="text-xs text-slate-600 leading-relaxed">
+								<div class="mt-6 p-4 bg-muted border border-border rounded-lg">
+									<p class="text-xs text-muted-foreground leading-relaxed">
 										<strong>Note:</strong> Quiz lessons serve as navigation placeholders in the course structure. 
 										The actual quiz questions are managed separately through the Quiz Management interface, 
 										which provides detailed statistics and publishing controls.

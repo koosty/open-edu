@@ -7,8 +7,10 @@
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
+	import { User, Clock, Users, Star, Edit } from 'lucide-svelte'
 	import type { Course, Enrollment } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 
 	const courseId = $derived($page.params.courseId as string)
 	let course = $state<Course | null>(null)
@@ -150,8 +152,8 @@
 	<div class="container mx-auto px-4 py-8">
 		<Card>
 			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-				<p class="text-gray-600 mb-6">{error}</p>
+				<h2 class="text-2xl font-bold text-destructive mb-4">Error</h2>
+				<p class="text-muted-foreground mb-6">{error}</p>
 				<Button onclick={() => navigate('/courses')}>
 					Back to Courses
 				</Button>
@@ -162,8 +164,8 @@
 	<div class="container mx-auto px-4 py-8">
 		<Card>
 			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold mb-4">Course Not Found</h2>
-				<p class="text-gray-600 mb-6">The course you're looking for doesn't exist.</p>
+				<h2 class="text-2xl font-bold text-foreground mb-4">Course Not Found</h2>
+				<p class="text-muted-foreground mb-6">The course you're looking for doesn't exist.</p>
 				<Button onclick={() => navigate('/courses')}>
 					Back to Courses
 				</Button>
@@ -172,6 +174,14 @@
 	</div>
 {:else}
 	<div class="container mx-auto px-4 py-8">
+		<!-- Breadcrumb -->
+		<DynamicBreadcrumb 
+			items={[
+				{ label: 'Courses', href: '/courses' },
+				{ label: course.title, current: true }
+			]} 
+		/>
+		
 		<!-- Course Header -->
 		<div class="mb-8">
 			<div class="flex flex-col lg:flex-row gap-8">
@@ -191,41 +201,35 @@
 				<!-- Course Info -->
 				<div class="lg:w-2/3">
 					<div class="flex items-center gap-2 mb-3">
-						<span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+						<span class="px-3 py-1 bg-primary/10 text-primary text-sm font-medium rounded-full">
 							{course.category}
 						</span>
-						<span class="px-3 py-1 bg-gray-100 text-gray-800 text-sm font-medium rounded-full">
+						<span class="px-3 py-1 bg-secondary/10 text-secondary-foreground text-sm font-medium rounded-full">
 							{course.difficulty}
 						</span>
 						{#if course.isFeatured}
-							<span class="px-3 py-1 bg-yellow-100 text-yellow-800 text-sm font-medium rounded-full">
+							<span class="px-3 py-1 bg-accent/10 text-accent-foreground text-sm font-medium rounded-full">
 								Featured
 							</span>
 						{/if}
 					</div>
 
-					<h1 class="text-3xl lg:text-4xl font-bold mb-4">{course.title}</h1>
-					<p class="text-gray-600 text-lg mb-6">{course.description}</p>
+					<h1 class="text-3xl lg:text-4xl font-bold text-foreground mb-4">{course.title}</h1>
+					<p class="text-muted-foreground text-lg mb-6">{course.description}</p>
 
 					<!-- Course Meta -->
 					<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
 						<div class="flex items-center gap-2">
-							<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-							</svg>
-							<span class="text-sm text-gray-600">By {course.instructor}</span>
+							<User class="w-5 h-5 text-muted-foreground" />
+							<span class="text-sm text-muted-foreground">By {course.instructor}</span>
 						</div>
 						<div class="flex items-center gap-2">
-							<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-							</svg>
-							<span class="text-sm text-gray-600">{formatDuration(course.duration)}</span>
+							<Clock class="w-5 h-5 text-muted-foreground" />
+							<span class="text-sm text-muted-foreground">{formatDuration(course.duration)}</span>
 						</div>
 						<div class="flex items-center gap-2">
-							<svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-							</svg>
-							<span class="text-sm text-gray-600">{course.enrolled} enrolled</span>
+							<Users class="w-5 h-5 text-muted-foreground" />
+							<span class="text-sm text-muted-foreground">{course.enrolled} enrolled</span>
 						</div>
 					</div>
 
@@ -234,16 +238,12 @@
 						<div class="flex items-center gap-2 mb-6">
 							<div class="flex items-center">
 							{#each Array(5) as _, i (i)}
-								<svg 
-									class="w-5 h-5 {i < Math.floor(course.rating) ? 'text-yellow-400' : 'text-gray-300'}" 
-									fill="currentColor" 
-									viewBox="0 0 20 20"
-								>
-									<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-								</svg>
+								<Star 
+									class="w-5 h-5 {i < Math.floor(course.rating) ? 'text-accent-foreground fill-accent-foreground' : 'text-muted fill-muted'}"
+								/>
 							{/each}
 							</div>
-							<span class="text-sm text-gray-600">
+							<span class="text-sm text-muted-foreground">
 								{course.rating.toFixed(1)} ({course.ratingCount} reviews)
 							</span>
 						</div>
@@ -251,7 +251,7 @@
 
 					<!-- Price and Enrollment -->
 					<div class="flex items-center justify-between">
-						<div class="text-2xl font-bold text-green-600">
+						<div class="text-2xl font-bold text-green-600 dark:text-green-400">
 							{formatPrice(course)}
 						</div>
 						
@@ -261,9 +261,7 @@
 									variant="outline"
 									onclick={() => navigate(`/admin/courses/${courseId}`)}
 								>
-									<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-									</svg>
+									<Edit class="w-4 h-4 mr-2" />
 									Edit Course
 								</Button>
 							{/if}
@@ -307,10 +305,10 @@
 							<ul class="space-y-3">
 							{#each course.learningOutcomes as outcome (outcome)}
 								<li class="flex items-start gap-3">
-									<svg class="w-5 h-5 text-green-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg class="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 									</svg>
-									<span class="text-gray-700">{outcome}</span>
+									<span class="text-foreground">{outcome}</span>
 								</li>
 							{/each}
 							</ul>
@@ -328,28 +326,46 @@
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
-							<div class="space-y-3">
+							<div class="space-y-2">
 							{#each sortedLessons as lesson (lesson.id)}
-								<div class="flex items-center gap-3 p-3 border rounded-lg">
-									<div class="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-sm font-medium">
-										{lesson.order || sortedLessons.indexOf(lesson) + 1}
-									</div>
-									<div class="flex-1">
-										<h4 class="font-medium">{lesson.title}</h4>
-										{#if lesson.description}
-											<p class="text-sm text-gray-600">{lesson.description}</p>
-										{/if}
-									</div>
-									<div class="flex items-center gap-2 text-sm text-gray-500">
-										{#if lesson.duration}
-											<span>{lesson.duration} min</span>
-										{/if}
-										<span class="capitalize">{lesson.type}</span>
-										{#if lesson.isRequired}
-											<span class="px-2 py-1 bg-red-100 text-red-600 text-xs rounded">Required</span>
-										{/if}
-									</div>
-								</div>
+								<Card class="overflow-hidden hover:shadow-md transition-shadow">
+									<CardContent class="p-4">
+										<div class="flex items-center gap-3">
+											<!-- Lesson Number Badge -->
+											<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-primary shrink-0">
+												{lesson.order || sortedLessons.indexOf(lesson) + 1}
+											</div>
+											
+											<!-- Lesson Info -->
+											<div class="flex-1 min-w-0">
+												<h4 class="font-semibold text-foreground mb-1">{lesson.title}</h4>
+												{#if lesson.description}
+													<p class="text-sm text-muted-foreground line-clamp-2">{lesson.description}</p>
+												{/if}
+											</div>
+											
+											<!-- Lesson Meta -->
+											<div class="flex flex-col sm:flex-row items-end sm:items-center gap-2 text-xs shrink-0">
+												{#if lesson.duration}
+													<div class="flex items-center gap-1 px-2 py-1 bg-muted rounded-md">
+														<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+														</svg>
+														<span class="text-muted-foreground font-medium">{lesson.duration} min</span>
+													</div>
+												{/if}
+												<div class="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-md capitalize font-medium">
+													{lesson.type}
+												</div>
+												{#if lesson.isRequired}
+													<div class="px-2 py-1 bg-destructive/10 text-destructive rounded-md font-semibold">
+														Required
+													</div>
+												{/if}
+											</div>
+										</div>
+									</CardContent>
+								</Card>
 							{/each}
 							</div>
 						</CardContent>
@@ -366,29 +382,29 @@
 					</CardHeader>
 					<CardContent class="space-y-4">
 						<div class="flex justify-between items-center">
-							<span class="text-gray-600">Level:</span>
-							<span class="font-medium capitalize">{course.level}</span>
+							<span class="text-muted-foreground">Level:</span>
+							<span class="font-medium text-foreground capitalize">{course.level}</span>
 						</div>
 						<div class="flex justify-between items-center">
-							<span class="text-gray-600">Duration:</span>
-							<span class="font-medium">{formatDuration(course.duration)}</span>
+							<span class="text-muted-foreground">Duration:</span>
+							<span class="font-medium text-foreground">{formatDuration(course.duration)}</span>
 						</div>
 						<div class="flex justify-between items-center">
-							<span class="text-gray-600">Lessons:</span>
-							<span class="font-medium">{course.lessons?.length || 0}</span>
+							<span class="text-muted-foreground">Lessons:</span>
+							<span class="font-medium text-foreground">{course.lessons?.length || 0}</span>
 						</div>
 						<div class="flex justify-between items-center">
-							<span class="text-gray-600">Enrolled:</span>
-							<span class="font-medium">{course.enrolled}</span>
+							<span class="text-muted-foreground">Enrolled:</span>
+							<span class="font-medium text-foreground">{course.enrolled}</span>
 						</div>
 						{#if course.prerequisites?.length}
 							<div>
-								<span class="text-gray-600 block mb-2">Prerequisites:</span>
+								<span class="text-muted-foreground block mb-2">Prerequisites:</span>
 								<ul class="text-sm space-y-1">
 								{#each course.prerequisites as prereq (prereq)}
 									<li class="flex items-start gap-2">
-										<span class="w-1.5 h-1.5 bg-gray-400 rounded-full mt-2 shrink-0"></span>
-										<span>{prereq}</span>
+										<span class="w-1.5 h-1.5 bg-muted-foreground rounded-full mt-2 shrink-0"></span>
+										<span class="text-foreground">{prereq}</span>
 									</li>
 								{/each}
 								</ul>
@@ -406,7 +422,7 @@
 						<CardContent>
 							<div class="flex flex-wrap gap-2">
 							{#each course.tags as tag (tag)}
-								<span class="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full">
+								<span class="px-3 py-1 bg-muted text-foreground text-sm rounded-full">
 									{tag}
 								</span>
 							{/each}
@@ -419,17 +435,26 @@
 
 		<!-- Enrollment Error -->
 		{#if error}
-			<div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+			<div class="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
 				<div class="flex items-start gap-3">
-					<svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<svg class="w-5 h-5 text-destructive mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					<div>
-						<h3 class="text-sm font-medium text-red-800">Error</h3>
-						<p class="text-sm text-red-700 mt-1">{error}</p>
+						<h3 class="text-sm font-medium text-destructive">Error</h3>
+						<p class="text-sm text-destructive mt-1">{error}</p>
 					</div>
 				</div>
 			</div>
 		{/if}
 	</div>
 {/if}
+
+<style>
+	.line-clamp-2 {
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+</style>

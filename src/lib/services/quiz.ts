@@ -14,11 +14,7 @@ import {
 	query,
 	where,
 	orderBy,
-	limit as firestoreLimit,
-	type Query,
-	type DocumentData,
 	serverTimestamp,
-	Timestamp,
 	arrayUnion
 } from 'firebase/firestore'
 import { db } from '$lib/firebase'
@@ -27,7 +23,6 @@ import type {
 	Quiz,
 	QuizAttempt,
 	QuizAnswer,
-	QuizResults,
 	QuizStatistics
 } from '$lib/types/quiz'
 import type { Lesson } from '$lib/types'
@@ -471,35 +466,37 @@ function checkAnswer(
 			if (!Array.isArray(answer) || !Array.isArray(correctAnswer)) {
 				return false
 			}
-			// Sort and compare arrays
-			const sortedAnswer = [...answer].sort()
-			const sortedCorrect = [...correctAnswer].sort()
-			return JSON.stringify(sortedAnswer) === JSON.stringify(sortedCorrect)
-			
-		case 'short_answer':
-			if (typeof answer !== 'string' || typeof correctAnswer !== 'string') {
-				return false
-			}
-			
-			// Check acceptable answers if provided
-			if (question.acceptableAnswers) {
-				const allAcceptable = [correctAnswer, ...question.acceptableAnswers]
-				return allAcceptable.some(acceptable => 
-					question.caseSensitive 
-						? answer === acceptable
-						: answer.toLowerCase() === acceptable.toLowerCase()
-				)
-			}
-			
-			return question.caseSensitive
-				? answer === correctAnswer
-				: answer.toLowerCase() === correctAnswer.toLowerCase()
-			
-		case 'fill_blank':
-			// Similar to short answer
-			return question.caseSensitive
-				? answer === correctAnswer
-				: String(answer).toLowerCase() === String(correctAnswer).toLowerCase()
+		// Sort and compare arrays
+		const sortedAnswer = [...answer].sort()
+		const sortedCorrect = [...correctAnswer].sort()
+		return JSON.stringify(sortedAnswer) === JSON.stringify(sortedCorrect)
+		
+	case 'short_answer': {
+		if (typeof answer !== 'string' || typeof correctAnswer !== 'string') {
+			return false
+		}
+		
+		// Check acceptable answers if provided
+		if (question.acceptableAnswers) {
+			const allAcceptable = [correctAnswer, ...question.acceptableAnswers]
+			return allAcceptable.some(acceptable => 
+				question.caseSensitive 
+					? answer === acceptable
+					: answer.toLowerCase() === acceptable.toLowerCase()
+			)
+		}
+		
+		return question.caseSensitive
+			? answer === correctAnswer
+			: answer.toLowerCase() === correctAnswer.toLowerCase()
+	}
+		
+	case 'fill_blank': {
+		// Similar to short answer
+		return question.caseSensitive
+			? answer === correctAnswer
+			: String(answer).toLowerCase() === String(correctAnswer).toLowerCase()
+	}
 			
 		case 'essay':
 			// Essays require manual grading

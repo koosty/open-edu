@@ -152,8 +152,8 @@
 							{/if}
 
 							{#if success}
-								<div class="bg-green-50 border border-green-200 rounded-md p-3">
-									<p class="text-sm text-green-800">{success}</p>
+								<div class="bg-green-500/10 border border-green-500/20 rounded-md p-3">
+									<p class="text-sm text-green-700 dark:text-green-400">{success}</p>
 								</div>
 							{/if}
 
@@ -193,7 +193,7 @@
 										{authState.user?.email}
 									</p>
 									{#if authState.user && !authState.user.emailVerified}
-										<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
+										<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 mt-1">
 											Unverified
 										</span>
 									{/if}
@@ -215,8 +215,8 @@
 							</div>
 
 							{#if success}
-								<div class="bg-green-50 border border-green-200 rounded-md p-3">
-									<p class="text-sm text-green-800">{success}</p>
+								<div class="bg-green-500/10 border border-green-500/20 rounded-md p-3">
+									<p class="text-sm text-green-700 dark:text-green-400">{success}</p>
 								</div>
 							{/if}
 						</div>

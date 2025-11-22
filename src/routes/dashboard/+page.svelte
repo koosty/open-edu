@@ -142,80 +142,80 @@
 		<div class="container mx-auto py-8 px-4">
 			<!-- Welcome Section -->
 			<div class="mb-8">
-				<h1 class="text-3xl font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent mb-2">
+				<h1 class="text-3xl font-bold text-primary mb-2">
 					Welcome back{#if authState.user?.displayName}, {authState.user.displayName}{/if}!
 				</h1>
-				<p class="text-slate-600">
+				<p class="text-muted-foreground">
 					Here's your learning progress and recent activity.
 				</p>
 			</div>
 
 			{#if error}
-				<Card class="mb-8 border-red-200 bg-red-50 rounded-xl shadow-sm">
+				<Card class="mb-8 border-destructive/20 bg-destructive/10">
 					<CardContent class="pt-6">
-						<p class="text-red-800 font-medium">{error}</p>
-						<Button onclick={loadDashboardData} class="mt-4 bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive">Retry</Button>
+						<p class="text-destructive font-medium">{error}</p>
+						<Button onclick={loadDashboardData} class="mt-4">Retry</Button>
 					</CardContent>
 				</Card>
 			{/if}
 
 			<!-- Stats Cards -->
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-				<Card class="card-hover rounded-xl shadow-sm border-slate-200">
+				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-slate-700">Enrolled Courses</CardTitle>
-						<div class="w-8 h-8 rounded-lg bg-primary-100 flex items-center justify-center">
-							<BookOpen class="h-4 w-4 text-primary-600" />
+						<CardTitle class="text-sm font-medium text-muted-foreground">Enrolled Courses</CardTitle>
+						<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+							<BookOpen class="h-4 w-4 text-primary" />
 						</div>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold text-slate-900">{userStats.totalCourses}</div>
-						<p class="text-xs text-slate-600">
+						<div class="text-2xl font-bold text-foreground">{userStats.totalCourses}</div>
+						<p class="text-xs text-muted-foreground">
 							Total enrollments
 						</p>
 					</CardContent>
 				</Card>
 
-				<Card class="card-hover rounded-xl shadow-sm border-slate-200">
+				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-slate-700">Completed</CardTitle>
-						<div class="w-8 h-8 rounded-lg bg-secondary-100 flex items-center justify-center">
-							<Award class="h-4 w-4 text-secondary-600" />
+						<CardTitle class="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+						<div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
+							<Award class="h-4 w-4 text-secondary-foreground" />
 						</div>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold text-slate-900">{userStats.completedCourses}</div>
-						<p class="text-xs text-slate-600">
+						<div class="text-2xl font-bold text-foreground">{userStats.completedCourses}</div>
+						<p class="text-xs text-muted-foreground">
 							{userStats.totalCourses > 0 ? Math.round((userStats.completedCourses / userStats.totalCourses) * 100) : 0}% completion rate
 						</p>
 					</CardContent>
 				</Card>
 
-				<Card class="card-hover rounded-xl shadow-sm border-slate-200">
+				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-slate-700">Study Hours</CardTitle>
-						<div class="w-8 h-8 rounded-lg bg-accent-100 flex items-center justify-center">
-							<Clock class="h-4 w-4 text-accent-600" />
+						<CardTitle class="text-sm font-medium text-muted-foreground">Study Hours</CardTitle>
+						<div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
+							<Clock class="h-4 w-4 text-accent-foreground" />
 						</div>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold text-slate-900">{userStats.totalStudyTime}</div>
-						<p class="text-xs text-slate-600">
+						<div class="text-2xl font-bold text-foreground">{userStats.totalStudyTime}</div>
+						<p class="text-xs text-muted-foreground">
 							Total time invested
 						</p>
 					</CardContent>
 				</Card>
 
-				<Card class="card-hover rounded-xl shadow-sm border-slate-200">
+				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-slate-700">Current Streak</CardTitle>
-						<div class="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-							<User class="h-4 w-4 text-primary-600" />
+						<CardTitle class="text-sm font-medium text-muted-foreground">Current Streak</CardTitle>
+						<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+							<User class="h-4 w-4 text-primary" />
 						</div>
 					</CardHeader>
 					<CardContent>
-						<div class="text-2xl font-bold text-slate-900">{userStats.currentStreak}</div>
-						<p class="text-xs text-slate-600">
+						<div class="text-2xl font-bold text-foreground">{userStats.currentStreak}</div>
+						<p class="text-xs text-muted-foreground">
 							{userStats.currentStreak === 1 ? 'day' : 'days'} in a row
 						</p>
 					</CardContent>
@@ -224,10 +224,10 @@
 
 			<!-- Course Overview -->
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-				<Card class="card rounded-xl shadow-sm border-slate-200">
+				<Card class="card">
 					<CardHeader>
-						<CardTitle class="text-slate-900">Recent Courses</CardTitle>
-						<CardDescription class="text-slate-600">
+						<CardTitle>Recent Courses</CardTitle>
+						<CardDescription>
 							Your enrolled courses and progress
 						</CardDescription>
 					</CardHeader>
@@ -235,27 +235,27 @@
 						{#if recentCourses.length > 0}
 							<div class="space-y-4">
 								{#each recentCourses as course (course.id)}
-									<div class="flex items-center justify-between space-x-4 p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm">
+									<div class="flex items-center justify-between space-x-4 p-3 rounded-lg border hover:bg-muted interactive hover:shadow-sm">
 										<div class="flex items-center space-x-4 flex-1">
-											<div class="w-10 h-10 rounded-lg flex items-center justify-center {course.progress >= 100 ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 shadow-md' : 'bg-primary-100'}">
+											<div class="w-10 h-10 rounded-lg flex items-center justify-center {course.progress >= 100 ? 'bg-primary text-primary-foreground shadow-md' : 'bg-primary/10'}">
 												{#if course.progress >= 100}
-													<CheckCircle class="h-5 w-5 text-white" />
+													<CheckCircle class="h-5 w-5" />
 												{:else}
-													<BookOpen class="h-5 w-5 text-primary-600" />
+													<BookOpen class="h-5 w-5 text-primary" />
 												{/if}
 											</div>
 											<div class="flex-1">
-												<p class="text-sm font-medium text-slate-900">{course.title}</p>
+												<p class="text-sm font-medium text-foreground">{course.title}</p>
 												<div class="flex items-center space-x-2 mt-1">
-													<p class="text-xs text-slate-600 font-medium">{course.progress}% complete</p>
+													<p class="text-xs text-muted-foreground font-medium">{course.progress}% complete</p>
 													{#if course.category}
-														<span class="text-xs text-slate-400">•</span>
-														<span class="text-xs text-slate-600 capitalize">{course.category}</span>
+														<span class="text-xs text-muted-foreground">•</span>
+														<span class="text-xs text-muted-foreground capitalize">{course.category}</span>
 													{/if}
 												</div>
-												<div class="w-full h-1.5 bg-slate-200 rounded-full mt-2">
+												<div class="w-full h-1.5 bg-muted rounded-full mt-2">
 													<div 
-														class="h-1.5 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full transition-all"
+														class="h-1.5 bg-primary rounded-full transition-all"
 														style="width: {course.progress}%"
 													></div>
 												</div>
@@ -265,7 +265,6 @@
 											size="sm" 
 											variant="outline"
 											onclick={() => continueCourse(course.courseId)}
-											class="interactive rounded-lg border-primary-300 text-primary-700 hover:bg-primary-50"
 										>
 											{course.progress > 0 ? 'Continue' : 'Start'}
 										</Button>
@@ -274,19 +273,19 @@
 							</div>
 						{:else}
 							<div class="text-center py-8">
-								<BookOpen class="h-12 w-12 text-slate-400 mx-auto mb-4" />
-								<p class="text-sm font-medium text-slate-900 mb-2">No enrolled courses yet</p>
-								<p class="text-xs text-slate-600 mb-4">Start your learning journey by browsing our course catalog</p>
-								<Button onclick={() => navigate('/courses')} class="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 interactive">Browse Courses</Button>
+								<BookOpen class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+								<p class="text-sm font-medium text-foreground mb-2">No enrolled courses yet</p>
+								<p class="text-xs text-muted-foreground mb-4">Start your learning journey by browsing our course catalog</p>
+								<Button onclick={() => navigate('/courses')}>Browse Courses</Button>
 							</div>
 						{/if}
 					</CardContent>
 				</Card>
 
-				<Card class="card rounded-xl shadow-sm border-slate-200">
+				<Card class="card">
 					<CardHeader>
-						<CardTitle class="text-slate-900">Quick Actions</CardTitle>
-						<CardDescription class="text-slate-600">
+						<CardTitle>Quick Actions</CardTitle>
+						<CardDescription>
 							Common tasks and shortcuts
 						</CardDescription>
 					</CardHeader>
@@ -294,42 +293,42 @@
 						<div class="space-y-3">
 							<a 
 								href={getPath('/courses')} 
-								class="block p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm"
+								class="block p-3 rounded-lg border hover:bg-muted interactive hover:shadow-sm"
 							>
 								<div class="flex items-center space-x-3">
-									<div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-										<BookOpen class="h-5 w-5 text-primary-600" />
+									<div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+										<BookOpen class="h-5 w-5 text-primary" />
 									</div>
 									<div>
-										<p class="text-sm font-medium text-slate-900">Browse Courses</p>
-										<p class="text-xs text-slate-600">Discover new learning materials</p>
+										<p class="text-sm font-medium text-foreground">Browse Courses</p>
+										<p class="text-xs text-muted-foreground">Discover new learning materials</p>
 									</div>
 								</div>
 							</a>
 
 							<a 
 								href={getPath('/auth/profile')} 
-								class="block p-3 rounded-lg border border-slate-200 hover:bg-slate-50 interactive hover:shadow-sm"
+								class="block p-3 rounded-lg border hover:bg-muted interactive hover:shadow-sm"
 							>
 								<div class="flex items-center space-x-3">
-									<div class="w-10 h-10 rounded-lg bg-secondary-100 flex items-center justify-center">
-										<User class="h-5 w-5 text-secondary-600" />
+									<div class="w-10 h-10 rounded-lg bg-secondary/10 flex items-center justify-center">
+										<User class="h-5 w-5 text-secondary-foreground" />
 									</div>
 									<div>
-										<p class="text-sm font-medium text-slate-900">Edit Profile</p>
-										<p class="text-xs text-slate-600">Update your account information</p>
+										<p class="text-sm font-medium text-foreground">Edit Profile</p>
+										<p class="text-xs text-muted-foreground">Update your account information</p>
 									</div>
 								</div>
 							</a>
 
-							<div class="p-3 rounded-lg border border-slate-200 bg-gradient-to-br from-accent-50 to-white">
+							<div class="p-3 rounded-lg border bg-accent/5">
 								<div class="flex items-center space-x-3">
-									<div class="w-10 h-10 rounded-lg bg-accent-100 flex items-center justify-center">
-										<Award class="h-5 w-5 text-accent-600" />
+									<div class="w-10 h-10 rounded-lg bg-accent/10 flex items-center justify-center">
+										<Award class="h-5 w-5 text-accent-foreground" />
 									</div>
 									<div>
-										<p class="text-sm font-medium text-slate-900">Learning Goal</p>
-										<p class="text-xs text-slate-600">
+										<p class="text-sm font-medium text-foreground">Learning Goal</p>
+										<p class="text-xs text-muted-foreground">
 											{#if userStats.totalCourses === 0}
 												Enroll in your first course
 											{:else if userStats.completedCourses < userStats.totalCourses}
