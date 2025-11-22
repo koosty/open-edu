@@ -34,14 +34,12 @@ export class ValidationError extends Error {
 }
 
 // Check if a value is a Firestore Timestamp
-function isFirestoreTimestamp(value: unknown): value is { toDate: () => Date, _seconds?: number, _nanoseconds?: number } {
+function isFirestoreTimestamp(value: unknown): value is { toDate: () => Date } {
   return (
     value !== null &&
     typeof value === "object" &&
     "toDate" in value &&
-    typeof value.toDate === "function" &&
-    "_seconds" in value &&
-    "_nanoseconds" in value
+    typeof value.toDate === "function"
   );
 }
 
