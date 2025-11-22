@@ -6,6 +6,7 @@
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
 	import QuizViewer from '$lib/components/QuizViewer.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAnswer } from '$lib/types/quiz'
 	
@@ -55,9 +56,9 @@
 	}
 	
 	// No-op submit function for preview mode
-	async function handlePreviewSubmit(answers: QuizAnswer[]) {
+	async function handlePreviewSubmit(_answers: QuizAnswer[]) {
 		// Do nothing - preview mode doesn't save
-		console.log('Preview mode: Quiz submit prevented', answers)
+		// Preview mode: Quiz submission prevented
 	}
 	
 	function handleExitPreview() {
@@ -76,15 +77,15 @@
 			<Loading />
 		</div>
 	{:else if error}
-		<div class="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-			<div class="bg-white rounded-lg shadow-lg p-6 max-w-md w-full">
-				<div class="flex items-center gap-3 text-red-600 mb-4">
+		<div class="min-h-screen bg-muted/30 flex items-center justify-center p-4">
+			<div class="bg-card rounded-lg shadow-lg p-6 max-w-md w-full">
+				<div class="flex items-center gap-3 text-destructive mb-4">
 					<svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 					</svg>
 					<h2 class="text-lg font-semibold">Error Loading Quiz</h2>
 				</div>
-				<p class="text-gray-600 mb-6">{error}</p>
+				<p class="text-muted-foreground mb-6">{error}</p>
 				<div class="flex gap-3">
 					<button
 						onclick={() => loadQuiz()}
@@ -94,7 +95,7 @@
 					</button>
 					<button
 						onclick={handleExitPreview}
-						class="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+						class="flex-1 px-4 py-2 bg-muted text-foreground rounded-lg hover:bg-muted/80 transition-colors"
 					>
 						Go Back
 					</button>
@@ -102,7 +103,19 @@
 			</div>
 		</div>
 	{:else if quiz}
-		<div class="min-h-screen bg-gray-50">
+		<div class="min-h-screen bg-muted/30">
+			<!-- Breadcrumb -->
+			<div class="container mx-auto px-4 pt-6">
+				<DynamicBreadcrumb 
+					items={[
+						{ label: 'Admin', href: '/admin' },
+						{ label: 'Course', href: `/admin/courses/${courseId}` },
+						{ label: 'Quizzes', href: `/admin/courses/${courseId}/quizzes` },
+						{ label: 'Preview', current: true }
+					]} 
+				/>
+			</div>
+			
 			<QuizViewer
 				{quiz}
 				onSubmit={handlePreviewSubmit}

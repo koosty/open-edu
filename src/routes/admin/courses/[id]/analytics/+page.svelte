@@ -6,6 +6,7 @@
 	import { Button, Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import { CourseService } from '$lib/services/courses'
 	import { AnalyticsService } from '$lib/services/analytics'
 	import * as QuizService from '$lib/services/quiz'
@@ -121,19 +122,19 @@
 	
 	function getActivityColor(level: string): string {
 		switch (level) {
-			case 'high': return 'bg-green-100 text-green-800'
-			case 'medium': return 'bg-yellow-100 text-yellow-800'
-			case 'low': return 'bg-orange-100 text-orange-800'
-			case 'inactive': return 'bg-red-100 text-red-800'
-			default: return 'bg-gray-100 text-gray-800'
+			case 'high': return 'bg-secondary/10 text-secondary'
+			case 'medium': return 'bg-yellow-600 dark:bg-yellow-400/10 text-yellow-600 dark:text-yellow-400'
+			case 'low': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400'
+			case 'inactive': return 'bg-destructive/10 text-destructive'
+			default: return 'bg-muted text-foreground'
 		}
 	}
 	
 	function getProgressColor(percentage: number): string {
-		if (percentage >= 75) return 'bg-green-500'
-		if (percentage >= 50) return 'bg-blue-500'
-		if (percentage >= 25) return 'bg-yellow-500'
-		return 'bg-red-500'
+		if (percentage >= 75) return 'bg-secondary'
+		if (percentage >= 50) return 'bg-primary'
+		if (percentage >= 25) return 'bg-yellow-600 dark:bg-yellow-400'
+		return 'bg-destructive'
 	}
 </script>
 
@@ -148,11 +149,11 @@
 			<Loading />
 		</div>
 	{:else if error && !course}
-		<div class="min-h-screen bg-gray-50 flex items-center justify-center">
+		<div class="min-h-screen bg-muted/30 flex items-center justify-center">
 			<Card class="max-w-md">
 				<CardContent class="p-8 text-center">
-					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-					<p class="text-gray-600 mb-6">{error}</p>
+					<h2 class="text-2xl font-bold text-destructive mb-4">Error</h2>
+					<p class="text-muted-foreground mb-6">{error}</p>
 					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
@@ -160,31 +161,24 @@
 			</Card>
 		</div>
 	{:else if course && analytics}
-		<div class="min-h-screen bg-gray-50">
+		<div class="min-h-screen bg-muted/30">
 			<!-- Header -->
 			<div class="bg-white border-b">
 				<div class="container mx-auto px-4 py-6">
+					<!-- Breadcrumb -->
+					<DynamicBreadcrumb 
+						items={[
+							{ label: 'Admin', href: '/admin' },
+							{ label: course.title, href: `/admin/courses/${courseId}` },
+							{ label: 'Analytics', current: true }
+						]} 
+						class="mb-4"
+					/>
+					
 					<div class="flex items-center justify-between">
 						<div>
-							<div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
-								<button
-									onclick={() => navigate('/admin')}
-									class="hover:text-blue-600"
-								>
-									Admin
-								</button>
-								<span>/</span>
-								<button
-									onclick={() => navigate(`/admin/courses/${courseId}`)}
-									class="hover:text-blue-600"
-								>
-									{course.title}
-								</button>
-								<span>/</span>
-								<span class="text-gray-900">Analytics</span>
-							</div>
 							<h1 class="text-3xl font-bold">Course Analytics</h1>
-							<p class="text-gray-600 mt-1">
+							<p class="text-muted-foreground mt-1">
 								Insights and performance metrics for {course.title}
 							</p>
 						</div>
@@ -212,7 +206,7 @@
 					<button
 						class="px-4 py-2 font-medium {selectedTab === 'overview' 
 							? 'border-b-2 border-primary-600 text-primary-600' 
-							: 'text-gray-600 hover:text-gray-900'}"
+							: 'text-muted-foreground hover:text-foreground'}"
 						onclick={() => selectedTab = 'overview'}
 					>
 						Overview
@@ -220,7 +214,7 @@
 					<button
 						class="px-4 py-2 font-medium {selectedTab === 'students' 
 							? 'border-b-2 border-primary-600 text-primary-600' 
-							: 'text-gray-600 hover:text-gray-900'}"
+							: 'text-muted-foreground hover:text-foreground'}"
 						onclick={() => selectedTab = 'students'}
 					>
 						Students ({students.length})
@@ -228,7 +222,7 @@
 					<button
 						class="px-4 py-2 font-medium {selectedTab === 'lessons' 
 							? 'border-b-2 border-primary-600 text-primary-600' 
-							: 'text-gray-600 hover:text-gray-900'}"
+							: 'text-muted-foreground hover:text-foreground'}"
 						onclick={() => selectedTab = 'lessons'}
 					>
 						Lessons ({analytics.lessonsAnalytics.length})
@@ -236,7 +230,7 @@
 					<button
 						class="px-4 py-2 font-medium {selectedTab === 'quizzes' 
 							? 'border-b-2 border-primary-600 text-primary-600' 
-							: 'text-gray-600 hover:text-gray-900'}"
+							: 'text-muted-foreground hover:text-foreground'}"
 						onclick={() => selectedTab = 'quizzes'}
 					>
 						Quizzes ({quizzes.length})
@@ -250,13 +244,13 @@
 						<Card>
 							<CardContent class="p-6">
 								<div class="flex items-center justify-between mb-2">
-									<span class="text-sm font-medium text-gray-600">Total Enrolled</span>
-									<svg class="w-8 h-8 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<span class="text-sm font-medium text-muted-foreground">Total Enrolled</span>
+									<svg class="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
 									</svg>
 								</div>
-								<div class="text-3xl font-bold text-gray-900">{analytics.totalEnrolled}</div>
-								<div class="text-sm text-gray-600 mt-1">
+								<div class="text-3xl font-bold text-foreground">{analytics.totalEnrolled}</div>
+								<div class="text-sm text-muted-foreground mt-1">
 									{analytics.activeStudents} active
 								</div>
 							</CardContent>
@@ -265,13 +259,13 @@
 						<Card>
 							<CardContent class="p-6">
 								<div class="flex items-center justify-between mb-2">
-									<span class="text-sm font-medium text-gray-600">Completion Rate</span>
-									<svg class="w-8 h-8 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<span class="text-sm font-medium text-muted-foreground">Completion Rate</span>
+									<svg class="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
 								</div>
-								<div class="text-3xl font-bold text-gray-900">{analytics.completionRate}%</div>
-								<div class="text-sm text-gray-600 mt-1">
+								<div class="text-3xl font-bold text-foreground">{analytics.completionRate}%</div>
+								<div class="text-sm text-muted-foreground mt-1">
 									{Math.round(analytics.totalEnrolled * analytics.completionRate / 100)} completed
 								</div>
 							</CardContent>
@@ -280,13 +274,13 @@
 						<Card>
 							<CardContent class="p-6">
 								<div class="flex items-center justify-between mb-2">
-									<span class="text-sm font-medium text-gray-600">Avg. Progress</span>
-									<svg class="w-8 h-8 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<span class="text-sm font-medium text-muted-foreground">Avg. Progress</span>
+									<svg class="w-8 h-8 text-purple-600 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
 									</svg>
 								</div>
-								<div class="text-3xl font-bold text-gray-900">{analytics.averageCourseProgress}%</div>
-								<div class="text-sm text-gray-600 mt-1">
+								<div class="text-3xl font-bold text-foreground">{analytics.averageCourseProgress}%</div>
+								<div class="text-sm text-muted-foreground mt-1">
 									Across all students
 								</div>
 							</CardContent>
@@ -295,13 +289,13 @@
 						<Card>
 							<CardContent class="p-6">
 								<div class="flex items-center justify-between mb-2">
-									<span class="text-sm font-medium text-gray-600">Avg. Time Spent</span>
-									<svg class="w-8 h-8 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<span class="text-sm font-medium text-muted-foreground">Avg. Time Spent</span>
+									<svg class="w-8 h-8 text-orange-600 dark:text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 									</svg>
 								</div>
-								<div class="text-3xl font-bold text-gray-900">{formatTime(analytics.averageCourseTime)}</div>
-								<div class="text-sm text-gray-600 mt-1">
+								<div class="text-3xl font-bold text-foreground">{formatTime(analytics.averageCourseTime)}</div>
+								<div class="text-sm text-muted-foreground mt-1">
 									Per student
 								</div>
 							</CardContent>
@@ -310,25 +304,25 @@
 
 					<!-- At-Risk Students Alert -->
 					{#if atRiskCount > 0}
-						<Card class="mb-8 bg-red-50 border-red-200">
+						<Card class="mb-8 bg-destructive/10 border-destructive/30">
 							<CardContent class="p-6">
 								<div class="flex items-start gap-4">
-									<div class="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center flex-shrink-0">
+									<div class="w-12 h-12 bg-destructive rounded-full flex items-center justify-center flex-shrink-0">
 										<svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 										</svg>
 									</div>
 									<div class="flex-1">
-										<h3 class="text-lg font-semibold text-red-900 mb-1">
+										<h3 class="text-lg font-semibold text-destructive mb-1">
 											⚠️ {atRiskCount} Student{atRiskCount > 1 ? 's' : ''} at Risk
 										</h3>
-										<p class="text-red-800 mb-4">
+										<p class="text-destructive mb-4">
 											These students haven't accessed the course in over 2 weeks and have low progress. Consider reaching out.
 										</p>
 										<Button
 											size="sm"
 											variant="outline"
-											class="border-red-300 text-red-700 hover:bg-red-100"
+											class="border-destructive text-destructive hover:bg-destructive/10"
 											onclick={() => {
 												selectedTab = 'students'
 												showAtRiskOnly = true
@@ -354,17 +348,17 @@
 									<div class="space-y-4">
 										{#each analytics.mostPopularLessons as lesson, i (lesson.lessonId)}
 											<div class="flex items-center gap-3">
-												<div class="w-8 h-8 rounded-full bg-green-100 text-green-700 flex items-center justify-center font-semibold text-sm">
+												<div class="w-8 h-8 rounded-full bg-secondary/10 text-secondary flex items-center justify-center font-semibold text-sm">
 													{i + 1}
 												</div>
 												<div class="flex-1">
-													<div class="font-medium text-gray-900">{lesson.lessonTitle}</div>
-													<div class="text-sm text-gray-600">
+													<div class="font-medium text-foreground">{lesson.lessonTitle}</div>
+													<div class="text-sm text-muted-foreground">
 														{lesson.views} views • {lesson.completionRate}% completion
 													</div>
 												</div>
 												<div class="text-right">
-													<div class="text-sm font-semibold text-green-600">
+													<div class="text-sm font-semibold text-secondary">
 														Score: {lesson.engagementScore}
 													</div>
 												</div>
@@ -387,17 +381,17 @@
 									<div class="space-y-4">
 										{#each analytics.leastEngagingLessons as lesson, i (lesson.lessonId)}
 											<div class="flex items-center gap-3">
-												<div class="w-8 h-8 rounded-full bg-red-100 text-red-700 flex items-center justify-center font-semibold text-sm">
+												<div class="w-8 h-8 rounded-full bg-destructive/10 text-destructive flex items-center justify-center font-semibold text-sm">
 													{i + 1}
 												</div>
 												<div class="flex-1">
-													<div class="font-medium text-gray-900">{lesson.lessonTitle}</div>
-													<div class="text-sm text-gray-600">
+													<div class="font-medium text-foreground">{lesson.lessonTitle}</div>
+													<div class="text-sm text-muted-foreground">
 														{lesson.views} views • {lesson.completionRate}% completion
 													</div>
 												</div>
 												<div class="text-right">
-													<div class="text-sm font-semibold text-red-600">
+													<div class="text-sm font-semibold text-destructive">
 														Score: {lesson.engagementScore}
 													</div>
 												</div>
@@ -420,18 +414,18 @@
 							<CardContent class="p-6">
 								<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 									<div class="text-center">
-										<div class="text-3xl font-bold text-gray-900">{quizzes.length}</div>
-										<div class="text-sm text-gray-600 mt-1">Total Quizzes</div>
+										<div class="text-3xl font-bold text-foreground">{quizzes.length}</div>
+										<div class="text-sm text-muted-foreground mt-1">Total Quizzes</div>
 									</div>
 									<div class="text-center">
-										<div class="text-3xl font-bold text-gray-900">{averageQuizScore()}%</div>
-										<div class="text-sm text-gray-600 mt-1">Average Score</div>
+										<div class="text-3xl font-bold text-foreground">{averageQuizScore()}%</div>
+										<div class="text-sm text-muted-foreground mt-1">Average Score</div>
 									</div>
 									<div class="text-center">
-										<div class="text-3xl font-bold text-gray-900">
+										<div class="text-3xl font-bold text-foreground">
 											{Array.from(quizStats.values()).reduce((sum, s) => sum + s.totalAttempts, 0)}
 										</div>
-										<div class="text-sm text-gray-600 mt-1">Total Attempts</div>
+										<div class="text-sm text-muted-foreground mt-1">Total Attempts</div>
 									</div>
 								</div>
 							</CardContent>
@@ -459,7 +453,7 @@
 							{#if filteredStudents.length > 0}
 								<div class="overflow-x-auto">
 									<table class="w-full">
-										<thead class="bg-gray-50 border-b">
+										<thead class="bg-muted/30 border-b">
 											<tr>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Progress</th>
@@ -471,7 +465,7 @@
 										</thead>
 										<tbody class="divide-y divide-gray-200">
 											{#each filteredStudents as student (student.userId)}
-												<tr class="hover:bg-gray-50">
+												<tr class="hover:bg-muted/30">
 													<td class="px-6 py-4">
 														<div class="flex items-center gap-3">
 															<div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
@@ -480,9 +474,9 @@
 																</span>
 															</div>
 															<div>
-																<div class="font-medium text-gray-900">{student.userName}</div>
+																<div class="font-medium text-foreground">{student.userName}</div>
 																{#if student.atRisk}
-																	<span class="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700">
+																	<span class="text-xs px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
 																		⚠️ At Risk
 																	</span>
 																{/if}
@@ -497,23 +491,23 @@
 																	style="width: {student.progressPercentage}%"
 																></div>
 															</div>
-															<span class="text-sm font-medium text-gray-900">
+															<span class="text-sm font-medium text-foreground">
 																{Math.round(student.progressPercentage)}%
 															</span>
 														</div>
 													</td>
 													<td class="px-6 py-4">
-														<span class="text-sm text-gray-900">
+														<span class="text-sm text-foreground">
 															{student.completedLessons}/{student.totalLessons}
 														</span>
 													</td>
 													<td class="px-6 py-4">
-														<span class="text-sm text-gray-900">
+														<span class="text-sm text-foreground">
 															{formatTime(student.totalTimeSpent)}
 														</span>
 													</td>
 													<td class="px-6 py-4">
-														<div class="text-sm text-gray-900">
+														<div class="text-sm text-foreground">
 															{formatDate(student.lastActive)}
 														</div>
 														<div class="text-xs text-gray-500">
@@ -549,7 +543,7 @@
 							{#if analytics.lessonsAnalytics.length > 0}
 								<div class="overflow-x-auto">
 									<table class="w-full">
-										<thead class="bg-gray-50 border-b">
+										<thead class="bg-muted/30 border-b">
 											<tr>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">#</th>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Lesson</th>
@@ -561,12 +555,12 @@
 										</thead>
 										<tbody class="divide-y divide-gray-200">
 											{#each analytics.lessonsAnalytics as lesson (lesson.lessonId)}
-												<tr class="hover:bg-gray-50">
+												<tr class="hover:bg-muted/30">
 													<td class="px-6 py-4 text-sm text-gray-500">{lesson.order}</td>
 													<td class="px-6 py-4">
-														<div class="font-medium text-gray-900">{lesson.lessonTitle}</div>
+														<div class="font-medium text-foreground">{lesson.lessonTitle}</div>
 													</td>
-													<td class="px-6 py-4 text-sm text-gray-900">{lesson.uniqueStudents}</td>
+													<td class="px-6 py-4 text-sm text-foreground">{lesson.uniqueStudents}</td>
 													<td class="px-6 py-4">
 														<div class="flex items-center gap-2">
 															<div class="flex-1 bg-gray-200 rounded-full h-2 max-w-[80px]">
@@ -575,23 +569,23 @@
 																	style="width: {lesson.completionRate}%"
 																></div>
 															</div>
-															<span class="text-sm font-medium text-gray-900">
+															<span class="text-sm font-medium text-foreground">
 																{Math.round(lesson.completionRate)}%
 															</span>
 														</div>
 													</td>
-													<td class="px-6 py-4 text-sm text-gray-900">
+													<td class="px-6 py-4 text-sm text-foreground">
 														{formatTime(lesson.averageTimeSpent)}
 													</td>
 													<td class="px-6 py-4">
 														<div class="flex items-center gap-2">
 															<div class="flex-1 bg-gray-200 rounded-full h-2 max-w-[60px]">
 																<div
-																	class="bg-purple-500 h-2 rounded-full"
+																	class="bg-purple-600 dark:bg-purple-400 h-2 rounded-full"
 																	style="width: {lesson.engagementScore}%"
 																></div>
 															</div>
-															<span class="text-sm font-medium text-gray-900">
+															<span class="text-sm font-medium text-foreground">
 																{lesson.engagementScore}
 															</span>
 														</div>
@@ -620,7 +614,7 @@
 							{#if quizzes.length > 0}
 								<div class="overflow-x-auto">
 									<table class="w-full">
-										<thead class="bg-gray-50 border-b">
+										<thead class="bg-muted/30 border-b">
 											<tr>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Quiz</th>
 												<th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Attempts</th>
@@ -633,24 +627,24 @@
 										<tbody class="divide-y divide-gray-200">
 											{#each quizzes as quiz (quiz.id)}
 												{@const stats = quizStats.get(quiz.id)}
-												<tr class="hover:bg-gray-50">
+												<tr class="hover:bg-muted/30">
 													<td class="px-6 py-4">
-														<div class="font-medium text-gray-900">{quiz.title}</div>
+														<div class="font-medium text-foreground">{quiz.title}</div>
 														<div class="text-sm text-gray-500">
 															{quiz.questions.length} questions • {quiz.passingScore}% to pass
 														</div>
 													</td>
-													<td class="px-6 py-4 text-sm text-gray-900">
+													<td class="px-6 py-4 text-sm text-foreground">
 														{stats?.totalAttempts || 0}
 													</td>
-													<td class="px-6 py-4 text-sm text-gray-900">
+													<td class="px-6 py-4 text-sm text-foreground">
 														{stats?.uniqueUsers || 0}
 													</td>
 													<td class="px-6 py-4">
 														<span class="text-sm font-medium {
 															(stats?.averageScore || 0) >= quiz.passingScore 
-																? 'text-green-600' 
-																: 'text-red-600'
+																? 'text-secondary' 
+																: 'text-destructive'
 														}">
 															{stats?.averageScore.toFixed(1) || 0}%
 														</span>
@@ -659,22 +653,22 @@
 														<div class="flex items-center gap-2">
 															<div class="flex-1 bg-gray-200 rounded-full h-2 max-w-[80px]">
 																<div
-																	class="bg-green-500 h-2 rounded-full"
+																	class="bg-secondary h-2 rounded-full"
 																	style="width: {stats?.passRate || 0}%"
 																></div>
 															</div>
-															<span class="text-sm font-medium text-gray-900">
+															<span class="text-sm font-medium text-foreground">
 																{stats?.passRate.toFixed(0) || 0}%
 															</span>
 														</div>
 													</td>
 													<td class="px-6 py-4">
 														{#if quiz.isPublished}
-															<span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+															<span class="text-xs px-2 py-1 rounded-full bg-secondary/10 text-secondary">
 																Published
 															</span>
 														{:else}
-															<span class="text-xs px-2 py-1 rounded-full bg-gray-100 text-gray-700">
+															<span class="text-xs px-2 py-1 rounded-full bg-muted text-gray-700">
 																Draft
 															</span>
 														{/if}

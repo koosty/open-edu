@@ -4,6 +4,7 @@ export { default as BookmarkButton } from "./BookmarkButton.svelte";
 export { default as BottomSheet } from "./BottomSheet.svelte";
 export { default as CodeBlock } from "./CodeBlock.svelte";
 export { default as CompletionCelebration } from "./CompletionCelebration.svelte";
+export { default as DynamicBreadcrumb } from "./DynamicBreadcrumb.svelte";
 export { default as LessonHeader } from "./LessonHeader.svelte";
 export { default as LessonNavigation } from "./LessonNavigation.svelte";
 export { default as Loading } from "./Loading.svelte";

@@ -11,14 +11,6 @@ const gitignorePath = fileURLToPath(new URL('./.gitignore', import.meta.url));
 
 export default defineConfig(
 	includeIgnoreFile(gitignorePath),
-	{
-		ignores: [
-			'**/*.spec.ts',
-			'**/*.test.ts',
-			'**/*.spec.js',
-			'**/*.test.js'
-		]
-	},
 	js.configs.recommended,
 	...ts.configs.recommended,
 	...svelte.configs.recommended,
@@ -33,7 +25,7 @@ export default defineConfig(
 			
 			// Allow unused variables that start with underscore or 'unused'
 			'@typescript-eslint/no-unused-vars': [
-				'warn', // Changed from 'error' to 'warn' for v1.4.0
+				'warn',
 				{
 					argsIgnorePattern: '^_|^unused',
 					varsIgnorePattern: '^_|^unused',
@@ -41,17 +33,23 @@ export default defineConfig(
 				}
 			],
 			
-			// Relaxed rules for v1.4.0 - to be addressed in v1.5.0/v2.0.0
-			// These are code quality issues, not breaking bugs
-			'@typescript-eslint/no-explicit-any': 'warn', // ~40 occurrences - gradual typing improvement
-			'no-useless-escape': 'warn', // 4 occurrences in markdown service
-			'no-case-declarations': 'warn', // 2 occurrences in quiz service
-			'prefer-const': 'warn', // 2 occurrences - minor improvements
+			// Code quality rules - enforced in v1.5.0
+			'@typescript-eslint/no-explicit-any': 'warn',
+			'no-useless-escape': 'warn',
+			'no-case-declarations': 'warn',
+			'prefer-const': 'warn',
 			
-		// Svelte-specific relaxed rules for v1.4.0
-		'svelte/no-navigation-without-resolve': 'off', // v1.5.0: Disabled - using custom navigation helpers (getPath/navigate)
-		'svelte/prefer-svelte-reactivity': 'warn', // 2 occurrences - SvelteSet usage
-		'svelte/require-each-key': 'warn' // ~10 occurrences in analytics pages
+		// Svelte-specific rules
+		'svelte/no-navigation-without-resolve': 'off', // v1.5.0: Disabled - using custom navigation helpers
+		'svelte/prefer-svelte-reactivity': 'warn',
+		'svelte/require-each-key': 'warn'
+		}
+	},
+	{
+		files: ['**/*.spec.ts', '**/*.spec.js', '**/*.test.ts', '**/*.test.js', '**/test-utils/**/*.ts'],
+		rules: {
+			// Allow any in test files
+			'@typescript-eslint/no-explicit-any': 'off'
 		}
 	},
 	{
@@ -67,6 +65,10 @@ export default defineConfig(
 				parser: ts.parser,
 				svelteConfig
 			}
+		},
+		rules: {
+			// Disable prefer-const in Svelte files - false positive with $props() destructuring
+			'prefer-const': 'off'
 		}
 	}
 );

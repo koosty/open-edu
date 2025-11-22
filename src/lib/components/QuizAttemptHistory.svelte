@@ -105,7 +105,7 @@
 									</span>
 									
 									{#if attempt.id === bestAttempt?.id}
-										<span class="flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">
+										<span class="flex items-center gap-1 px-2 py-1 bg-yellow-500/10 text-yellow-700 rounded-full text-xs font-semibold">
 											<Trophy class="w-3 h-3" />
 											Best Score
 										</span>
@@ -113,8 +113,8 @@
 									
 									<span class="px-2 py-1 rounded-full text-xs font-semibold {
 										isPassed(attempt.score)
-											? 'bg-green-100 text-green-700'
-											: 'bg-red-100 text-red-700'
+											? 'bg-secondary/10 text-green-700'
+											: 'bg-destructive/10 text-red-700'
 									}">
 										{isPassed(attempt.score) ? '✓ Passed' : '✗ Failed'}
 									</span>

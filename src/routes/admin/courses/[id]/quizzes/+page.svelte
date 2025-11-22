@@ -5,7 +5,7 @@
 	import { canManageCourses } from '$lib/utils/admin'
 	import { getErrorMessage } from '$lib/utils/errors'
 	import { Button } from '$lib/components/ui'
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
+	import { Card, CardContent } from '$lib/components/ui'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
 	import * as QuizService from '$lib/services/quiz'
@@ -293,12 +293,12 @@
 		setTimeout(() => success = null, 3000)
 	}
 	
-	function getDifficultyColor(difficulty?: 'easy' | 'medium' | 'hard'): string {
+	function _getDifficultyColor(difficulty?: 'easy' | 'medium' | 'hard'): string {
 		switch (difficulty) {
-			case 'easy': return 'bg-green-100 text-green-800'
-			case 'medium': return 'bg-yellow-100 text-yellow-800'
-			case 'hard': return 'bg-red-100 text-red-800'
-			default: return 'bg-gray-100 text-gray-800'
+			case 'easy': return 'bg-secondary/10 text-secondary'
+			case 'medium': return 'bg-yellow-500/10 text-yellow-600 dark:text-yellow-400'
+			case 'hard': return 'bg-destructive/10 text-destructive'
+			default: return 'bg-muted text-foreground'
 		}
 	}
 	
@@ -329,11 +329,11 @@
 			<Loading />
 		</div>
 	{:else if error && !course}
-		<div class="min-h-screen bg-gray-50 flex items-center justify-center">
+		<div class="min-h-screen bg-muted/30 flex items-center justify-center">
 			<Card class="max-w-md">
 				<CardContent class="p-8 text-center">
-					<h2 class="text-2xl font-bold text-red-600 mb-4">Error</h2>
-					<p class="text-gray-600 mb-6">{error}</p>
+					<h2 class="text-2xl font-bold text-destructive mb-4">Error</h2>
+					<p class="text-muted-foreground mb-6">{error}</p>
 					<Button onclick={() => navigate('/admin')}>
 						Back to Admin
 					</Button>
@@ -341,31 +341,31 @@
 			</Card>
 		</div>
 	{:else}
-		<div class="min-h-screen bg-gray-50">
+		<div class="min-h-screen bg-muted/30">
 			<!-- Header -->
 			<div class="bg-white border-b">
 				<div class="container mx-auto px-4 py-6">
 					<div class="flex items-center justify-between">
 						<div>
-							<div class="flex items-center gap-3 text-sm text-gray-600 mb-2">
+							<div class="flex items-center gap-3 text-sm text-muted-foreground mb-2">
 								<button
 									onclick={() => navigate('/admin')}
-									class="hover:text-blue-600"
+									class="hover:text-primary"
 								>
 									Admin
 								</button>
 								<span>/</span>
 								<button
 									onclick={() => navigate(`/admin/courses/${courseId}`)}
-									class="hover:text-blue-600"
+									class="hover:text-primary"
 								>
 									{course?.title}
 								</button>
 								<span>/</span>
-								<span class="text-gray-900">Quizzes</span>
+								<span class="text-foreground">Quizzes</span>
 							</div>
 							<h1 class="text-3xl font-bold">Manage Quizzes</h1>
-							<p class="text-gray-600 mt-1">
+							<p class="text-muted-foreground mt-1">
 								{quizzes.length} {quizzes.length === 1 ? 'quiz' : 'quizzes'} in this course
 							</p>
 						</div>
@@ -390,12 +390,12 @@
 			<div class="container mx-auto px-4 py-8">
 				<!-- Success Message -->
 				{#if success}
-					<div class="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+					<div class="mb-6 p-4 bg-secondary/10 border border-secondary/30 rounded-lg">
 						<div class="flex items-center gap-3">
-							<svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
 							</svg>
-							<p class="text-green-800 font-medium">{success}</p>
+							<p class="text-secondary font-medium">{success}</p>
 						</div>
 					</div>
 				{/if}
@@ -410,7 +410,7 @@
 								</span>
 								<button
 									onclick={() => selectedQuizIds.clear()}
-									class="text-sm text-primary-600 hover:text-primary-800 font-medium"
+									class="text-sm text-primary hover:text-primary-800 font-medium"
 								>
 									Clear selection
 								</button>
@@ -467,12 +467,12 @@
 
 				<!-- Error Message -->
 				{#if error}
-					<div class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+					<div class="mb-6 p-4 bg-destructive/10 border border-destructive/30 rounded-lg">
 						<div class="flex items-center gap-3">
-							<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-5 h-5 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
-							<p class="text-red-800">{error}</p>
+							<p class="text-destructive">{error}</p>
 						</div>
 					</div>
 				{/if}
@@ -483,12 +483,12 @@
 						<Card>
 							<CardContent class="py-16 text-center">
 								<div class="flex justify-center mb-4">
-									<svg class="w-16 h-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+									<svg class="w-16 h-16 text-muted-foreground/50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
 									</svg>
 								</div>
-								<h3 class="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
-								<p class="text-gray-600 mb-6 max-w-md mx-auto">
+								<h3 class="text-xl font-semibold text-foreground mb-2">No quizzes yet</h3>
+								<p class="text-muted-foreground mb-6 max-w-md mx-auto">
 									Create your first quiz to assess student learning with our visual quiz builder.
 								</p>
 								<Button onclick={handleCreateQuiz}>
@@ -498,7 +498,7 @@
 									Create Your First Quiz
 								</Button>
 								<div class="mt-6 pt-6 border-t">
-									<p class="text-sm text-gray-500">
+									<p class="text-sm text-muted-foreground">
 										You'll select a lesson, then use our drag-and-drop quiz builder to create questions.
 									</p>
 								</div>
@@ -512,9 +512,9 @@
 								checked={selectedQuizIds.size === quizzes.length}
 								indeterminate={selectedQuizIds.size > 0 && selectedQuizIds.size < quizzes.length}
 								onchange={toggleSelectAll}
-								class="w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+								class="w-4 h-4 text-primary border-input rounded focus:ring-primary-500"
 							/>
-							<span class="text-sm font-medium text-gray-700">
+							<span class="text-sm font-medium text-foreground">
 								Select All ({quizzes.length})
 							</span>
 						</div>
@@ -531,7 +531,7 @@
 												type="checkbox"
 												checked={selectedQuizIds.has(quiz.id)}
 												onchange={() => toggleSelectQuiz(quiz.id)}
-												class="mt-1 w-4 h-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500"
+												class="mt-1 w-4 h-4 text-primary border-input rounded focus:ring-primary-500"
 											/>
 											
 											<!-- Quiz Info -->
@@ -541,44 +541,44 @@
 													
 													<!-- Status Badge -->
 													{#if quiz.isPublished}
-														<span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded">
+														<span class="px-2 py-1 text-xs font-medium bg-secondary/10 text-secondary rounded">
 															Published
 														</span>
 													{:else}
-														<span class="px-2 py-1 text-xs font-medium bg-gray-100 text-gray-600 rounded">
+														<span class="px-2 py-1 text-xs font-medium bg-muted text-muted-foreground rounded">
 															Draft
 														</span>
 													{/if}
 												</div>
 												
 												{#if quiz.description}
-													<p class="text-gray-600 mb-4">{quiz.description}</p>
+													<p class="text-muted-foreground mb-4">{quiz.description}</p>
 												{/if}
 												
 												<!-- Quiz Configuration -->
 												<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 pb-4 border-b">
-													<div class="flex items-center gap-2 text-sm text-gray-600">
+													<div class="flex items-center gap-2 text-sm text-muted-foreground">
 														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 														</svg>
 														<span>{quiz.questions.length} questions</span>
 													</div>
 													
-													<div class="flex items-center gap-2 text-sm text-gray-600">
+													<div class="flex items-center gap-2 text-sm text-muted-foreground">
 														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 														</svg>
 														<span>{quiz.timeLimit ? `${quiz.timeLimit} min` : 'No limit'}</span>
 													</div>
 													
-													<div class="flex items-center gap-2 text-sm text-gray-600">
+													<div class="flex items-center gap-2 text-sm text-muted-foreground">
 														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
 														</svg>
 														<span>{quiz.passingScore}% to pass</span>
 													</div>
 													
-													<div class="flex items-center gap-2 text-sm text-gray-600">
+													<div class="flex items-center gap-2 text-sm text-muted-foreground">
 														<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
 														</svg>
@@ -588,39 +588,39 @@
 												
 												<!-- Student Statistics -->
 												{#if stats && stats.totalAttempts > 0}
-													<div class="bg-blue-50 rounded-lg p-4 mb-4">
-														<h4 class="text-sm font-semibold text-blue-900 mb-3">Student Performance</h4>
+													<div class="bg-primary/10 rounded-lg p-4 mb-4">
+														<h4 class="text-sm font-semibold text-primary mb-3">Student Performance</h4>
 														<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 															<div>
-																<div class="text-2xl font-bold text-blue-900">{stats.totalAttempts}</div>
-																<div class="text-xs text-blue-700">Total Attempts</div>
+																<div class="text-2xl font-bold text-primary">{stats.totalAttempts}</div>
+																<div class="text-xs text-primary">Total Attempts</div>
 															</div>
 															<div>
-																<div class="text-2xl font-bold text-blue-900">{stats.uniqueUsers}</div>
-																<div class="text-xs text-blue-700">Unique Students</div>
+																<div class="text-2xl font-bold text-primary">{stats.uniqueUsers}</div>
+																<div class="text-xs text-primary">Unique Students</div>
 															</div>
 															<div>
-																<div class="text-2xl font-bold text-blue-900">{stats.averageScore.toFixed(1)}%</div>
-																<div class="text-xs text-blue-700">Average Score</div>
+																<div class="text-2xl font-bold text-primary">{stats.averageScore.toFixed(1)}%</div>
+																<div class="text-xs text-primary">Average Score</div>
 															</div>
 															<div>
-																<div class="text-2xl font-bold text-blue-900">{stats.passRate.toFixed(1)}%</div>
-																<div class="text-xs text-blue-700">Pass Rate</div>
+																<div class="text-2xl font-bold text-primary">{stats.passRate.toFixed(1)}%</div>
+																<div class="text-xs text-primary">Pass Rate</div>
 															</div>
 														</div>
 													</div>
 												{:else if loadingStats}
-													<div class="bg-gray-50 rounded-lg p-4 mb-4 text-center text-sm text-gray-500">
+													<div class="bg-muted/30 rounded-lg p-4 mb-4 text-center text-sm text-muted-foreground">
 														Loading statistics...
 													</div>
 												{:else}
-													<div class="bg-gray-50 rounded-lg p-4 mb-4 text-center text-sm text-gray-500">
+													<div class="bg-muted/30 rounded-lg p-4 mb-4 text-center text-sm text-muted-foreground">
 														No student attempts yet
 													</div>
 												{/if}
 												
 												<!-- Metadata -->
-												<div class="flex items-center gap-4 text-xs text-gray-500">
+												<div class="flex items-center gap-4 text-xs text-muted-foreground">
 													<span>Created: {formatDate(quiz.createdAt)}</span>
 													{#if quiz.updatedAt}
 														<span>Updated: {formatDate(quiz.updatedAt)}</span>
@@ -667,7 +667,7 @@
 												<Button
 													size="sm"
 													variant="outline"
-													class="text-red-600 hover:bg-red-50"
+													class="text-destructive hover:bg-destructive/10"
 													onclick={() => handleDeleteQuiz(quiz)}
 												>
 													Delete
@@ -689,33 +689,33 @@
 		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
 			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
 				<!-- Header -->
-				<div class="p-6 border-b border-gray-200">
+				<div class="p-6 border-b border-border">
 					<div class="flex items-center gap-3">
-						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-							<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div class="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+							<svg class="w-6 h-6 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 							</svg>
 						</div>
 						<div>
-							<h3 class="text-lg font-semibold text-gray-900">Delete Quiz</h3>
-							<p class="text-sm text-gray-500">This action cannot be undone</p>
+							<h3 class="text-lg font-semibold text-foreground">Delete Quiz</h3>
+							<p class="text-sm text-muted-foreground">This action cannot be undone</p>
 						</div>
 					</div>
 				</div>
 				
 				<!-- Content -->
 				<div class="p-6">
-					<p class="text-gray-700 mb-4">
-						Are you sure you want to delete <span class="font-semibold text-gray-900">"{quizToDelete.title}"</span>?
+					<p class="text-foreground mb-4">
+						Are you sure you want to delete <span class="font-semibold text-foreground">"{quizToDelete.title}"</span>?
 					</p>
-					<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+					<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive">
 						<div class="flex items-start gap-2">
 							<svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 							<div>
 								<p class="font-medium mb-1">This will permanently delete:</p>
-								<ul class="list-disc list-inside space-y-0.5 text-red-700">
+								<ul class="list-disc list-inside space-y-0.5 text-destructive">
 									<li>The quiz and all questions</li>
 									<li>All student attempts and scores</li>
 									<li>Quiz analytics and statistics</li>
@@ -726,7 +726,7 @@
 				</div>
 				
 				<!-- Actions -->
-				<div class="p-6 bg-gray-50 rounded-b-xl flex items-center justify-end gap-3">
+				<div class="p-6 bg-muted/30 rounded-b-xl flex items-center justify-end gap-3">
 					<Button
 						variant="outline"
 						onclick={cancelDelete}
@@ -736,7 +736,7 @@
 					</Button>
 					<Button
 						variant="outline"
-						class="bg-red-600 text-white hover:bg-red-700 border-red-600"
+						class="bg-destructive text-white hover:bg-destructive/90 border-destructive"
 						onclick={confirmDeleteQuiz}
 						disabled={isDeleting}
 					>
@@ -763,33 +763,33 @@
 		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
 			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
 				<!-- Header -->
-				<div class="p-6 border-b border-gray-200">
+				<div class="p-6 border-b border-border">
 					<div class="flex items-center gap-3">
-						<div class="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center flex-shrink-0">
-							<svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<div class="w-12 h-12 rounded-full bg-destructive/10 flex items-center justify-center flex-shrink-0">
+							<svg class="w-6 h-6 text-destructive" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
 							</svg>
 						</div>
 						<div>
-							<h3 class="text-lg font-semibold text-gray-900">Delete Multiple Quizzes</h3>
-							<p class="text-sm text-gray-500">This action cannot be undone</p>
+							<h3 class="text-lg font-semibold text-foreground">Delete Multiple Quizzes</h3>
+							<p class="text-sm text-muted-foreground">This action cannot be undone</p>
 						</div>
 					</div>
 				</div>
 				
 				<!-- Content -->
 				<div class="p-6">
-					<p class="text-gray-700 mb-4">
-						Are you sure you want to delete <span class="font-semibold text-gray-900">{selectedQuizIds.size} selected quiz{selectedQuizIds.size > 1 ? 'zes' : ''}</span>?
+					<p class="text-foreground mb-4">
+						Are you sure you want to delete <span class="font-semibold text-foreground">{selectedQuizIds.size} selected quiz{selectedQuizIds.size > 1 ? 'zes' : ''}</span>?
 					</p>
-					<div class="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-800">
+					<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-3 text-sm text-destructive">
 						<div class="flex items-start gap-2">
 							<svg class="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
 							<div>
 								<p class="font-medium mb-1">This will permanently delete for all selected quizzes:</p>
-								<ul class="list-disc list-inside space-y-0.5 text-red-700">
+								<ul class="list-disc list-inside space-y-0.5 text-destructive">
 									<li>All questions and content</li>
 									<li>All student attempts and scores</li>
 									<li>All analytics and statistics</li>
@@ -800,7 +800,7 @@
 				</div>
 				
 				<!-- Actions -->
-				<div class="p-6 bg-gray-50 rounded-b-xl flex items-center justify-end gap-3">
+				<div class="p-6 bg-muted/30 rounded-b-xl flex items-center justify-end gap-3">
 					<Button
 						variant="outline"
 						onclick={cancelBulkDelete}
@@ -810,7 +810,7 @@
 					</Button>
 					<Button
 						variant="outline"
-						class="bg-red-600 text-white hover:bg-red-700 border-red-600"
+						class="bg-destructive text-white hover:bg-destructive/90 border-destructive"
 						onclick={confirmBulkDelete}
 						disabled={bulkActionInProgress}
 					>

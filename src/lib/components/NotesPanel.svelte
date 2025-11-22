@@ -269,15 +269,15 @@
 
 <div class="notes-panel h-full flex flex-col">
 	<!-- Search & Filters -->
-	<div class="p-4 border-b border-gray-200 dark:border-gray-700">
+	<div class="p-4 border-b border-border dark:border-gray-700">
 		<!-- Search -->
 		<div class="relative">
-			<Search size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+			<Search size={16} class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/50" />
 			<input
 				type="text"
 				bind:value={searchQuery}
 				placeholder="Search notes..."
-				class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+				class="w-full pl-9 pr-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-foreground dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 			/>
 		</div>
 		
@@ -287,7 +287,7 @@
 				onclick={() => activeTab = 'all'}
 				class="flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors {activeTab === 'all' 
 					? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
-					: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+					: 'text-muted-foreground dark:text-muted-foreground/50 hover:bg-muted dark:hover:bg-gray-700'}"
 			>
 				All ({totalNotes + totalBookmarks})
 			</button>
@@ -295,7 +295,7 @@
 				onclick={() => activeTab = 'notes'}
 				class="flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors {activeTab === 'notes' 
 					? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
-					: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+					: 'text-muted-foreground dark:text-muted-foreground/50 hover:bg-muted dark:hover:bg-gray-700'}"
 			>
 				Notes ({totalNotes})
 			</button>
@@ -303,7 +303,7 @@
 				onclick={() => activeTab = 'bookmarks'}
 				class="flex-1 px-3 py-1.5 text-xs font-medium rounded transition-colors {activeTab === 'bookmarks' 
 					? 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300' 
-					: 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'}"
+					: 'text-muted-foreground dark:text-muted-foreground/50 hover:bg-muted dark:hover:bg-gray-700'}"
 			>
 				Bookmarks ({totalBookmarks})
 			</button>
@@ -349,7 +349,7 @@
 	<!-- Content -->
 	<div class="flex-1 overflow-y-auto">
 		{#if loading}
-			<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+			<div class="p-4 text-center text-sm text-muted-foreground dark:text-muted-foreground/50">
 				Loading...
 			</div>
 		{:else if error}
@@ -357,7 +357,7 @@
 				{error}
 			</div>
 		{:else if totalNotes === 0 && totalBookmarks === 0}
-			<div class="p-4 text-center text-sm text-gray-500 dark:text-gray-400">
+			<div class="p-4 text-center text-sm text-muted-foreground dark:text-muted-foreground/50">
 				{searchQuery ? 'No results found' : 'No notes or bookmarks yet'}
 			</div>
 		{:else}
@@ -365,7 +365,7 @@
 				<!-- Notes Section -->
 				{#if showNotes && filteredNotes.length > 0}
 					{#each filteredNotes as note (note.id)}
-						<div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+						<div class="p-3 hover:bg-muted/30 dark:hover:bg-gray-800/50 transition-colors">
 							<button
 								onclick={() => toggleNote(note.id)}
 								class="w-full text-left"
@@ -375,26 +375,26 @@
 									<div class="flex-1 min-w-0">
 										<div class="flex items-start justify-between gap-2 mb-1">
 											<div class="flex items-center gap-2">
-												<StickyNote size={14} class="text-gray-400 shrink-0" />
+												<StickyNote size={14} class="text-muted-foreground/50 shrink-0" />
 												{#if note.title}
-													<h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+													<h4 class="text-sm font-medium text-foreground dark:text-gray-100 truncate">
 														{note.title}
 													</h4>
 												{/if}
 											</div>
-											<span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+											<span class="text-xs text-muted-foreground dark:text-muted-foreground/50 shrink-0">
 												{formatDate(note.createdAt)}
 											</span>
 										</div>
 										
-										<p class="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+										<p class="text-xs text-muted-foreground dark:text-muted-foreground/50 line-clamp-2">
 											{expandedNotes.has(note.id) ? note.content : truncate(note.content, 100)}
 										</p>
 										
 										{#if note.tags && note.tags.length > 0}
 											<div class="flex flex-wrap gap-1 mt-2">
 												{#each note.tags as tag (tag)}
-													<span class="px-2 py-0.5 text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
+													<span class="px-2 py-0.5 text-xs bg-muted dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded">
 														{tag}
 													</span>
 												{/each}
@@ -402,7 +402,7 @@
 										{/if}
 										
 										{#if note.anchorText}
-											<p class="text-xs text-gray-500 dark:text-gray-400 italic mt-1 truncate">
+											<p class="text-xs text-muted-foreground dark:text-muted-foreground/50 italic mt-1 truncate">
 												📍 {note.anchorText}
 											</p>
 										{/if}
@@ -424,7 +424,7 @@
 											e.stopPropagation()
 											onEditNote(note)
 										}}
-										class="text-xs text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
+										class="text-xs text-muted-foreground dark:text-muted-foreground/50 hover:text-foreground dark:hover:text-gray-200"
 									>
 										Edit
 									</button>
@@ -443,7 +443,7 @@
 				<!-- Bookmarks Section -->
 				{#if showBookmarks && filteredBookmarks.length > 0}
 					{#each filteredBookmarks as bookmark (bookmark.id)}
-						<div class="p-3 hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
+						<div class="p-3 hover:bg-muted/30 dark:hover:bg-gray-800/50 transition-colors">
 							<button
 								onclick={() => handleJumpToBookmark(bookmark)}
 								class="w-full text-left"
@@ -453,18 +453,18 @@
 									<div class="flex-1 min-w-0">
 										<div class="flex items-start justify-between gap-2 mb-1">
 											<div class="flex items-center gap-2">
-												<BookmarkIcon size={14} class="text-gray-400 shrink-0" />
-												<h4 class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+												<BookmarkIcon size={14} class="text-muted-foreground/50 shrink-0" />
+												<h4 class="text-sm font-medium text-foreground dark:text-gray-100 truncate">
 													{bookmark.label || 'Bookmark'}
 												</h4>
 											</div>
-											<span class="text-xs text-gray-500 dark:text-gray-400 shrink-0">
+											<span class="text-xs text-muted-foreground dark:text-muted-foreground/50 shrink-0">
 												{formatDate(bookmark.createdAt)}
 											</span>
 										</div>
 										
 										{#if bookmark.anchorText}
-											<p class="text-xs text-gray-600 dark:text-gray-400 truncate">
+											<p class="text-xs text-muted-foreground dark:text-muted-foreground/50 truncate">
 												📍 {bookmark.anchorText}
 											</p>
 										{/if}

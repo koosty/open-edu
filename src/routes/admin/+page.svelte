@@ -5,8 +5,9 @@
 	import { isAdmin, canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
-	import type { Course, Enrollment } from '$lib/types'
+	import type { Course } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
+	import { Plus, BookOpen, Users, CheckCircle, Star, User } from 'lucide-svelte'
 
 	// State management
 	let loading = $state(true)
@@ -149,10 +150,10 @@
 
 	function getDifficultyColor(difficulty: string): string {
 		switch (difficulty.toLowerCase()) {
-			case 'beginner': return 'bg-green-100 text-green-800'
-			case 'intermediate': return 'bg-yellow-100 text-yellow-800' 
-			case 'advanced': return 'bg-red-100 text-red-800'
-			default: return 'bg-gray-100 text-gray-800'
+			case 'beginner': return 'bg-green-500/10 text-green-700 dark:text-green-400'
+			case 'intermediate': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' 
+			case 'advanced': return 'bg-red-500/10 text-red-700 dark:text-red-400'
+			default: return 'bg-muted text-muted-foreground'
 		}
 	}
 </script>
@@ -170,8 +171,8 @@
 	<div class="container mx-auto px-4 py-8">
 		<Card>
 			<CardContent class="p-8 text-center">
-				<h2 class="text-2xl font-bold text-red-600 mb-4">Access Denied</h2>
-				<p class="text-gray-600 mb-6">You don't have permission to access the admin dashboard.</p>
+				<h2 class="text-2xl font-bold text-destructive mb-4">Access Denied</h2>
+				<p class="text-muted-foreground mb-6">You don't have permission to access the admin dashboard.</p>
 				<Button onclick={() => navigate('/dashboard')}>
 					Go to Dashboard
 				</Button>
@@ -179,21 +180,19 @@
 		</Card>
 	</div>
 {:else}
-	<div class="min-h-screen bg-gray-50">
+	<div class="min-h-screen bg-background">
 		<!-- Header -->
-		<div class="bg-white border-b">
+		<div class="bg-card border-b">
 			<div class="container mx-auto px-4 py-6">
 				<div class="flex items-center justify-between">
 					<div>
-						<h1 class="text-3xl font-bold">Admin Dashboard</h1>
-						<p class="text-gray-600 mt-1">
+						<h1 class="text-3xl font-bold text-foreground">Admin Dashboard</h1>
+						<p class="text-muted-foreground mt-1">
 							{isFullAdmin ? 'Platform Administrator' : 'Course Instructor'}
 						</p>
 					</div>
 					<Button onclick={() => navigate('/admin/courses/new')} class="flex items-center gap-2">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-						</svg>
+						<Plus class="w-5 h-5" />
 						Create Course
 					</Button>
 				</div>
@@ -207,17 +206,15 @@
 					<CardContent class="p-6">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-sm font-medium text-gray-600">Total Courses</p>
-								<p class="text-3xl font-bold">{formatNumber(analytics.totalCourses)}</p>
+								<p class="text-sm font-medium text-muted-foreground">Total Courses</p>
+								<p class="text-3xl font-bold text-foreground">{formatNumber(analytics.totalCourses)}</p>
 							</div>
-							<div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-								<svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-								</svg>
+							<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
+								<BookOpen class="w-6 h-6 text-primary" />
 							</div>
 						</div>
 						<div class="mt-2">
-							<span class="text-sm text-gray-500">
+							<span class="text-sm text-muted-foreground">
 								{analytics.publishedCourses} published, {analytics.draftCourses} draft
 							</span>
 						</div>
@@ -228,17 +225,15 @@
 					<CardContent class="p-6">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-sm font-medium text-gray-600">Total Enrollments</p>
-								<p class="text-3xl font-bold">{formatNumber(analytics.totalEnrollments)}</p>
+								<p class="text-sm font-medium text-muted-foreground">Total Enrollments</p>
+								<p class="text-3xl font-bold text-foreground">{formatNumber(analytics.totalEnrollments)}</p>
 							</div>
-							<div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-								<svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-								</svg>
+							<div class="w-12 h-12 bg-green-500/10 rounded-lg flex items-center justify-center">
+								<Users class="w-6 h-6 text-green-600 dark:text-green-500" />
 							</div>
 						</div>
 						<div class="mt-2">
-							<span class="text-sm text-gray-500">
+							<span class="text-sm text-muted-foreground">
 								~{formatNumber(analytics.totalStudents)} students
 							</span>
 						</div>
@@ -249,17 +244,15 @@
 					<CardContent class="p-6">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-sm font-medium text-gray-600">Published Courses</p>
-								<p class="text-3xl font-bold">{formatNumber(analytics.publishedCourses)}</p>
+								<p class="text-sm font-medium text-muted-foreground">Published Courses</p>
+								<p class="text-3xl font-bold text-foreground">{formatNumber(analytics.publishedCourses)}</p>
 							</div>
-							<div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-								<svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-								</svg>
+							<div class="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center">
+								<CheckCircle class="w-6 h-6 text-purple-600 dark:text-purple-500" />
 							</div>
 						</div>
 						<div class="mt-2">
-							<span class="text-sm text-gray-500">
+							<span class="text-sm text-muted-foreground">
 								{analytics.featuredCourses} featured
 							</span>
 						</div>
@@ -270,21 +263,19 @@
 					<CardContent class="p-6">
 						<div class="flex items-center justify-between">
 							<div>
-								<p class="text-sm font-medium text-gray-600">Average Rating</p>
-								<p class="text-3xl font-bold">
+								<p class="text-sm font-medium text-muted-foreground">Average Rating</p>
+								<p class="text-3xl font-bold text-foreground">
 									{courses.length > 0 ? 
 										(courses.reduce((sum, c) => sum + c.rating, 0) / courses.length).toFixed(1) : 
 										'N/A'}
 								</p>
 							</div>
-							<div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
-								<svg class="w-6 h-6 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-									<path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-								</svg>
+							<div class="w-12 h-12 bg-yellow-500/10 rounded-lg flex items-center justify-center">
+								<Star class="w-6 h-6 text-yellow-600 dark:text-yellow-500" fill="currentColor" />
 							</div>
 						</div>
 						<div class="mt-2">
-							<span class="text-sm text-gray-500">
+							<span class="text-sm text-muted-foreground">
 								Across {analytics.totalCourses} courses
 							</span>
 						</div>
@@ -307,11 +298,9 @@
 						<CardContent>
 							{#if courses.length === 0}
 								<div class="text-center py-8">
-									<svg class="w-12 h-12 text-gray-400 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-									</svg>
-									<h3 class="text-lg font-medium text-gray-900 mb-2">No courses yet</h3>
-									<p class="text-gray-600 mb-4">Get started by creating your first course.</p>
+									<BookOpen class="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+									<h3 class="text-lg font-medium text-foreground mb-2">No courses yet</h3>
+									<p class="text-muted-foreground mb-4">Get started by creating your first course.</p>
 									<Button onclick={() => navigate('/admin/courses/new')}>
 										Create Course
 									</Button>
@@ -319,25 +308,25 @@
 							{:else}
 								<div class="space-y-4">
 									{#each courses.slice(0, 6) as course (course.id)}
-										<div class="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
+										<div class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
 											<div class="flex-1">
 												<div class="flex items-center gap-3 mb-2">
-													<h3 class="font-medium">{course.title}</h3>
+													<h3 class="font-medium text-foreground">{course.title}</h3>
 													<span class="px-2 py-1 text-xs rounded-full {getDifficultyColor(course.difficulty)}">
 														{course.difficulty}
 													</span>
 													{#if course.isFeatured}
-														<span class="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+														<span class="px-2 py-1 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-xs rounded-full">
 															Featured
 														</span>
 													{/if}
 												</div>
-												<p class="text-sm text-gray-600 mb-2">
+												<p class="text-sm text-muted-foreground mb-2">
 													{course.description.length > 100 ? 
 														course.description.substring(0, 100) + '...' : 
 														course.description}
 												</p>
-												<div class="flex items-center gap-4 text-sm text-gray-500">
+												<div class="flex items-center gap-4 text-sm text-muted-foreground">
 													<span>{course.enrolled} students</span>
 													<span>{course.lessons?.length || 0} lessons</span>
 													{#if course.rating > 0}
@@ -350,10 +339,10 @@
 												<div class="flex items-center">
 													{#if course.isPublished}
 														<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-														<span class="text-sm text-green-600 font-medium">Published</span>
+														<span class="text-sm text-green-600 dark:text-green-500 font-medium">Published</span>
 													{:else}
-														<span class="w-2 h-2 bg-gray-400 rounded-full mr-2"></span>
-														<span class="text-sm text-gray-500 font-medium">Draft</span>
+														<span class="w-2 h-2 bg-muted-foreground rounded-full mr-2"></span>
+														<span class="text-sm text-muted-foreground font-medium">Draft</span>
 													{/if}
 												</div>
 												<Button 
@@ -396,9 +385,7 @@
 						</CardHeader>
 						<CardContent class="space-y-3">
 							<Button onclick={() => navigate('/admin/courses/new')} class="w-full justify-start">
-								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-								</svg>
+								<Plus class="w-4 h-4 mr-2" />
 								Create New Course
 							</Button>
 							<Button variant="outline" onclick={() => navigate('/admin/analytics')} class="w-full justify-start">
@@ -408,15 +395,11 @@
 								Content Analytics
 							</Button>
 							<Button variant="outline" onclick={() => navigate('/courses')} class="w-full justify-start">
-								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-								</svg>
+								<BookOpen class="w-4 h-4 mr-2" />
 								Browse Courses
 							</Button>
 							<Button variant="outline" onclick={() => navigate('/dashboard')} class="w-full justify-start">
-								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-								</svg>
+								<User class="w-4 h-4 mr-2" />
 								Student View
 							</Button>
 						</CardContent>
@@ -434,8 +417,8 @@
 									{#each popularCourses as course (course.id)}
 										<div class="flex items-center justify-between">
 											<div class="flex-1 min-w-0">
-												<p class="font-medium text-sm truncate">{course.title}</p>
-												<p class="text-xs text-gray-500">{course.enrolled} students</p>
+												<p class="font-medium text-sm text-foreground truncate">{course.title}</p>
+												<p class="text-xs text-muted-foreground">{course.enrolled} students</p>
 											</div>
 											<Button 
 												variant="ghost" 
@@ -465,15 +448,13 @@
 										class="w-10 h-10 rounded-full"
 									/>
 								{:else}
-									<div class="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center">
-										<svg class="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-										</svg>
+									<div class="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
+										<User class="w-6 h-6 text-muted-foreground" />
 									</div>
 								{/if}
 								<div>
-									<p class="font-medium">{authState.user?.displayName || 'User'}</p>
-									<p class="text-sm text-gray-600 capitalize">{authState.user?.role}</p>
+									<p class="font-medium text-foreground">{authState.user?.displayName || 'User'}</p>
+									<p class="text-sm text-muted-foreground capitalize">{authState.user?.role}</p>
 								</div>
 							</div>
 							<Button 
@@ -490,14 +471,14 @@
 
 			<!-- Error Display -->
 			{#if error}
-				<div class="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+				<div class="mt-6 p-4 bg-destructive/10 border border-destructive/20 rounded-lg">
 					<div class="flex items-start gap-3">
-						<svg class="w-5 h-5 text-red-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="w-5 h-5 text-destructive mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 						</svg>
 						<div>
-							<h3 class="text-sm font-medium text-red-800">Error</h3>
-							<p class="text-sm text-red-700 mt-1">{error}</p>
+							<h3 class="text-sm font-medium text-destructive">Error</h3>
+							<p class="text-sm text-destructive/90 mt-1">{error}</p>
 						</div>
 					</div>
 				</div>

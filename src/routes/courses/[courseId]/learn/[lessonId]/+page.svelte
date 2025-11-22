@@ -7,9 +7,8 @@
 	import { ProgressService } from '$lib/services/progress'
 	import { authState } from '$lib/auth.svelte'
 	import { Button, Skeleton } from '$lib/components/ui'
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
+	import { Card, CardContent } from '$lib/components/ui'
 	import type { Course, Lesson, UserProgress } from '$lib/types'
-	import Loading from '$lib/components/Loading.svelte'
 	import LessonSkeleton from '$lib/components/LessonSkeleton.svelte'
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
 	import TableOfContents from '$lib/components/TableOfContents.svelte'
@@ -23,6 +22,7 @@
 	import ErrorAlert from '$lib/components/ErrorAlert.svelte'
 	import AutoSaveIndicator from '$lib/components/AutoSaveIndicator.svelte'
 	import CompletionCelebration from '$lib/components/CompletionCelebration.svelte'
+	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import { 
 		ReadingPositionManager, 
 		loadReadingPosition, 
@@ -35,7 +35,6 @@
 	import QuizViewer from '$lib/components/QuizViewer.svelte'
 	import QuizResults from '$lib/components/QuizResults.svelte'
 	import QuizAttemptHistory from '$lib/components/QuizAttemptHistory.svelte'
-	import QuizSkeleton from '$lib/components/QuizSkeleton.svelte'
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
@@ -86,8 +85,6 @@
 	let positionManager: ReadingPositionManager | null = null
 	let progressTracker: ReadingProgressTracker | null = null
 	let hasRestoredPosition = $state(false)
-	let lastAccessedAt = $state<Date | null>(null)
-	let estimatedReadingMinutes = $state(0)
 	
 	// Auto-save indicator state
 	let saveStatus = $state<'idle' | 'saving' | 'saved' | 'error'>('idle')
@@ -137,7 +134,7 @@
 	$effect(() => {
 		// Only track auth state and route params (courseId, lessonId)
 		const isReady = authState.initialized && authState.user
-		const currentCourseId = courseId
+		const _currentCourseId = courseId
 		const _currentLessonId = lessonId
 		
 		// Wait for auth to initialize and user to be available
@@ -180,7 +177,7 @@
 					handleSwipeNavigation('next')
 				}
 			},
-			onSwipeMove: (deltaX, deltaY) => {
+			onSwipeMove: (deltaX, _deltaY) => {
 				// Update visual feedback during swipe
 				// Limit the offset to provide resistance effect
 				const maxOffset = 100
@@ -247,12 +244,6 @@
 			}
 
 			currentLesson = lesson
-
-			// Calculate estimated reading time if content exists
-			if (lesson.content) {
-				const { estimateReadingTime } = await import('$lib/services/markdown')
-				estimatedReadingMinutes = estimateReadingTime(lesson.content)
-			}
 
 			// Find lesson navigation
 			if (courseData.lessons) {
@@ -352,9 +343,6 @@
 			const savedPosition = await loadReadingPosition(authState.user.id, lessonId)
 			
 			if (savedPosition) {
-				// Set last accessed date
-				lastAccessedAt = savedPosition.updatedAt
-				
 				if (shouldRestorePosition(savedPosition)) {
 					// Wait for content to render
 					setTimeout(() => {
@@ -657,13 +645,13 @@
 		navigate(`/courses/${courseId}/learn/${lesson.id}`)
 	}
 
-	function formatTime(seconds: number): string {
+	function _formatTime(seconds: number): string {
 		const minutes = Math.floor(seconds / 60)
 		const remainingSeconds = seconds % 60
 		return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`
 	}
 
-	function formatLessonNumber(order: number): string {
+	function _formatLessonNumber(order: number): string {
 		return `Lesson ${order}`
 	}
 	
@@ -745,7 +733,7 @@
 <AuthGuard redirectTo="/courses/{courseId}">
 {#if loading}
 	<!-- Skeleton loader for better UX -->
-	<div class="min-h-screen bg-slate-50">
+	<div class="min-h-screen bg-background">
 		<div class="lg:pl-80 transition-all duration-300">
 			<LessonSkeleton />
 		</div>
@@ -763,14 +751,14 @@
 		/>
 	</div>
 {:else}
-	<div class="min-h-screen bg-slate-50">
+	<div class="min-h-screen bg-muted/30">
 		<!-- Mobile Menu Button (Fixed at top-left on mobile only) -->
 		<button
 			onclick={() => showMobileSidebar = !showMobileSidebar}
-			class="fixed top-20 left-4 z-40 lg:hidden bg-white p-3 rounded-xl shadow-lg border border-slate-200 hover:bg-slate-50 transition-all duration-200 active:scale-95"
+			class="fixed top-20 left-4 z-40 lg:hidden bg-card p-3 rounded-xl shadow-lg border border-border hover:bg-muted/50 transition-all duration-200 active:scale-95"
 			aria-label="Toggle sidebar menu"
 		>
-			<svg class="w-5 h-5 text-slate-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+			<svg class="w-5 h-5 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 				{#if showMobileSidebar}
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 				{:else}
@@ -792,10 +780,10 @@
 		{/if}
 
 		<!-- Fixed Sidebar - Course Navigation (below header) -->
-		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-white border-r border-slate-200 z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : focusMode ? '-translate-x-full lg:-translate-x-full' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col shadow-lg">
+		<aside class="fixed top-16 bottom-0 left-0 w-80 bg-card border-r border-border z-50 transition-transform duration-300 {showMobileSidebar ? 'translate-x-0' : focusMode ? '-translate-x-full lg:-translate-x-full' : '-translate-x-full lg:translate-x-0'} lg:z-20 flex flex-col shadow-lg">
 			<!-- Scrollable Content Area -->
 			<div class="flex-1 overflow-y-auto scrollbar-thin">
-				<div class="p-6 border-b border-slate-200 bg-gradient-to-br from-primary-50 via-white to-secondary-50">
+				<div class="p-6 border-b border-border bg-gradient-to-br from-primary/5 via-background to-secondary/5">
 				<Button 
 					variant="ghost" 
 					onclick={() => navigate(`/courses/${courseId}`)}
@@ -806,27 +794,25 @@
 					</svg>
 					Back to Course
 				</Button>
-				<h1 class="font-bold text-lg text-slate-900">{course?.title}</h1>
-				<div class="mt-4 flex items-center justify-between text-sm">
-					<span class="text-slate-600">
-						{progress?.completedLessons.length || 0} of {course?.lessons?.length || 0} complete
+				<h1 class="font-bold text-lg text-foreground">{course?.title}</h1>
+				{#if course?.lessons}
+					<span class="text-muted-foreground">
+						{progress?.completedLessons.length || 0} of {course.lessons.length} lessons completed
 					</span>
-					<span class="font-semibold text-primary-600">
-						{Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%
-					</span>
-				</div>
-				<!-- Progress Bar -->
-				<div class="mt-3 h-2 bg-slate-200 rounded-full overflow-hidden">
+				{/if}
+				
+				<!-- Progress bar -->
+				<div class="mt-3 h-2 bg-muted rounded-full overflow-hidden">
 					<div 
 						class="h-full bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500 rounded-full"
 						style="width: {Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%"
 					></div>
 				</div>
-			</div>
+				</div>
 
 			<div class="p-4">
 				<div class="mb-4">
-					<h2 class="text-sm font-semibold text-slate-900 mb-2 px-2">Lessons</h2>
+					<h2 class="text-sm font-semibold text-foreground mb-2 px-2">Lessons</h2>
 					<!-- Search input -->
 					<div class="relative px-2">
 						<input
@@ -834,18 +820,18 @@
 							type="text"
 							bind:value={sidebarSearchQuery}
 							placeholder="Search lessons... (Press /)"
-							class="w-full px-3 py-2 pl-9 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+							class="w-full px-3 py-2 pl-9 text-sm border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
 						/>
-						<svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+						<svg class="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
 						</svg>
 						{#if sidebarSearchQuery}
 							<button
 								onclick={() => sidebarSearchQuery = ''}
-								class="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-slate-100 rounded"
+								class="absolute right-4 top-1/2 -translate-y-1/2 p-1 hover:bg-muted rounded"
 								aria-label="Clear search"
 							>
-								<svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
 								</svg>
 							</button>
@@ -857,16 +843,16 @@
 					<nav class="space-y-1.5">
 						{#each filteredLessons as lesson, index (lesson.id)}
 							<button
-								class="w-full text-left p-3 rounded-xl transition-all duration-200 {lesson.id === lessonId ? 'bg-primary-50 border-l-4 border-l-primary-600 shadow-sm' : 'hover:bg-slate-50 active:scale-[0.98]'}"
+								class="w-full text-left p-3 rounded-xl transition-all duration-200 {lesson.id === lessonId ? 'bg-primary/10 border-l-4 border-l-primary shadow-sm' : 'hover:bg-muted/50 active:scale-[0.98]'}"
 								onclick={() => handleNavigateToLesson(lesson)}
 							>
 								<div class="flex items-center gap-3">
-									<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-200 {progress?.completedLessons.includes(lesson.id) ? 'bg-gradient-to-br from-secondary-500 to-secondary-600 text-white shadow-md' : 'bg-slate-200 text-slate-600'}">
+									<div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all duration-200 {progress?.completedLessons.includes(lesson.id) ? 'bg-gradient-to-br from-secondary to-secondary/80 text-secondary-foreground shadow-md' : 'bg-muted text-muted-foreground'}">
 										{progress?.completedLessons.includes(lesson.id) ? '✓' : lesson.order || index + 1}
 									</div>
 									<div class="flex-1 min-w-0">
-										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-primary-900' : 'text-slate-900'}">{lesson.title}</p>
-										<div class="flex items-center gap-2 text-xs text-slate-500">
+										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-primary' : 'text-foreground'}">{lesson.title}</p>
+										<div class="flex items-center gap-2 text-xs text-muted-foreground">
 											<span class="capitalize">{lesson.type}</span>
 											{#if lesson.duration}
 												<span>• {lesson.duration} min</span>
@@ -880,14 +866,14 @@
 					{:else}
 						<!-- No results message -->
 						<div class="text-center py-8 px-4">
-							<svg class="w-12 h-12 mx-auto text-slate-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+							<svg class="w-12 h-12 mx-auto text-muted-foreground/50 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 								<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 							</svg>
-							<p class="text-sm text-slate-600 mb-1">No lessons found</p>
-							<p class="text-xs text-slate-500">Try a different search term</p>
+							<p class="text-sm text-muted-foreground mb-1">No lessons found</p>
+							<p class="text-xs text-muted-foreground/70">Try a different search term</p>
 							<button
 								onclick={() => sidebarSearchQuery = ''}
-								class="mt-3 text-xs text-primary-600 hover:text-primary-700 font-medium"
+								class="mt-3 text-xs text-primary hover:text-primary/80 font-medium"
 							>
 								Clear search
 							</button>
@@ -898,10 +884,10 @@
 
 				<!-- Table of Contents (in sidebar) -->
 				{#if !isQuizLesson && currentLesson?.content}
-					<div class="border-t border-slate-200 p-4">
+					<div class="border-t border-border p-4">
 						<button
 							onclick={() => showTableOfContents = !showTableOfContents}
-							class="interactive w-full flex items-center justify-between px-2 py-2 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg active:scale-[0.98] transition-all"
+							class="interactive w-full flex items-center justify-between px-2 py-2 text-sm font-semibold text-foreground hover:bg-muted/50 rounded-lg active:scale-[0.98] transition-all"
 						>
 							<span>Table of Contents</span>
 							<svg 
@@ -924,10 +910,10 @@
 				{/if}
 				
 				<!-- Notes & Bookmarks Panel (in sidebar) -->
-				<div class="border-t border-slate-200">
+				<div class="border-t border-border">
 					<button
 						onclick={() => showNotesPanel = !showNotesPanel}
-						class="interactive w-full flex items-center justify-between px-6 py-3 text-sm font-semibold text-slate-900 hover:bg-slate-50 rounded-lg active:scale-[0.98] transition-all"
+						class="interactive w-full flex items-center justify-between px-6 py-3 text-sm font-semibold text-foreground hover:bg-muted/50 rounded-lg active:scale-[0.98] transition-all"
 					>
 						<span>Notes & Bookmarks</span>
 						<svg 
@@ -950,27 +936,27 @@
 				</div>
 				
 				<!-- Keyboard Shortcuts Help -->
-				<div class="border-t border-slate-200 p-4 bg-slate-50">
-					<p class="text-xs font-semibold text-slate-700 mb-2">Keyboard Shortcuts</p>
-					<div class="space-y-1 text-xs text-slate-600">
+				<div class="border-t border-border p-4 bg-muted/30">
+					<p class="text-xs font-semibold text-foreground mb-2">Keyboard Shortcuts</p>
+					<div class="space-y-1 text-xs text-muted-foreground">
 						<div class="flex justify-between">
 							<span>Search lessons</span>
-							<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">/</kbd>
+							<kbd class="px-2 py-0.5 bg-background border border-border rounded text-foreground font-mono">/</kbd>
 						</div>
 						<div class="flex justify-between">
 							<span>Previous lesson</span>
-							<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">←</kbd>
+							<kbd class="px-2 py-0.5 bg-background border border-border rounded text-foreground font-mono">←</kbd>
 						</div>
 						<div class="flex justify-between">
 							<span>Next lesson</span>
-							<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">→</kbd>
+							<kbd class="px-2 py-0.5 bg-background border border-border rounded text-foreground font-mono">→</kbd>
 						</div>
 						<div class="flex justify-between">
 							<span>Toggle focus mode</span>
 							<div class="flex gap-1">
-								<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">⌘</kbd>
-								<span class="text-slate-400">+</span>
-								<kbd class="px-2 py-0.5 bg-white border border-slate-300 rounded text-slate-700 font-mono">S</kbd>
+								<kbd class="px-2 py-0.5 bg-background border border-border rounded text-foreground font-mono">⌘</kbd>
+								<span class="text-muted-foreground">+</span>
+								<kbd class="px-2 py-0.5 bg-background border border-border rounded text-foreground font-mono">S</kbd>
 							</div>
 						</div>
 					</div>
@@ -1009,9 +995,20 @@
 			<!-- Lesson Content -->
 			<div class="px-6 py-12 {focusMode ? 'max-w-3xl' : 'max-w-4xl'} mx-auto {fontSizeClass}">
 					{#if currentLesson}
+						<!-- Breadcrumb -->
+						{#if !focusMode}
+							<DynamicBreadcrumb 
+								items={[
+									{ label: 'Courses', href: '/courses' },
+									{ label: course?.title || 'Course', href: `/courses/${courseId}` },
+									{ label: currentLesson.title, current: true }
+								]} 
+								class="mb-6"
+							/>
+						{/if}
 						<Card class="mb-6 card-hover shadow-lg">
 							<!-- Lesson Header with Bookmark -->
-							<div class="px-6 pt-6 pb-4 border-b border-slate-200 dark:border-slate-700">
+							<div class="px-6 pt-6 pb-4 border-b border-border">
 								<!-- Top Row: Controls -->
 								<div class="flex items-center justify-between gap-4 mb-4">
 									<div class="flex items-center gap-3">
@@ -1032,19 +1029,19 @@
 											const heading = document.getElementById(currentHeadingId)
 											return heading?.textContent || ''
 										}}
-										onSuccess={(bookmarkId) => {
-											console.log('Bookmark saved:', bookmarkId)
-										}}
+									onSuccess={(_bookmarkId) => {
+										// Bookmark saved successfully
+									}}
 									/>
 								</div>
 								
 								<!-- Bottom Row: Title and Description -->
 								<div class="space-y-2">
-									<h1 class="text-2xl font-bold text-slate-900 dark:text-slate-100 leading-tight">
+									<h1 class="text-2xl font-bold text-foreground leading-tight">
 										{currentLesson.title}
 									</h1>
 									{#if currentLesson.description}
-										<p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed max-w-3xl">
+										<p class="text-muted-foreground text-sm leading-relaxed max-w-3xl">
 											{currentLesson.description}
 										</p>
 									{/if}
@@ -1056,24 +1053,24 @@
 									{#if loadingQuiz}
 										<!-- Quiz loading skeleton -->
 										<div class="space-y-4 py-8">
-											<Skeleton variant="heading" width="60%" />
-											<Skeleton variant="text" width="80%" />
+											<Skeleton class="h-8 w-[60%]" />
+											<Skeleton class="h-4 w-[80%]" />
 											<div class="space-y-3 mt-6">
-												<Skeleton variant="button" height="44px" />
-												<Skeleton variant="button" height="44px" />
-												<Skeleton variant="button" height="44px" />
-												<Skeleton variant="button" height="44px" />
+												<Skeleton class="h-11 w-full" />
+												<Skeleton class="h-11 w-full" />
+												<Skeleton class="h-11 w-full" />
+												<Skeleton class="h-11 w-full" />
 											</div>
 											<div class="flex justify-between mt-8">
-												<Skeleton variant="button" width="100px" />
-												<Skeleton variant="button" width="120px" />
+												<Skeleton class="h-10 w-[100px]" />
+												<Skeleton class="h-10 w-[120px]" />
 											</div>
 										</div>
 									{:else if showAttemptHistory && currentQuiz && allAttempts.length > 0}
 										<!-- Quiz Attempt History View -->
 										<div class="space-y-4">
 											<div class="flex items-center justify-between">
-												<h2 class="text-xl font-semibold text-slate-900">Attempt History</h2>
+												<h2 class="text-xl font-semibold text-foreground">Attempt History</h2>
 												<Button variant="ghost" onclick={handleBackToQuiz}>
 													<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
@@ -1092,12 +1089,12 @@
 										<div class="space-y-4">
 											<!-- Show attempt history toggle if there are previous attempts -->
 											{#if allAttempts.length > 0}
-												<div class="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200">
+												<div class="flex items-center justify-between p-4 bg-muted/50 rounded-lg border border-border">
 													<div class="flex items-center gap-2">
-														<svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<svg class="w-5 h-5 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 															<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
 														</svg>
-														<span class="text-sm font-medium text-slate-700">
+														<span class="text-sm font-medium text-foreground">
 															You have {allAttempts.length} previous {allAttempts.length === 1 ? 'attempt' : 'attempts'}
 														</span>
 													</div>
@@ -1153,11 +1150,11 @@
 									{/if}
 								{:else}
 									<!-- Regular Lesson Content -->
-									<div bind:this={contentElement} class="prose prose-slate max-w-none">
+									<div bind:this={contentElement} class="prose prose-slate max-w-none dark:prose-invert">
 										{#if currentLesson.content}
 											<MarkdownRenderer content={currentLesson.content} />
 										{:else}
-											<p class="text-slate-600">This lesson content will be available soon.</p>
+											<p class="text-muted-foreground">This lesson content will be available soon.</p>
 										{/if}
 									</div>
 								{/if}
@@ -1187,12 +1184,12 @@
 							{lessonId}
 							{currentHeadingId}
 							scrollPosition={currentScrollPosition}
-							onNoteCreated={(noteId) => {
-								console.log('Note created:', noteId)
-								// Refresh notes panel if open
-								showMobileNotesSheet = false
-								setTimeout(() => showMobileNotesSheet = true, 100)
-							}}
+						onNoteCreated={(_noteId) => {
+							// Note created successfully
+							// Refresh notes panel if open
+							showMobileNotesSheet = false
+							setTimeout(() => showMobileNotesSheet = true, 100)
+						}}
 						/>
 					{/if}
 					
@@ -1208,12 +1205,11 @@
 					</button>
 					
 					<!-- Mobile Notes Bottom Sheet -->
-					<BottomSheet 
-						bind:open={showMobileNotesSheet}
-						title="Notes & Bookmarks"
-						height="full"
-						snapPoints={[50, 90]}
-					>
+				<BottomSheet 
+					bind:open={showMobileNotesSheet}
+					title="Notes & Bookmarks"
+					height="full"
+				>
 						<NotesPanel 
 							{courseId}
 							{lessonId}
@@ -1222,14 +1218,14 @@
 
 					<!-- Error Display -->
 					{#if error}
-						<div class="mt-6 p-5 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+						<div class="mt-6 p-5 bg-destructive/10 border border-destructive/30 rounded-xl shadow-sm">
 							<div class="flex items-start gap-3">
-								<svg class="w-5 h-5 text-red-600 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+								<svg class="w-5 h-5 text-destructive mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
 								</svg>
 								<div>
-									<h3 class="text-sm font-semibold text-red-900">Error</h3>
-									<p class="text-sm text-red-700 mt-1">{error}</p>
+									<h3 class="text-sm font-semibold text-destructive">Error</h3>
+									<p class="text-sm text-destructive/90 mt-1">{error}</p>
 								</div>
 							</div>
 						</div>

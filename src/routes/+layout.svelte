@@ -9,6 +9,8 @@
 	import { isAdmin } from '$lib/utils/admin'
 	import { initTheme } from '$lib/config/theme'
 	import { getPath } from '$lib/utils/navigation'
+	import { ModeWatcher } from 'mode-watcher'
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte'
 
 	const { children } = $props()
 	let mobileMenuOpen = $state(false)
@@ -42,6 +44,8 @@
 	<meta name="description" content="Learn with Open-EDU - A modern online course platform" />
 </svelte:head>
 
+<ModeWatcher />
+
 <div class="min-h-screen bg-background">
 	<!-- Navigation Header -->
 	<header class="sticky top-0 z-50 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -56,18 +60,30 @@
 
 			<!-- Desktop Navigation -->
 			<nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
-				<a href={getPath('/')} class="transition-colors hover:text-foreground/80 text-foreground">
+				<a 
+					href={getPath('/')} 
+					class="transition-colors hover:text-foreground/80 {$page.url.pathname === '/' ? 'text-foreground' : 'text-foreground/60'}"
+				>
 					Home
 				</a>
-				<a href={getPath('/courses')} class="transition-colors hover:text-foreground/80 text-foreground/60">
+				<a 
+					href={getPath('/courses')} 
+					class="transition-colors hover:text-foreground/80 {$page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-foreground/60'}"
+				>
 					Courses
 				</a>
 				{#if authState.user}
-					<a href={getPath('/dashboard')} class="transition-colors hover:text-foreground/80 text-foreground/60">
+					<a 
+						href={getPath('/dashboard')} 
+						class="transition-colors hover:text-foreground/80 {$page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-foreground/60'}"
+					>
 						Dashboard
 					</a>
 					{#if isAdmin(authState.user)}
-						<a href={getPath('/admin')} class="transition-colors hover:text-foreground/80 text-foreground/60 flex items-center space-x-1">
+						<a 
+							href={getPath('/admin')} 
+							class="transition-colors hover:text-foreground/80 {$page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-foreground/60'} flex items-center space-x-1"
+						>
 							<Settings class="h-3 w-3" />
 							<span>Admin</span>
 						</a>
@@ -85,12 +101,14 @@
 						<span class="hidden sm:inline-block text-sm text-muted-foreground">
 							Welcome, {authState.user.displayName || authState.user.email}
 						</span>
+						<ThemeToggle />
 						<Button variant="ghost" size="icon" onclick={handleLogout} title="Logout">
 							<LogOut class="h-4 w-4" />
 						</Button>
 					</div>
 				{:else}
 					<!-- Guest User Menu -->
+					<ThemeToggle />
 					<Button size="sm">
 						<a href={getPath('/auth/login')}>Sign In with Google</a>
 					</Button>
@@ -107,18 +125,30 @@
 		{#if mobileMenuOpen}
 			<div class="border-t bg-background md:hidden">
 				<nav class="container mx-auto px-4 py-4 space-y-3 max-w-7xl">
-					<a href={getPath('/')} class="block py-2 text-sm font-medium">
+					<a 
+						href={getPath('/')} 
+						class="block py-2 text-sm font-medium {$page.url.pathname === '/' ? 'text-foreground' : 'text-muted-foreground'}"
+					>
 						Home
 					</a>
-					<a href={getPath('/courses')} class="block py-2 text-sm font-medium text-muted-foreground">
+					<a 
+						href={getPath('/courses')} 
+						class="block py-2 text-sm font-medium {$page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-muted-foreground'}"
+					>
 						Courses
 					</a>
 					{#if authState.user}
-						<a href={getPath('/dashboard')} class="block py-2 text-sm font-medium text-muted-foreground">
+						<a 
+							href={getPath('/dashboard')} 
+							class="block py-2 text-sm font-medium {$page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground'}"
+						>
 							Dashboard
 						</a>
 						{#if isAdmin(authState.user)}
-							<a href={getPath('/admin')} class="block py-2 text-sm font-medium text-muted-foreground flex items-center space-x-1">
+							<a 
+								href={getPath('/admin')} 
+								class="block py-2 text-sm font-medium flex items-center space-x-1 {$page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-muted-foreground'}"
+							>
 								<Settings class="h-3 w-3" />
 								<span>Admin</span>
 							</a>
@@ -136,47 +166,47 @@
 
 	<!-- Footer (hidden on lesson pages) -->
 	{#if !isLessonPage}
-	<footer class="border-t bg-slate-100">
+	<footer class="border-t bg-muted">
 		<div class="container mx-auto px-4 py-8 max-w-7xl">
 			<div class="grid grid-cols-1 md:grid-cols-4 gap-8">
 				<div class="space-y-3">
-					<div class="flex items-center space-x-2 text-slate-900">
+					<div class="flex items-center space-x-2 text-foreground">
 						<BookOpen class="h-5 w-5" />
 						<span class="font-bold">Open-EDU</span>
 					</div>
-					<p class="text-sm text-slate-700">
+					<p class="text-sm text-muted-foreground">
 						Empowering learners worldwide with accessible, high-quality online education.
 					</p>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-slate-900">Platform</h3>
+					<h3 class="text-sm font-semibold text-foreground">Platform</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/courses')} class="text-slate-700 hover:text-primary-700 hover:underline">Browse Courses</a></li>
-						<li><a href={getPath('/about')} class="text-slate-700 hover:text-primary-700 hover:underline">About Us</a></li>
-						<li><a href={getPath('/pricing')} class="text-slate-700 hover:text-primary-700 hover:underline">Pricing</a></li>
+						<li><a href={getPath('/courses')} class="text-muted-foreground hover:text-primary hover:underline">Browse Courses</a></li>
+						<li><a href={getPath('/about')} class="text-muted-foreground hover:text-primary hover:underline">About Us</a></li>
+						<li><a href={getPath('/pricing')} class="text-muted-foreground hover:text-primary hover:underline">Pricing</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-slate-900">Support</h3>
+					<h3 class="text-sm font-semibold text-foreground">Support</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/help')} class="text-slate-700 hover:text-primary-700 hover:underline">Help Center</a></li>
-						<li><a href={getPath('/contact')} class="text-slate-700 hover:text-primary-700 hover:underline">Contact</a></li>
-						<li><a href={getPath('/community')} class="text-slate-700 hover:text-primary-700 hover:underline">Community</a></li>
+						<li><a href={getPath('/help')} class="text-muted-foreground hover:text-primary hover:underline">Help Center</a></li>
+						<li><a href={getPath('/contact')} class="text-muted-foreground hover:text-primary hover:underline">Contact</a></li>
+						<li><a href={getPath('/community')} class="text-muted-foreground hover:text-primary hover:underline">Community</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-slate-900">Legal</h3>
+					<h3 class="text-sm font-semibold text-foreground">Legal</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/privacy')} class="text-slate-700 hover:text-primary-700 hover:underline">Privacy Policy</a></li>
-						<li><a href={getPath('/terms')} class="text-slate-700 hover:text-primary-700 hover:underline">Terms of Service</a></li>
-						<li><a href={getPath('/cookies')} class="text-slate-700 hover:text-primary-700 hover:underline">Cookie Policy</a></li>
+						<li><a href={getPath('/privacy')} class="text-muted-foreground hover:text-primary hover:underline">Privacy Policy</a></li>
+						<li><a href={getPath('/terms')} class="text-muted-foreground hover:text-primary hover:underline">Terms of Service</a></li>
+						<li><a href={getPath('/cookies')} class="text-muted-foreground hover:text-primary hover:underline">Cookie Policy</a></li>
 					</ul>
 				</div>
 			</div>
 		</div>
-		<div class="border-t bg-slate-50">
+		<div class="border-t bg-background">
 			<div class="container mx-auto px-4 py-4 max-w-7xl">
-				<div class="text-center text-sm text-slate-700">
+				<div class="text-center text-sm text-muted-foreground">
 					© {new Date().getFullYear()} Open-EDU. All rights reserved.
 				</div>
 			</div>

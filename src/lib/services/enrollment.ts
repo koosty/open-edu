@@ -22,16 +22,16 @@ import { hasToDate } from "$lib/utils/errors";
 function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
   if (!data) return data;
 
-  const converted = { ...data };
+  const converted = { ...data } as Record<string, unknown>;
 
   Object.keys(converted).forEach((key) => {
     const value = converted[key];
     if (hasToDate(value)) {
-      converted[key] = value.toDate().toISOString() as T[Extract<keyof T, string>];
+      converted[key] = value.toDate().toISOString();
     }
   });
 
-  return converted;
+  return converted as T;
 }
 
 // Enrollment Service

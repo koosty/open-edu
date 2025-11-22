@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { Button, Input, Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
+	import { Button, Input, Textarea, Label, Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
 	import { NotesService } from '$lib/services/notes'
 	import { authState } from '$lib/auth.svelte'
 	import type { Note, NoteColor, CreateNoteInput } from '$lib/types/notes'
@@ -255,7 +255,7 @@
 	<!-- Modal -->
 	<div class="fixed inset-0 z-50 flex items-center justify-center p-4 pointer-events-none">
 		<Card class="w-full max-w-2xl pointer-events-auto animate-slide-up">
-			<CardHeader class="border-b border-gray-200 dark:border-gray-700">
+			<CardHeader class="border-b border-border dark:border-gray-700">
 				<div class="flex items-center justify-between">
 					<CardTitle>{isEditMode ? 'Edit Note' : 'Add Note'}</CardTitle>
 					<button
@@ -291,21 +291,21 @@
 					/>
 				</div>
 				
-				<!-- Content (required) -->
-				<div>
-					<label for="note-content" class="block text-sm font-medium mb-2">
-						Content <span class="text-red-500">*</span>
-					</label>
-					<textarea
-						id="note-content"
-						bind:value={content}
-						placeholder="Write your note here..."
-						rows="6"
-						class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-						disabled={saving}
-						required
-					></textarea>
-				</div>
+		<!-- Content (required) -->
+		<div>
+			<Label for="note-content" class="mb-2">
+				Content <span class="text-red-500">*</span>
+			</Label>
+			<Textarea
+					id="note-content"
+					bind:value={content}
+					placeholder="Write your note here..."
+					rows={6}
+					class="w-full resize-none"
+					disabled={saving}
+					required
+				/>
+			</div>
 				
 				<!-- Color picker -->
 				<div>
@@ -408,7 +408,7 @@
 				{/if}
 				
 				<!-- Action buttons -->
-				<div class="flex items-center justify-between pt-4 border-t border-gray-200 dark:border-gray-700">
+				<div class="flex items-center justify-between pt-4 border-t border-border dark:border-gray-700">
 					<div>
 						{#if isEditMode}
 							<Button

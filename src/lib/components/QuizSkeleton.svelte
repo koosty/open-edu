@@ -12,18 +12,18 @@
 		<div class="max-w-4xl mx-auto">
 			<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
 				<div class="flex-1 min-w-0 space-y-2">
-					<Skeleton variant="heading" width="40%" />
-					<Skeleton variant="text" width="60%" />
+					<Skeleton class="h-8 w-[40%]" />
+					<Skeleton class="h-4 w-[60%]" />
 				</div>
 				
 				<div class="flex items-center gap-2 md:gap-4">
-					<Skeleton variant="button" width="120px" height="42px" />
-					<Skeleton variant="text" width="80px" />
+					<Skeleton class="h-[42px] w-[120px]" />
+					<Skeleton class="h-4 w-[80px]" />
 				</div>
 			</div>
 			
 			<!-- Progress bar -->
-			<Skeleton variant="text" height="8px" />
+			<Skeleton class="h-2 w-full" />
 		</div>
 	</div>
 	
@@ -32,11 +32,11 @@
 		<Card class="border-slate-200 bg-slate-50">
 			<CardContent class="p-4 md:p-5">
 				<div class="flex items-start gap-2 md:gap-3">
-					<Skeleton circle width="20px" height="20px" />
+					<Skeleton class="h-5 w-5 rounded-full" />
 					<div class="flex-1 space-y-2">
-						<Skeleton variant="text" width="30%" />
-						<Skeleton variant="text" width="90%" />
-						<Skeleton variant="text" width="80%" />
+						<Skeleton class="h-4 w-[30%]" />
+						<Skeleton class="h-4 w-[90%]" />
+						<Skeleton class="h-4 w-[80%]" />
 					</div>
 				</div>
 			</CardContent>
@@ -49,19 +49,19 @@
 			<CardContent class="p-4 md:p-8">
 				<!-- Question header -->
 				<div class="flex items-start gap-3 md:gap-4 mb-4 md:mb-6">
-					<Skeleton circle width="40px" height="40px" />
+					<Skeleton class="h-10 w-10 rounded-full" />
 					<div class="flex-1 space-y-2">
-						<Skeleton variant="text" width="30%" />
-						<Skeleton variant="heading" width="80%" />
+						<Skeleton class="h-4 w-[30%]" />
+						<Skeleton class="h-8 w-[80%]" />
 					</div>
 				</div>
 				
 				<!-- Answer options -->
 				<div class="space-y-3">
-					<Skeleton variant="button" height="44px" />
-					<Skeleton variant="button" height="44px" />
-					<Skeleton variant="button" height="44px" />
-					<Skeleton variant="button" height="44px" />
+					<Skeleton class="h-11 w-full" />
+					<Skeleton class="h-11 w-full" />
+					<Skeleton class="h-11 w-full" />
+					<Skeleton class="h-11 w-full" />
 				</div>
 			</CardContent>
 		</Card>
@@ -73,14 +73,14 @@
 			<!-- Question navigator -->
 			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2">
 				{#each Array(5) as __, index (index)}
-					<Skeleton width="44px" height="44px" className="shrink-0" />
+					<Skeleton class="h-11 w-11 shrink-0" />
 				{/each}
 			</div>
 			
 			<!-- Navigation buttons -->
 			<div class="flex items-center justify-between gap-2">
-				<Skeleton variant="button" width="100px" height="44px" />
-				<Skeleton variant="button" width="120px" height="44px" />
+				<Skeleton class="h-11 w-[100px]" />
+				<Skeleton class="h-11 w-[120px]" />
 			</div>
 		</div>
 	</div>

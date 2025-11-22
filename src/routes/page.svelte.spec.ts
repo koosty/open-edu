@@ -2,7 +2,6 @@ import { page } from "vitest/browser";
 import { describe, expect, it } from "vitest";
 import { render } from "vitest-browser-svelte";
 import Page from "./+page.svelte";
-import { authState } from "$lib/auth.svelte";
 
 describe("Home Page", () => {
   it("should render the main heading", async () => {
