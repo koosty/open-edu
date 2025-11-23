@@ -547,7 +547,7 @@
 			</div>
 			
 			<!-- Navigation Buttons - Mobile Optimized (min 44px touch target) -->
-			<div class="flex items-center justify-between gap-3">
+			<div class="flex items-center justify-between gap-3 pb-4">
 				<Button
 					variant="outline"
 					onclick={goPrevious}
