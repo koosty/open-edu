@@ -330,7 +330,7 @@
 											</Item.Content>
 											
 											<Item.Actions>
-												<div class="flex items-center gap-2">
+												<div class="flex items-center gap-3">
 													{#if course.isPublished}
 														<Badge variant="secondary" class="bg-green-500/10 text-green-700 dark:text-green-500">
 															Published
@@ -339,21 +339,23 @@
 														<Badge variant="outline">Draft</Badge>
 													{/if}
 													
-													<Button 
-														variant="outline" 
-														size="sm"
-														onclick={() => handleTogglePublish(course)}
-													>
-														{course.isPublished ? 'Unpublish' : 'Publish'}
-													</Button>
-													
-													<Button 
-														variant="ghost" 
-														size="sm"
-														onclick={() => navigate(`/courses/${course.id}`)}
-													>
-														View
-													</Button>
+													<div class="flex items-center gap-2">
+														<Button 
+															variant={course.isPublished ? 'outline' : 'default'}
+															size="sm"
+															onclick={() => handleTogglePublish(course)}
+														>
+															{course.isPublished ? 'Unpublish' : 'Publish'}
+														</Button>
+														
+														<Button 
+															variant="outline" 
+															size="sm"
+															onclick={() => navigate(`/courses/${course.id}`)}
+														>
+															View
+														</Button>
+													</div>
 												</div>
 											</Item.Actions>
 										</Item.Root>
