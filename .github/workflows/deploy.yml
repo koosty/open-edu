@@ -25,7 +25,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           
       - name: Install dependencies
@@ -34,6 +34,7 @@ jobs:
       - name: Build application
         run: npm run build
         env:
+          PUBLIC_BASE_PATH: ${{ vars.BASE_PATH || '/open-edu' }}
           # Firebase configuration for production
           PUBLIC_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           PUBLIC_FIREBASE_AUTH_DOMAIN: ${{ secrets.FIREBASE_AUTH_DOMAIN }}
