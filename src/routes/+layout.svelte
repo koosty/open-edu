@@ -11,7 +11,8 @@
 	import { getPath } from '$lib/utils/navigation'
 	import { ModeWatcher } from 'mode-watcher'
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte'
-
+	import { VERSION, formatBuildId, ENVIRONMENT } from '$lib/version'
+	
 	const { children } = $props()
 	let mobileMenuOpen = $state(false)
 
@@ -205,8 +206,17 @@
 		</div>
 		<div class="border-t bg-background">
 			<div class="container mx-auto px-4 py-4 max-w-7xl">
-				<div class="text-center text-sm text-muted-foreground">
-					© {new Date().getFullYear()} Open-EDU. All rights reserved.
+				<div class="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
+					<div class="text-center md:text-left">
+						© {new Date().getFullYear()} Open-EDU. All rights reserved.
+					</div>
+					<div class="flex items-center gap-3 text-center md:text-right">
+						<span class="font-mono">v{VERSION}</span>
+						<span class="hidden sm:inline">•</span>
+						<span class="hidden sm:inline font-mono">Build {formatBuildId()}</span>
+						<span class="hidden md:inline">•</span>
+						<span class="hidden md:inline capitalize">{ENVIRONMENT}</span>
+					</div>
 				</div>
 			</div>
 		</div>
