@@ -171,7 +171,7 @@
 	}
 </script>
 
-<div class="quiz-viewer flex flex-col">
+<div class="quiz-viewer">
 	<!-- Preview Mode Banner -->
 	{#if previewMode}
 		<div class="bg-gradient-to-r from-amber-500 to-orange-500 text-white px-4 py-3 sticky top-0 z-20 shadow-md">
@@ -334,7 +334,7 @@
 	{/if}
 	
 	<!-- Question Content - Mobile Optimized -->
-	<div class="flex-1 max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8 w-full">
+	<div class="max-w-4xl mx-auto px-4 md:px-6 py-6 md:py-8">
 		{#if currentQuestion}
 			<Card class="shadow-lg">
 				<CardContent class="p-4 md:p-8">
@@ -525,7 +525,7 @@
 	</div>
 	
 	<!-- Navigation Footer - Mobile Optimized -->
-	<div class="border-t bg-card p-3 md:p-6 mt-auto shadow-lg safe-area-bottom">
+	<div class="border-t bg-card p-3 md:p-6 sticky bottom-0 shadow-lg safe-area-bottom">
 		<div class="max-w-4xl mx-auto">
 			<!-- Question Navigator - Touch Optimized -->
 			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
