@@ -547,7 +547,7 @@
 			</div>
 			
 			<!-- Navigation Buttons - Mobile Optimized (min 44px touch target) -->
-			<div class="flex items-center justify-between gap-2 md:gap-3">
+			<div class="flex items-center justify-between gap-3">
 				<Button
 					variant="outline"
 					onclick={goPrevious}
@@ -558,26 +558,24 @@
 					<span class="sm:ml-2">Prev</span>
 				</Button>
 				
-				<div class="flex gap-2 md:gap-3 flex-1 justify-end">
-					{#if isLastQuestion}
-						<Button
-							onclick={handleSubmitClick}
-							disabled={isSubmitting}
-							class="min-h-[44px] px-4 md:px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md"
-						>
-							{isSubmitting ? 'Submitting...' : 'Submit Quiz'}
-						</Button>
-					{:else}
-						<Button
-							onclick={goNext}
-							disabled={!canGoNext || isSubmitting}
-							class="min-h-[44px] px-4 md:px-6"
-						>
-							<span class="sm:mr-2">Next</span>
-							<span class="hidden sm:inline">→</span>
-						</Button>
-					{/if}
-				</div>
+				{#if isLastQuestion}
+					<Button
+						onclick={handleSubmitClick}
+						disabled={isSubmitting}
+						class="min-h-[44px] px-4 md:px-6 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md"
+					>
+						{isSubmitting ? 'Submitting...' : 'Submit Quiz'}
+					</Button>
+				{:else}
+					<Button
+						onclick={goNext}
+						disabled={!canGoNext || isSubmitting}
+						class="min-h-[44px] px-4 md:px-6"
+					>
+						<span class="sm:mr-2">Next</span>
+						<span class="hidden sm:inline">→</span>
+					</Button>
+				{/if}
 			</div>
 		</div>
 	</div>
