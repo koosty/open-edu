@@ -5,6 +5,8 @@
 	import { isAdmin, canManageCourses } from '$lib/utils/admin'
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
+	import * as Item from '$lib/components/ui/item'
+	import { Badge } from '$lib/components/ui/badge'
 	import type { Course } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
 	import { Plus, BookOpen, Users, CheckCircle, Star, User } from 'lucide-svelte'
@@ -146,15 +148,6 @@
 
 	function formatNumber(num: number): string {
 		return num.toLocaleString()
-	}
-
-	function getDifficultyColor(difficulty: string): string {
-		switch (difficulty.toLowerCase()) {
-			case 'beginner': return 'bg-green-500/10 text-green-700 dark:text-green-400'
-			case 'intermediate': return 'bg-yellow-500/10 text-yellow-700 dark:text-yellow-400' 
-			case 'advanced': return 'bg-red-500/10 text-red-700 dark:text-red-400'
-			default: return 'bg-muted text-muted-foreground'
-		}
 	}
 </script>
 
@@ -306,26 +299,26 @@
 									</Button>
 								</div>
 							{:else}
-								<div class="space-y-4">
+								<div class="space-y-3">
 									{#each courses.slice(0, 6) as course (course.id)}
-										<div class="flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors">
-											<div class="flex-1">
-												<div class="flex items-center gap-3 mb-2">
-													<h3 class="font-medium text-foreground">{course.title}</h3>
-													<span class="px-2 py-1 text-xs rounded-full {getDifficultyColor(course.difficulty)}">
-														{course.difficulty}
-													</span>
+										<Item.Root variant="outline">
+											<Item.Content class="flex-1">
+												<div class="flex items-center gap-2 mb-1">
+													<Item.Title>{course.title}</Item.Title>
+													<Badge variant="secondary">{course.difficulty}</Badge>
 													{#if course.isFeatured}
-														<span class="px-2 py-1 bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 text-xs rounded-full">
+														<Badge variant="outline" class="bg-yellow-500/10 text-yellow-700 dark:text-yellow-400">
 															Featured
-														</span>
+														</Badge>
 													{/if}
 												</div>
-												<p class="text-sm text-muted-foreground mb-2">
+												
+												<Item.Description class="mb-2">
 													{course.description.length > 100 ? 
 														course.description.substring(0, 100) + '...' : 
 														course.description}
-												</p>
+												</Item.Description>
+												
 												<div class="flex items-center gap-4 text-sm text-muted-foreground">
 													<span>{course.enrolled} students</span>
 													<span>{course.lessons?.length || 0} lessons</span>
@@ -334,33 +327,36 @@
 													{/if}
 													<span>Updated {formatDate(course.updatedAt)}</span>
 												</div>
-											</div>
-											<div class="flex items-center gap-2 ml-4">
-												<div class="flex items-center">
+											</Item.Content>
+											
+											<Item.Actions>
+												<div class="flex items-center gap-2">
 													{#if course.isPublished}
-														<span class="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-														<span class="text-sm text-green-600 dark:text-green-500 font-medium">Published</span>
+														<Badge variant="secondary" class="bg-green-500/10 text-green-700 dark:text-green-500">
+															Published
+														</Badge>
 													{:else}
-														<span class="w-2 h-2 bg-muted-foreground rounded-full mr-2"></span>
-														<span class="text-sm text-muted-foreground font-medium">Draft</span>
+														<Badge variant="outline">Draft</Badge>
 													{/if}
+													
+													<Button 
+														variant="outline" 
+														size="sm"
+														onclick={() => handleTogglePublish(course)}
+													>
+														{course.isPublished ? 'Unpublish' : 'Publish'}
+													</Button>
+													
+													<Button 
+														variant="ghost" 
+														size="sm"
+														onclick={() => navigate(`/courses/${course.id}`)}
+													>
+														View
+													</Button>
 												</div>
-												<Button 
-													variant="outline" 
-													size="sm"
-													onclick={() => handleTogglePublish(course)}
-												>
-													{course.isPublished ? 'Unpublish' : 'Publish'}
-												</Button>
-												<Button 
-													variant="ghost" 
-													size="sm"
-													onclick={() => navigate(`/courses/${course.id}`)}
-												>
-													View
-												</Button>
-											</div>
-										</div>
+											</Item.Actions>
+										</Item.Root>
 									{/each}
 
 									{#if courses.length > 6}
