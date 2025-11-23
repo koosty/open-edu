@@ -2,6 +2,13 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { codecovSvelteKitPlugin } from '@codecov/sveltekit-plugin';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+
+// Read version from package.json
+const packageJson = JSON.parse(
+	readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8')
+);
 
 export default defineConfig({
 	plugins: [
@@ -15,6 +22,10 @@ export default defineConfig({
 			telemetry: false // Privacy-conscious default
 		})] : [])
 	],
+	define: {
+		// Inject version from package.json into the app
+		'import.meta.env.VITE_APP_VERSION': JSON.stringify(packageJson.version)
+	},
 	test: {
 		expect: { requireAssertions: true },
 		testTimeout: 30000, // 30 seconds timeout per test

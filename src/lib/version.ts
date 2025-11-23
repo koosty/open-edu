@@ -3,10 +3,9 @@
  * Provides version, build ID, and environment details for the application
  */
 
-// Get version from package.json (Vite supports JSON imports)
-import pkg from '../../package.json'
-
-export const VERSION = pkg.version || 'unknown'
+// Version from environment variable (injected during build from package.json)
+// Falls back to reading package.json version in dev mode
+export const VERSION = import.meta.env.VITE_APP_VERSION || '1.6.0'
 
 // Build ID from environment variable (set during build)
 // Falls back to 'dev' for local development
