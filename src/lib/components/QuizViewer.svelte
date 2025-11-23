@@ -525,7 +525,7 @@
 	</div>
 	
 	<!-- Navigation Footer - Mobile Optimized -->
-	<div class="border-t bg-card p-3 md:p-6 sticky bottom-0 shadow-lg safe-area-bottom">
+	<div class="border-t bg-card px-3 md:px-6 pt-3 md:pt-6 pb-6 md:pb-8 sticky bottom-0 shadow-lg safe-area-bottom">
 		<div class="max-w-4xl mx-auto">
 			<!-- Question Navigator - Touch Optimized -->
 			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2 -mx-1 px-1 scrollbar-hide">
