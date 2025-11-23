@@ -9,6 +9,7 @@
 	import * as RadioGroup from '$lib/components/ui/radio-group'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import CourseImporter from '$lib/components/CourseImporter.svelte'
+	import type { Course } from '$lib/types'
 
 	// Mode selection
 	type CreationMode = 'manual' | 'import'
@@ -88,10 +89,11 @@
 
 		try {
 			// Process form data
-			const courseData: any = {
+			const courseData: Omit<Course, 'id' | 'enrolled' | 'rating' | 'ratingCount' | 'lessons' | 'chapters' | 'createdAt' | 'updatedAt'> = {
 				title: form.title.trim(),
 				description: form.description.trim(),
 				instructor: authState.user.displayName || authState.user.email,
+				instructorId: authState.user.id,
 				category: form.category.trim(),
 				difficulty: form.difficulty,
 				duration: form.duration.trim(),
@@ -102,13 +104,8 @@
 				learningOutcomes: form.learningOutcomes.split('\n').map(outcome => outcome.trim()).filter(outcome => outcome.length > 0),
 				isPublished: form.isPublished,
 				isFeatured: form.isFeatured,
-				lessons: []
-			}
-
-			// Add price info for premium courses
-			if (form.level === 'premium') {
-				courseData.price = parseFloat(form.price) || 0
-				courseData.currency = form.currency
+				price: form.level === 'premium' ? parseFloat(form.price) || 0 : undefined,
+				currency: form.level === 'premium' ? form.currency : undefined,
 			}
 
 			const courseId = await CourseService.createCourse(courseData, authState.user.id)
@@ -120,8 +117,8 @@
 				navigate(`/courses/${courseId}`)
 			}, 2000)
 
-		} catch (err: any) {
-			error = err.message || 'Failed to create course'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to create course'
 			console.error('Error creating course:', err)
 		} finally {
 			submitting = false

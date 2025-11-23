@@ -92,8 +92,8 @@
 				await loadRecentEnrollments()
 			}
 
-		} catch (err: any) {
-			error = err.message || 'Failed to load dashboard data'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to load dashboard data'
 			console.error('Error loading dashboard:', err)
 		} finally {
 			loading = false
@@ -131,8 +131,8 @@
 				courses[courseIndex] = { ...course, isPublished: !course.isPublished }
 				calculateAnalytics()
 			}
-		} catch (err: any) {
-			error = err.message || 'Failed to update course status'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to update course status'
 		}
 	}
 

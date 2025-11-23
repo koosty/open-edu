@@ -26,9 +26,9 @@
 			const result = await parseCourseFile(file)
 			preview = result.data
 			format = result.format
-		} catch (err: any) {
-			error = err.message || 'Failed to parse file'
-			console.error('File parsing error:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to parse file'
+		console.error('File parsing error:', err)
 		}
 	}
 
@@ -47,9 +47,9 @@
 
 			// Success! Navigate to course
 			navigate(`/courses/${courseId}`)
-		} catch (err: any) {
-			error = err.message || 'Failed to import course'
-			console.error('Import error:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to import course'
+		console.error('Import error:', err)
 		} finally {
 			uploading = false
 		}
@@ -157,10 +157,10 @@
 				{#if preview.learningOutcomes && preview.learningOutcomes.length > 0}
 					<div class="pt-3 border-t">
 						<p class="text-sm font-medium mb-2">Learning Outcomes ({preview.learningOutcomes.length})</p>
-						<ul class="text-xs text-muted-foreground space-y-1 list-disc list-inside">
-							{#each preview.learningOutcomes.slice(0, 3) as outcome}
-								<li>{outcome}</li>
-							{/each}
+					<ul class="text-xs text-muted-foreground space-y-1 list-disc list-inside">
+						{#each preview.learningOutcomes.slice(0, 3) as outcome, i (i)}
+							<li>{outcome}</li>
+						{/each}
 							{#if preview.learningOutcomes.length > 3}
 								<li class="italic">... and {preview.learningOutcomes.length - 3} more</li>
 							{/if}

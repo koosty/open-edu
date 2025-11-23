@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -10,8 +10,8 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz } from '$lib/types/quiz'
 	
-	const courseId = $derived($page.params.id as string)
-	const quizId = $derived($page.params.quizId as string)
+	const courseId = $derived(page.params.id as string)
+	const quizId = $derived(page.params.quizId as string)
 	
 	let quiz = $state<Quiz | null>(null)
 	let loading = $state(true)
@@ -51,8 +51,8 @@
 			}
 			
 			quiz = quizData
-		} catch (err: any) {
-			error = err.message || 'Failed to load quiz'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to load quiz'
 			console.error('Error loading quiz:', err)
 		} finally {
 			loading = false
@@ -68,8 +68,8 @@
 			
 			// Navigate back to quiz management
 			navigate(`/admin/courses/${courseId}/quizzes`)
-		} catch (err: any) {
-			error = err.message || 'Failed to update quiz'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to update quiz'
 			console.error('Error updating quiz:', err)
 		} finally {
 			isSaving = false

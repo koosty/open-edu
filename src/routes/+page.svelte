@@ -2,7 +2,7 @@
 	import { Button, Card, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
 	import { authState } from '$lib/auth.svelte'
 	import { BookOpen, Users, Star, Github, Flame, Rocket } from 'lucide-svelte'
-	import { base } from '$app/paths'
+	import { getPath } from '$lib/utils/navigation'
 </script>
 
 <svelte:head>
@@ -24,19 +24,19 @@
 		{#if authState.user}
 			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
-					<a href="{base}/dashboard">Go to Dashboard</a>
+					<a href={getPath('/dashboard')}>Go to Dashboard</a>
 				</Button>
 				<Button variant="outline" size="lg" class="text-lg px-8">
-					<a href="{base}/courses">Browse Courses</a>
+					<a href={getPath('/courses')}>Browse Courses</a>
 				</Button>
 			</div>
 		{:else}
 			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
-					<a href="{base}/auth/login">Start Learning Today</a>
+					<a href={getPath('/auth/login')}>Start Learning Today</a>
 				</Button>
 				<Button variant="outline" size="lg" class="text-lg px-8">
-					<a href="{base}/courses">Explore Courses</a>
+					<a href={getPath('/courses')}>Explore Courses</a>
 				</Button>
 			</div>
 		{/if}
@@ -182,7 +182,7 @@
 		</p>
 		{#if !authState.user}
 			<Button size="lg" class="text-lg px-8">
-				<a href="{base}/auth/login">Sign Up Free Today</a>
+				<a href={getPath('/auth/login')}>Sign Up Free Today</a>
 			</Button>
 		{/if}
 	</div>

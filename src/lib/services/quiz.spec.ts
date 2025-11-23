@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
-import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
+import type { Quiz, QuizAnswer } from '$lib/types/quiz'
 
 // Mock Firestore functions
 const mockGetDoc = vi.fn()

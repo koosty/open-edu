@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
@@ -12,7 +12,7 @@
 	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
-	const courseId = $derived($page.params.id as string)
+	const courseId = $derived(page.params.id as string)
 	
 	// Course data
 	let course = $state<Course | null>(null)
@@ -114,8 +114,8 @@
 			form.isPublished = courseData.isPublished
 			form.isFeatured = courseData.isFeatured
 			
-		} catch (err: any) {
-			error = err.message || 'Failed to load course'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to load course'
 			console.error('Error loading course:', err)
 		} finally {
 			loading = false
@@ -136,7 +136,7 @@
 		
 		try {
 			// Process form data
-			const updates: any = {
+			const updates: Partial<Course> = {
 				title: form.title.trim(),
 				description: form.description.trim(),
 				category: form.category.trim(),
@@ -168,8 +168,8 @@
 				loadCourse()
 			}, 2000)
 			
-		} catch (err: any) {
-			error = err.message || 'Failed to update course'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to update course'
 			console.error('Error updating course:', err)
 		} finally {
 			submitting = false
@@ -213,8 +213,8 @@
 			// Close modal
 			showDeleteLessonDialog = false
 			lessonToDelete = null
-		} catch (err: any) {
-			error = err.message || 'Failed to delete lesson'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to delete lesson'
 		} finally {
 			deletingLesson = false
 		}
@@ -267,8 +267,8 @@
 			
 			// Redirect to admin dashboard after successful deletion
 			navigate('/admin')
-		} catch (err: any) {
-			error = err.message || 'Failed to delete course'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to delete course'
 			console.error('Error deleting course:', err)
 			deleting = false
 			showDeleteDialog = false

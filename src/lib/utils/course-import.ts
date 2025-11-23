@@ -52,7 +52,7 @@ export async function parseCourseFile(file: File): Promise<ParseResult> {
 	const content = await file.text()
 	const extension = file.name.split('.').pop()?.toLowerCase()
 
-	let data: any
+	let data: unknown
 	let format: ImportFormat
 
 	try {
@@ -73,7 +73,7 @@ export async function parseCourseFile(file: File): Promise<ParseResult> {
 		if (err instanceof Error) {
 			if (err.name === 'ZodError') {
 				// Format Zod validation errors nicely
-				const zodError = err as any
+				const zodError = err as { errors?: Array<{ path: string[]; message: string }> }
 				const firstError = zodError.errors?.[0]
 				if (firstError) {
 					throw new Error(`Validation error: ${firstError.path.join('.')}: ${firstError.message}`)
@@ -205,6 +205,6 @@ export function downloadTemplate(format: ImportFormat): void {
 /**
  * Validate course data
  */
-export function validateCourseData(data: any): CourseImportData {
+export function validateCourseData(data: unknown): CourseImportData {
 	return courseImportSchema.parse(data)
 }

@@ -19,6 +19,38 @@ import { convertTimestamps } from "$lib/utils/firestore";
 
 export class ProgressService {
   /**
+   * Ensure progress record exists for a user and course
+   * Creates one if user is enrolled but has no progress record
+   * @private
+   */
+  private static async ensureProgressRecord(
+    userId: string,
+    courseId: string,
+  ): Promise<UserProgress> {
+    let progress = await this.getCourseProgress(userId, courseId);
+
+    if (!progress) {
+      // Check if user is enrolled but has no progress record
+      const { EnrollmentService } = await import("./enrollment");
+      const isEnrolled = await EnrollmentService.hasAccess(userId, courseId);
+
+      if (!isEnrolled) {
+        throw new Error("User not enrolled in course");
+      }
+
+      // Create progress record for enrolled user
+      await this.createInitialProgressRecord(userId, courseId);
+      progress = await this.getCourseProgress(userId, courseId);
+
+      if (!progress) {
+        throw new Error("Failed to create progress record");
+      }
+    }
+
+    return progress;
+  }
+
+  /**
    * Get user's progress for a specific course
    */
   static async getCourseProgress(
@@ -56,25 +88,7 @@ export class ProgressService {
     lessonId: string,
   ): Promise<void> {
     try {
-      let progress = await this.getCourseProgress(userId, courseId);
-
-      if (!progress) {
-        // Check if user is enrolled but has no progress record
-        const { EnrollmentService } = await import("./enrollment");
-        const isEnrolled = await EnrollmentService.hasAccess(userId, courseId);
-
-        if (!isEnrolled) {
-          throw new Error("User not enrolled in course");
-        }
-
-        // Create progress record for enrolled user
-        await this.createInitialProgressRecord(userId, courseId);
-        progress = await this.getCourseProgress(userId, courseId);
-
-        if (!progress) {
-          throw new Error("Failed to create progress record");
-        }
-      }
+      const progress = await this.ensureProgressRecord(userId, courseId);
 
       const updates: Record<string, unknown> = {
         currentLesson: lessonId,
@@ -105,25 +119,7 @@ export class ProgressService {
     quizScore?: number,
   ): Promise<void> {
     try {
-      let progress = await this.getCourseProgress(userId, courseId);
-
-      if (!progress) {
-        // Check if user is enrolled but has no progress record
-        const { EnrollmentService } = await import("./enrollment");
-        const isEnrolled = await EnrollmentService.hasAccess(userId, courseId);
-
-        if (!isEnrolled) {
-          throw new Error("User not enrolled in course");
-        }
-
-        // Create progress record for enrolled user
-        await this.createInitialProgressRecord(userId, courseId);
-        progress = await this.getCourseProgress(userId, courseId);
-
-        if (!progress) {
-          throw new Error("Failed to create progress record");
-        }
-      }
+      const progress = await this.ensureProgressRecord(userId, courseId);
 
       // Check if lesson is already completed
       if (progress.completedLessons.includes(lessonId)) {
@@ -207,25 +203,7 @@ export class ProgressService {
     timeSpent: number,
   ): Promise<void> {
     try {
-      let progress = await this.getCourseProgress(userId, courseId);
-
-      if (!progress) {
-        // Check if user is enrolled but has no progress record
-        const { EnrollmentService } = await import("./enrollment");
-        const isEnrolled = await EnrollmentService.hasAccess(userId, courseId);
-
-        if (!isEnrolled) {
-          throw new Error("User not enrolled in course");
-        }
-
-        // Create progress record for enrolled user
-        await this.createInitialProgressRecord(userId, courseId);
-        progress = await this.getCourseProgress(userId, courseId);
-
-        if (!progress) {
-          throw new Error("Failed to create progress record");
-        }
-      }
+      const progress = await this.ensureProgressRecord(userId, courseId);
 
       const currentAttempts = progress.quizAttempts?.[lessonId] || 0;
       const currentBestScore = progress.quizScores?.[lessonId] || 0;

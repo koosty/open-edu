@@ -62,7 +62,7 @@ export interface UserActivity {
   entityId: string; // courseId, lessonId, etc.
   entityType: "course" | "lesson" | "quiz" | "achievement";
   timestamp: Date;
-  metadata?: Record<string, any>; // Additional activity-specific data
+  metadata?: Record<string, unknown>; // Additional activity-specific data
 }
 
 export interface Achievement {

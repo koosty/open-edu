@@ -1,20 +1,20 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui'
-	import * as Select from '$lib/components/ui/select'
+	// import * as Select from '$lib/components/ui/select'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
 	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 	import type { Course, Lesson } from '$lib/types'
 	
-	const courseId = $derived($page.params.id as string)
-	const lessonId = $derived($page.params.lessonId as string)
+	const courseId = $derived(page.params.id as string)
+	const lessonId = $derived(page.params.lessonId as string)
 	const isNewLesson = $derived(lessonId === 'new')
 	
 	// Data
@@ -96,8 +96,8 @@
 				form.order = (courseData.lessons?.length || 0) + 1
 			}
 			
-		} catch (err: any) {
-			error = err.message || 'Failed to load data'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to load data'
 			console.error('Error loading data:', err)
 		} finally {
 			loading = false
@@ -156,9 +156,9 @@
 				navigate(`/admin/courses/${courseId}`)
 			}, 1500)
 			
-		} catch (err: any) {
-			error = err.message || `Failed to ${isNewLesson ? 'create' : 'update'} lesson`
-			console.error('❌ Error saving lesson:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : `Failed to ${isNewLesson ? 'create' : 'update'} lesson`
+		console.error('❌ Error saving lesson:', err)
 			console.error('Full error:', err)
 		} finally {
 			submitting = false

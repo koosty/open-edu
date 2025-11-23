@@ -57,6 +57,7 @@
         "vitest-browser-svelte": "^2.0.1"
     },
     "dependencies": {
+        "chart.js": "^4.5.1",
         "class-variance-authority": "^0.7.1",
         "clsx": "^2.1.1",
         "date-fns": "^4.1.0",
@@ -67,7 +68,9 @@
         "katex": "^0.16.25",
         "lucide-svelte": "^0.553.0",
         "marked": "^17.0.0",
+        "mathjs": "^15.1.0",
         "mode-watcher": "^1.1.0",
+        "svelte-dnd-action": "^0.9.67",
         "tailwind-merge": "^3.4.0",
         "yaml": "^2.8.1",
         "zod": "^4.1.12"

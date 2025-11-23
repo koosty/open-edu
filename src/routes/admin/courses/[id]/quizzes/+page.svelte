@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -8,13 +8,14 @@
 	import { Card, CardContent } from '$lib/components/ui'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
 	import Loading from '$lib/components/Loading.svelte'
+	import type { Timestamp } from 'firebase/firestore'
 	import * as QuizService from '$lib/services/quiz'
 	import { CourseService } from '$lib/services/courses'
 	import type { Course } from '$lib/types'
 	import type { Quiz, QuizStatistics } from '$lib/types/quiz'
 	import { SvelteSet } from 'svelte/reactivity'
 	
-	const courseId = $derived($page.params.id as string)
+	const courseId = $derived(page.params.id as string)
 	
 	// State
 	let quizzes = $state<Quiz[]>([])
@@ -302,11 +303,13 @@
 		}
 	}
 	
-	function formatDate(date: any): string {
+	function formatDate(date: Date | Timestamp | string | null | undefined): string {
 		if (!date) return 'N/A'
 		
 		try {
-			const dateObj = date.toDate ? date.toDate() : new Date(date)
+			const dateObj = date instanceof Date ? date : 
+				(typeof date === 'object' && 'toDate' in date) ? date.toDate() : 
+				new Date(date)
 			return dateObj.toLocaleDateString('en-US', {
 				year: 'numeric',
 				month: 'short',

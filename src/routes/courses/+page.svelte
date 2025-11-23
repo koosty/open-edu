@@ -3,7 +3,7 @@
 
 <script lang="ts">
 	import { onMount } from 'svelte'
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { goto } from '$app/navigation'
 	import { navigate } from '$lib/utils/navigation'
 	import { browser } from '$app/environment'
@@ -119,7 +119,7 @@
 	}
 	
 	function performURLUpdate() {
-		const url = new URL($page.url)
+		const url = new URL(page.url)
 		const params = url.searchParams
 		
 		// Update search params

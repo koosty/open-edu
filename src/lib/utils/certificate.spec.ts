@@ -32,7 +32,7 @@ describe('Certificate Generation Utility', () => {
 	beforeAll(() => {
 		// Mock document.createElement for escapeHtml function
 		global.document = {
-			createElement: vi.fn((tagName: string) => {
+			createElement: vi.fn((_tagName: string) => {
 				const element = {
 					textContent: '',
 					innerHTML: '',

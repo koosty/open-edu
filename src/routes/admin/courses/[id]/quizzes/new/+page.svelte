@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -11,7 +11,7 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz } from '$lib/types/quiz'
 	
-	const courseId = $derived($page.params.id as string)
+	const courseId = $derived(page.params.id as string)
 	
 	let isSaving = $state(false)
 	let error = $state<string | null>(null)
@@ -65,8 +65,8 @@
 			
 			// Navigate back to quiz management
 			await navigate(`/admin/courses/${courseId}/quizzes`)
-		} catch (err: any) {
-			error = err.message || 'Failed to create quiz'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to create quiz'
 			console.error('Error creating quiz:', err)
 		} finally {
 			isSaving = false

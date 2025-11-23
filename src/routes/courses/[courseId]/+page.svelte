@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
 	import { EnrollmentService } from '$lib/services/enrollment'
@@ -12,7 +12,7 @@
 	import Loading from '$lib/components/Loading.svelte'
 	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 
-	const courseId = $derived($page.params.courseId as string)
+	const courseId = $derived(page.params.courseId as string)
 	let course = $state<Course | null>(null)
 	let enrollment = $state<Enrollment | null>(null)
 	let loading = $state(true)
@@ -75,9 +75,9 @@
 				return
 			}
 			course = courseData
-		} catch (err: any) {
-			error = err.message || 'Failed to load course'
-			console.error('Error loading course:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to load course'
+		console.error('Error loading course:', err)
 		} finally {
 			loading = false
 		}
@@ -89,9 +89,9 @@
 		try {
 			const enrollmentData = await EnrollmentService.getEnrollment(authState.user.id, courseId)
 			enrollment = enrollmentData
-		} catch (err: any) {
-			console.error('Error loading enrollment:', err)
-			// Don't set error - enrollment check failure shouldn't block viewing course
+	} catch (err: unknown) {
+		console.error('Error loading enrollment:', err)
+		// Don't set error - enrollment check failure shouldn't block viewing course
 		}
 	}
 
@@ -114,9 +114,9 @@
 				course = courseData
 			}
 			
-		} catch (err: any) {
-			error = err.message || 'Failed to enroll in course'
-			console.error('Error enrolling:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to enroll in course'
+		console.error('Error enrolling:', err)
 		} finally {
 			enrolling = false
 		}

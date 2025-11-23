@@ -573,9 +573,9 @@ describe('createTypedService', () => {
 			email: 'john@example.com'
 		}
 
-		const id = await userService.create(userData)
+		const _id = await userService.create(userData)
 
-		expect(id).toBe('user-new')
+		expect(_id).toBe('user-new') // id was returned from addValidatedDoc
 		expect(mockFirestore.addDoc).toHaveBeenCalled()
 	})
 

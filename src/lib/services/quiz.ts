@@ -461,15 +461,16 @@ function checkAnswer(
 		case 'true_false':
 			return answer === correctAnswer
 			
-		case 'multiple_select':
-			if (!Array.isArray(answer) || !Array.isArray(correctAnswer)) {
-				return false
-			}
+	case 'multiple_select': {
+		if (!Array.isArray(answer) || !Array.isArray(correctAnswer)) {
+			return false
+		}
 		// Sort and compare arrays
 		const sortedAnswer = [...answer].sort()
 		const sortedCorrect = [...correctAnswer].sort()
 		return JSON.stringify(sortedAnswer) === JSON.stringify(sortedCorrect)
-		
+	}
+
 	case 'short_answer': {
 		if (typeof answer !== 'string' || typeof correctAnswer !== 'string') {
 			return false
@@ -496,13 +497,13 @@ function checkAnswer(
 			? answer === correctAnswer
 			: String(answer).toLowerCase() === String(correctAnswer).toLowerCase()
 	}
-			
-		case 'essay':
-			// Essays require manual grading
-			return false
-			
-		default:
-			return false
+	
+	case 'essay':
+		// Essays require manual grading
+		return false
+		
+	default:
+		return false
 	}
 }
 

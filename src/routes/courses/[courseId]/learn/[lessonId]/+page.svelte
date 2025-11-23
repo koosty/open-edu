@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { onDestroy, untrack } from 'svelte'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
@@ -38,8 +38,8 @@
 	import * as QuizService from '$lib/services/quiz'
 	import type { Quiz, QuizAttempt, QuizAnswer } from '$lib/types/quiz'
 	
-	const courseId = $derived($page.params.courseId as string)
-	const lessonId = $derived($page.params.lessonId as string)
+	const courseId = $derived(page.params.courseId as string)
+	const lessonId = $derived(page.params.lessonId as string)
 	
 	let course = $state<Course | null>(null)
 	let currentLesson = $state<Lesson | null>(null)
@@ -269,9 +269,9 @@
 			await loadQuizData()
 		}
 
-		} catch (err: any) {
-			error = err.message || 'Failed to load lesson'
-			console.error('Error loading lesson:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to load lesson'
+		console.error('Error loading lesson:', err)
 		} finally {
 			loading = false
 		}
@@ -403,9 +403,9 @@
 			// Show celebration animation
 			showCompletionCelebration = true
 
-		} catch (err: any) {
-			error = err.message || 'Failed to complete lesson'
-			console.error('Error completing lesson:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to complete lesson'
+		console.error('Error completing lesson:', err)
 		} finally {
 			completing = false
 		}
@@ -518,9 +518,9 @@
 					lessonId
 				)
 			}
-		} catch (err: any) {
-			console.error('Error loading quiz:', err)
-			error = 'Failed to load quiz'
+	} catch (err: unknown) {
+		console.error('Error loading quiz:', err)
+		error = 'Failed to load quiz'
 		} finally {
 			loadingQuiz = false
 		}
@@ -571,9 +571,9 @@
 				await deleteReadingPosition(authState.user.id, lessonId)
 			}
 
-		} catch (err: any) {
-			error = err.message || 'Failed to submit quiz'
-			console.error('Error submitting quiz:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to submit quiz'
+		console.error('Error submitting quiz:', err)
 		} finally {
 			quizSubmitting = false
 		}
@@ -601,9 +601,9 @@
 				authState.user.id,
 				currentQuiz.id
 			)
-		} catch (err: any) {
-			error = err.message || 'Failed to start new attempt'
-			console.error('Error starting quiz retry:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to start new attempt'
+		console.error('Error starting quiz retry:', err)
 		}
 	}
 	
@@ -627,9 +627,9 @@
 				showQuizResults = true
 				showAttemptHistory = false
 			}
-		} catch (err: any) {
-			error = err.message || 'Failed to load attempt results'
-			console.error('Error loading attempt:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to load attempt results'
+		console.error('Error loading attempt:', err)
 		}
 	}
 

@@ -214,11 +214,11 @@ describe('TouchGestureManager', () => {
 
 		test('should call onSwipeMove for horizontal swipe', () => {
 			// Start touch
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move horizontally
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 150, clientY: 200 }])
@@ -231,11 +231,11 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should prevent default for horizontal swipes', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 160, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -247,11 +247,11 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not prevent default for small movements', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 105, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -263,11 +263,11 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not call onSwipeMove for primarily vertical swipes', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move more vertically than horizontally
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 105, clientY: 250 }])
@@ -291,11 +291,11 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should ignore multi-touch move events', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Multi-touch move
 			const moveEvent = createTouchEvent('touchmove', [
@@ -325,12 +325,12 @@ describe('TouchGestureManager', () => {
 
 		test('should detect right swipe', () => {
 			// Start
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 200, clientY: 200 }])
@@ -360,12 +360,12 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should detect left swipe', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 200, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 200, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 100, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -389,11 +389,11 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not trigger swipe if distance too small', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move only 30px (less than 50px threshold)
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 130, clientY: 200 }])
@@ -413,12 +413,12 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not trigger swipe if duration too long', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 200, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -438,12 +438,12 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not trigger swipe if velocity too low', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move 60px in 250ms = 0.24 px/ms (less than 0.3 min velocity)
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 160, clientY: 200 }])
@@ -463,12 +463,12 @@ describe('TouchGestureManager', () => {
 		})
 
 		test('should not trigger swipe if too much vertical deviation', () => {
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Move horizontally but also 120px vertically (more than 100px max deviation)
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 200, clientY: 320 }])
@@ -507,11 +507,11 @@ describe('TouchGestureManager', () => {
 
 		test('should call onSwipeEnd on cancel', () => {
 			// Start tracking
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			// Cancel
 			const cancelEvent = createTouchEvent('touchcancel', [])
@@ -552,12 +552,12 @@ describe('TouchGestureManager', () => {
 			})
 
 			// Test with new options - swipe of 80px should not trigger (100px min now)
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 180, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -580,12 +580,12 @@ describe('TouchGestureManager', () => {
 			manager.updateOptions({ onSwipe: newOnSwipe })
 
 			// Trigger swipe
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			const startHandler = (element.addEventListener as any).mock.calls.find(
 				(call: any) => call[0] === 'touchstart'
 			)[1]
 			vi.spyOn(Date, 'now').mockReturnValue(1000)
-			startHandler(startEvent)
+			startHandler(_startEvent)
 
 			const moveEvent = createTouchEvent('touchmove', [{ clientX: 200, clientY: 200 }])
 			const moveHandler = (element.addEventListener as any).mock.calls.find(
@@ -633,7 +633,7 @@ describe('TouchGestureManager', () => {
 			manager.destroy()
 
 			// Try to trigger events - handlers should not be called
-			const startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
+			const _startEvent = createTouchEvent('touchstart', [{ clientX: 100, clientY: 200 }])
 			// The handlers were removed, so calling them directly would fail
 			// This test verifies that removeEventListener was called
 			expect(element.removeEventListener).toHaveBeenCalled()

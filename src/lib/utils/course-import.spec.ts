@@ -1,6 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
 import { parseCourseFile, generateCourseTemplate, downloadTemplate, parseDurationToMinutes } from './course-import'
-import type { ImportFormat } from './course-import'
 
 describe('Course Import Utils', () => {
 	describe('parseCourseFile', () => {

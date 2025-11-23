@@ -28,10 +28,11 @@ import {
 } from "$lib/validation/course";
 import { COLLECTIONS } from "$lib/firebase/collections";
 import { convertTimestamps } from "$lib/utils/firestore";
-import type { QueryConstraint } from "firebase/firestore";
-import type { CourseImportData } from "$lib/validation/course-import";
-import { createQuiz } from "$lib/services/quiz";
+import type { QueryConstraint, DocumentReference } from "firebase/firestore";
+import type { CourseImportData, QuizQuestionImportData } from "$lib/validation/course-import";
 import { parseDurationToMinutes } from "$lib/utils/course-import";
+import type { Lesson, Quiz, QuizQuestion } from "$lib/types";
+import type { QuestionOption } from "$lib/types/quiz";
 
 // Course CRUD Operations
 export class CourseService {
@@ -304,7 +305,7 @@ export class CourseService {
       const BATCH_SIZE = 50; // Small batches to avoid security rule read limits
 
       // Helper function to delete documents in batches
-      const deleteBatch = async (docs: any[], label: string) => {
+      const deleteBatch = async (docs: DocumentReference[], label: string) => {
         if (docs.length === 0) return 0;
         
         let count = 0;
@@ -651,9 +652,11 @@ export class CourseService {
       // Generate lesson IDs
       const generateId = () => `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
-      // Prepare lessons array (without quiz data) - filter out undefined values
-      const lessons = data.lessons.map((lesson, index) => {
-        const lessonDoc: Record<string, any> = {
+      // Prepare lessons array (without quiz data)
+      type LessonDoc = Omit<Lesson, 'quiz' | 'attachments' | 'chapterId'>;
+      
+      const lessons = data.lessons.map((lesson, index): LessonDoc => {
+        const lessonDoc: LessonDoc = {
           id: generateId(),
           courseId: '', // Will be set after course creation
           title: lesson.title,
@@ -663,28 +666,26 @@ export class CourseService {
           completed: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
+          description: lesson.description,
+          content: lesson.content,
+          videoUrl: lesson.videoUrl,
         };
-
-        // Add optional fields only if they exist
-        if (lesson.description) {
-          lessonDoc.description = lesson.description;
-        }
-        if (lesson.content) {
-          lessonDoc.content = lesson.content;
-        }
-        if (lesson.videoUrl) {
-          lessonDoc.videoUrl = lesson.videoUrl;
-        }
 
         return lessonDoc;
       });
 
-      // Prepare course document - filter out undefined values
-      const courseDoc: Record<string, any> = {
+      // Prepare course document
+      type CourseDoc = Omit<Course, 'id' | 'createdAt' | 'updatedAt'> & {
+        createdAt: ReturnType<typeof serverTimestamp>;
+        updatedAt: ReturnType<typeof serverTimestamp>;
+      };
+      
+      const courseDoc: CourseDoc = {
         title: data.title,
         description: data.description,
         instructor: instructorName,
         instructorId: instructorId,
+        thumbnail: data.thumbnail ?? '',
         category: data.category,
         difficulty: data.difficulty,
         duration: data.duration,
@@ -698,34 +699,29 @@ export class CourseService {
         isFeatured: data.isFeatured ?? false,
         currency: data.currency ?? 'USD',
         level: data.level,
+        price: data.price,
         prerequisites: data.prerequisites ?? [],
         learningOutcomes: data.learningOutcomes ?? [],
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
 
-      // Add optional fields only if they have values
-      if (data.thumbnail) {
-        courseDoc.thumbnail = data.thumbnail;
-      }
-      if (data.price !== undefined) {
-        courseDoc.price = data.price;
-      }
-
       // Create course reference with auto-generated ID
       const courseRef = doc(collection(db, COLLECTIONS.COURSES));
       courseId = courseRef.id;
 
-      // Update lessons with courseId
-      const lessonsWithCourseId = lessons.map(lesson => ({
+      // Update lessons with courseId (courseId is guaranteed to be non-null here)
+      const finalCourseId: string = courseId;
+      
+      const lessonsWithCourseId = lessons.map((lesson): LessonDoc => ({
         ...lesson,
-        courseId: courseId,
-      })) as Array<Record<string, any> & { id: string; courseId: string }>;
+        courseId: finalCourseId,
+      }));
 
       // Add course document with ID and updated lessons to batch
       batch.set(courseRef, {
         ...courseDoc,
-        id: courseId,
+        id: finalCourseId,
         lessons: lessonsWithCourseId,
       });
 
@@ -736,77 +732,110 @@ export class CourseService {
 
         if (lessonData.quiz) {
           // Transform quiz questions to match Quiz type
-          const transformedQuestions = lessonData.quiz.questions.map((q: any, qIndex: number) => {
-            const transformedQuestion: Record<string, any> = {
+          const transformedQuestions = lessonData.quiz.questions.map((q: QuizQuestionImportData, qIndex: number): QuizQuestion => {
+            // Map import question type to internal type format
+            const questionType: QuizQuestion['type'] = 
+              q.type === 'multiple-choice' ? 'multiple_choice'
+              : q.type === 'true-false' ? 'true_false'
+              : q.type === 'multiple-select' ? 'multiple_select'
+              : q.type === 'fill-blank' ? 'fill_blank'
+              : q.type as QuizQuestion['type'];
+            
+            // Base question structure
+            const baseQuestion: Pick<QuizQuestion, 'id' | 'type' | 'question' | 'points' | 'order'> = {
               id: q.id,
-              type: q.type === 'multiple-choice' ? 'multiple_choice' 
-                  : q.type === 'true-false' ? 'true_false'
-                  : q.type === 'multiple-select' ? 'multiple_select'
-                  : q.type === 'fill-blank' ? 'fill_blank'
-                  : q.type,
+              type: questionType,
               question: q.question,
               points: q.points,
               order: qIndex,
             };
 
-            // Transform options from string array to QuestionOption objects
-            if (q.options && Array.isArray(q.options)) {
-              transformedQuestion.options = q.options.map((optText: string, optIndex: number) => ({
+            // Transform based on question type
+            let transformedQuestion: QuizQuestion;
+            
+            if (q.type === 'multiple-choice') {
+              const options: QuestionOption[] = q.options.map((optText, optIndex) => ({
                 id: `opt-${optIndex}`,
                 text: optText,
-                isCorrect: q.type === 'multiple-choice' 
-                  ? q.correctAnswer === optIndex
-                  : q.type === 'multiple-select'
-                  ? (q.correctAnswers || []).includes(optIndex)
-                  : false,
+                isCorrect: q.correctAnswer === optIndex,
               }));
-            }
-
-            // Set correctAnswer based on question type
-            if (q.type === 'multiple-choice') {
-              transformedQuestion.correctAnswer = `opt-${q.correctAnswer}`;
+              transformedQuestion = {
+                ...baseQuestion,
+                options,
+                correctAnswer: `opt-${q.correctAnswer}`,
+                explanation: q.explanation,
+              };
             } else if (q.type === 'multiple-select') {
-              transformedQuestion.correctAnswer = (q.correctAnswers || []).map((idx: number) => `opt-${idx}`);
+              const options: QuestionOption[] = q.options.map((optText, optIndex) => ({
+                id: `opt-${optIndex}`,
+                text: optText,
+                isCorrect: q.correctAnswers.includes(optIndex),
+              }));
+              transformedQuestion = {
+                ...baseQuestion,
+                options,
+                correctAnswer: q.correctAnswers.map(idx => `opt-${idx}`),
+                explanation: q.explanation,
+              };
             } else if (q.type === 'true-false') {
-              transformedQuestion.correctAnswer = q.correctAnswer;
+              transformedQuestion = {
+                ...baseQuestion,
+                correctAnswer: q.correctAnswer,
+                explanation: q.explanation,
+              };
             } else if (q.type === 'fill-blank') {
-              transformedQuestion.correctAnswer = q.correctAnswer;
-              if (q.caseSensitive !== undefined) {
-                transformedQuestion.caseSensitive = q.caseSensitive;
-              }
+              transformedQuestion = {
+                ...baseQuestion,
+                correctAnswer: q.correctAnswer,
+                caseSensitive: q.caseSensitive,
+                explanation: q.explanation,
+              };
             } else if (q.type === 'ordering') {
-              transformedQuestion.correctAnswer = q.correctOrder;
-              transformedQuestion.options = q.items.map((item: string, idx: number) => ({
+              const options: QuestionOption[] = q.items.map((item, idx) => ({
                 id: `opt-${idx}`,
                 text: item,
                 isCorrect: false,
               }));
+              transformedQuestion = {
+                ...baseQuestion,
+                options,
+                correctAnswer: q.correctOrder.join(','), // Convert to string for storage
+                explanation: q.explanation,
+              };
             } else if (q.type === 'matching') {
-              transformedQuestion.correctAnswer = q.pairs;
-            }
-
-            // Add optional fields
-            if (q.explanation) {
-              transformedQuestion.explanation = q.explanation;
-            }
-            if (q.hint) {
-              transformedQuestion.hint = q.hint;
-            }
-            if (q.difficulty) {
-              transformedQuestion.difficulty = q.difficulty;
+              transformedQuestion = {
+                ...baseQuestion,
+                correctAnswer: JSON.stringify(q.pairs), // Serialize matching pairs
+                explanation: q.explanation,
+              };
+            } else {
+              // Fallback for unknown types
+              transformedQuestion = {
+                ...baseQuestion,
+                correctAnswer: '',
+              };
             }
 
             return transformedQuestion;
           });
 
-          // Build quiz data object, filtering out undefined values
-          const quizData: Record<string, any> = {
-            lessonId: lessonDoc.id as string,
-            courseId: courseId,
+          // Build quiz data object
+          type QuizDoc = Omit<Quiz, 'id' | 'createdAt' | 'updatedAt'> & {
+            createdAt: ReturnType<typeof serverTimestamp>;
+            updatedAt: ReturnType<typeof serverTimestamp>;
+          };
+          
+          const quizData: QuizDoc = {
+            lessonId: lessonDoc.id,
+            courseId: finalCourseId,
             title: lessonData.quiz.title,
+            description: lessonData.quiz.description,
+            instructions: lessonData.quiz.instructions,
             questions: transformedQuestions,
+            timeLimit: lessonData.quiz.timeLimit,
             passingScore: lessonData.quiz.passingScore ?? 70,
             allowMultipleAttempts: lessonData.quiz.allowMultipleAttempts ?? true,
+            maxAttempts: lessonData.quiz.maxAttempts,
             showCorrectAnswers: lessonData.quiz.showCorrectAnswers ?? true,
             showExplanations: lessonData.quiz.showExplanations ?? true,
             randomizeQuestions: lessonData.quiz.randomizeQuestions ?? false,
@@ -817,20 +846,6 @@ export class CourseService {
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
           };
-
-          // Add optional fields only if they exist
-          if (lessonData.quiz.description) {
-            quizData.description = lessonData.quiz.description;
-          }
-          if (lessonData.quiz.instructions) {
-            quizData.instructions = lessonData.quiz.instructions;
-          }
-          if (lessonData.quiz.timeLimit) {
-            quizData.timeLimit = lessonData.quiz.timeLimit;
-          }
-          if (lessonData.quiz.maxAttempts) {
-            quizData.maxAttempts = lessonData.quiz.maxAttempts;
-          }
 
           // Create quiz reference and add to batch
           const quizRef = doc(collection(db, COLLECTIONS.QUIZZES));
@@ -844,7 +859,7 @@ export class CourseService {
       // Commit all operations atomically
       await batch.commit();
 
-      return courseId;
+      return finalCourseId;
     } catch (error) {
       console.error("Error importing course:", error);
       throw error;

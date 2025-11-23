@@ -2,7 +2,7 @@
 	import '../app.css'
 	import favicon from '$lib/assets/favicon.svg'
 	import { onMount } from 'svelte'
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { initializeAuth, authState, logout } from '$lib/auth.svelte'
 	import { Button } from '$lib/components/ui'
 	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
@@ -17,8 +17,8 @@
 
 	// Detect if we're on a lesson viewer page
 	const isLessonPage = $derived(
-		$page.url.pathname.includes('/courses/') &&
-		$page.url.pathname.includes('/learn/')
+		page.url.pathname.includes('/courses/') &&
+		page.url.pathname.includes('/learn/')
 	)
 
 	// Initialize auth immediately when script runs
@@ -62,27 +62,27 @@
 			<nav class="hidden md:flex items-center space-x-6 text-sm font-medium">
 				<a 
 					href={getPath('/')} 
-					class="transition-colors hover:text-foreground/80 {$page.url.pathname === '/' ? 'text-foreground' : 'text-foreground/60'}"
+					class="transition-colors hover:text-foreground/80 {page.url.pathname === '/' ? 'text-foreground' : 'text-foreground/60'}"
 				>
 					Home
 				</a>
 				<a 
 					href={getPath('/courses')} 
-					class="transition-colors hover:text-foreground/80 {$page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-foreground/60'}"
+					class="transition-colors hover:text-foreground/80 {page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-foreground/60'}"
 				>
 					Courses
 				</a>
 				{#if authState.user}
 					<a 
 						href={getPath('/dashboard')} 
-						class="transition-colors hover:text-foreground/80 {$page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-foreground/60'}"
+						class="transition-colors hover:text-foreground/80 {page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-foreground/60'}"
 					>
 						Dashboard
 					</a>
 					{#if isAdmin(authState.user)}
 						<a 
 							href={getPath('/admin')} 
-							class="transition-colors hover:text-foreground/80 {$page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-foreground/60'} flex items-center space-x-1"
+							class="transition-colors hover:text-foreground/80 {page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-foreground/60'} flex items-center space-x-1"
 						>
 							<Settings class="h-3 w-3" />
 							<span>Admin</span>
@@ -127,27 +127,27 @@
 				<nav class="container mx-auto px-4 py-4 space-y-3 max-w-7xl">
 					<a 
 						href={getPath('/')} 
-						class="block py-2 text-sm font-medium {$page.url.pathname === '/' ? 'text-foreground' : 'text-muted-foreground'}"
+						class="block py-2 text-sm font-medium {page.url.pathname === '/' ? 'text-foreground' : 'text-muted-foreground'}"
 					>
 						Home
 					</a>
 					<a 
 						href={getPath('/courses')} 
-						class="block py-2 text-sm font-medium {$page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-muted-foreground'}"
+						class="block py-2 text-sm font-medium {page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-muted-foreground'}"
 					>
 						Courses
 					</a>
 					{#if authState.user}
 						<a 
 							href={getPath('/dashboard')} 
-							class="block py-2 text-sm font-medium {$page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground'}"
+							class="block py-2 text-sm font-medium {page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground'}"
 						>
 							Dashboard
 						</a>
 						{#if isAdmin(authState.user)}
 							<a 
 								href={getPath('/admin')} 
-								class="block py-2 text-sm font-medium flex items-center space-x-1 {$page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-muted-foreground'}"
+								class="block py-2 text-sm font-medium flex items-center space-x-1 {page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-muted-foreground'}"
 							>
 								<Settings class="h-3 w-3" />
 								<span>Admin</span>

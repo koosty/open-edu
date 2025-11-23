@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { page } from '$app/stores'
+	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
@@ -14,7 +14,7 @@
 	import type { CourseAnalytics, StudentEngagementSummary } from '$lib/types/analytics'
 	import type { Quiz, QuizStatistics } from '$lib/types/quiz'
 	
-	const courseId = $derived($page.params.id as string)
+	const courseId = $derived(page.params.id as string)
 	
 	// State
 	let course = $state<Course | null>(null)
@@ -77,8 +77,8 @@
 			})
 			await Promise.all(statsPromises)
 			
-		} catch (err: any) {
-			error = err.message || 'Failed to load analytics'
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : 'Failed to load analytics'
 			console.error('Error loading analytics:', err)
 		} finally {
 			loading = false

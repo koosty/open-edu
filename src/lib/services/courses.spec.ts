@@ -12,8 +12,6 @@ import {
   mockDocRef,
   mockTimestamp,
   resetFirebaseMocks,
-  setupSuccessfulFirestoreOperations,
-  setupFirestoreError,
 } from "$lib/test-utils/firebase-mocks";
 
 // Mock Firebase functions before importing service

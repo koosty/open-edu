@@ -76,9 +76,9 @@
 				selectedCourseId = courses[0].id
 				await loadAnalytics(selectedCourseId)
 			}
-		} catch (err: any) {
-			error = err.message || 'Failed to load courses'
-			console.error('Error loading courses:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to load courses'
+		console.error('Error loading courses:', err)
 		} finally {
 			loading = false
 		}
@@ -93,9 +93,9 @@
 		try {
 			const analytics = await AnalyticsService.getCourseAnalytics(courseId)
 			courseAnalytics = analytics
-		} catch (err: any) {
-			error = err.message || 'Failed to load analytics'
-			console.error('Error loading analytics:', err)
+	} catch (err: unknown) {
+		error = err instanceof Error ? err.message : 'Failed to load analytics'
+		console.error('Error loading analytics:', err)
 		} finally {
 			loadingAnalytics = false
 		}
