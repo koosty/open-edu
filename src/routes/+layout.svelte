@@ -15,10 +15,10 @@
 	const { children } = $props()
 	let mobileMenuOpen = $state(false)
 
-	// Detect if we're on a lesson viewer page
+	// Detect if we're on a lesson viewer or quiz page (hide footer)
 	const isLessonPage = $derived(
-		page.url.pathname.includes('/courses/') &&
-		page.url.pathname.includes('/learn/')
+		(page.url.pathname.includes('/courses/') && page.url.pathname.includes('/learn/')) ||
+		(page.url.pathname.includes('/quizzes/') && page.url.pathname.includes('/preview'))
 	)
 
 	// Initialize auth immediately when script runs
