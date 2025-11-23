@@ -4,6 +4,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { page } from '$app/stores'
+	import { goto } from '$app/navigation'
 	import { navigate } from '$lib/utils/navigation'
 	import { browser } from '$app/environment'
 	import { Search, Users, Clock, Star } from 'lucide-svelte'
@@ -153,7 +154,8 @@
 		}
 		
 		// Update URL without triggering a page reload
-		navigate(url.pathname + url.search, { 
+		// Use goto() directly since url.pathname already includes base path
+		goto(url.pathname + url.search, { 
 			replaceState: true,
 			noScroll: true,
 			keepFocus: true
