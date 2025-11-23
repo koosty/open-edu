@@ -65,20 +65,6 @@ node --version  # Should be 18.x or higher
 
 # Check npm version
 npm --version   # Should be 9.x or higher
-
-# Run type checking
-npm run check   # Should pass with no errors
-
-# Run tests
-npm run test    # Should show 89 tests passing
-```
-
-**Expected Output**:
-```
-✓ 89 tests passing
-  ✓ Markdown Service (35 tests)
-  ✓ Reading Progress (33 tests)
-  ✓ Notes Service (21 tests)
 ```
 
 ---
@@ -120,15 +106,7 @@ npm run test    # Should show 89 tests passing
    - `asia-northeast1` (Asia)
 5. Click **"Enable"**
 
-### Step 4: Enable Cloud Storage (Optional)
-
-1. Go to **Storage** in Firebase Console
-2. Click **"Get Started"**
-3. Accept default rules
-4. Choose same location as Firestore
-5. Click **"Done"**
-
-### Step 5: Get Firebase Config
+### Step 4: Get Firebase Config
 
 1. In Firebase Console, go to **Project Settings** (gear icon)
 2. Scroll down to **"Your apps"**
@@ -136,7 +114,7 @@ npm run test    # Should show 89 tests passing
 4. Register app with nickname (e.g., "Open-EDU Web")
 5. Copy the Firebase config object
 
-### Step 6: Create Environment File
+### Step 5: Create Environment File
 
 ```bash
 # Copy example environment file
@@ -174,9 +152,6 @@ CODECOV_TOKEN=your_codecov_token_here
 
 Fresh Firebase projects have no data. You need:
 - Admin user with proper role
-- Sample courses (optional but recommended)
-- Initial lesson content
-- Test quiz data
 
 ### Automated Seeding (Recommended)
 
@@ -229,47 +204,13 @@ chmod +x seed-automated.sh
 **What This Does**:
 1. ✅ Deploys temporary open rules to Firestore
 2. ✅ Creates your admin user document
-3. ✅ Seeds sample courses (JavaScript & React)
-4. ✅ Creates lessons with markdown content
-5. ✅ Adds sample quizzes
-6. ✅ Restores production security rules
+3. ✅ Restores production security rules
 
 **Expected Output**:
 ```
 ✅ Admin user created successfully
-✅ Sample courses seeded
 ✅ Security rules deployed
 🎉 Database seeding complete!
-```
-
-### Manual Seeding (Alternative)
-
-If automated seeding fails:
-
-**1. Create Admin User**:
-- Go to Firestore Console
-- Create collection: `users`
-- Create document with your UID as document ID
-- Add fields:
-  ```json
-  {
-    "id": "your-uid-here",
-    "email": "admin@example.com",
-    "displayName": "Admin User",
-    "role": "admin",
-    "createdAt": "2025-01-20T12:00:00Z"
-  }
-  ```
-
-**2. Create Sample Course**:
-- Create collection: `courses`
-- Add document with auto-generated ID
-- Use structure from `scripts/automated-seed.mjs`
-
-**3. Deploy Security Rules**:
-```bash
-firebase deploy --only firestore:rules
-firebase deploy --only firestore:indexes
 ```
 
 ---
@@ -290,10 +231,6 @@ Open-EDU includes 3 rule sets:
 - Admins: Full access
 - Instructors: Can manage their courses
 - Students: Read-only + own progress
-
-**3. Standard Rules** (`firestore.rules`):
-- Default rules file
-- Copy from production rules
 
 ### Deploying Rules
 
@@ -355,27 +292,43 @@ match /courses/{courseId} {
 
 ### Creating Admin Users
 
-**Method 1: During Seeding**
+**Method 1: During Seeding (Recommended)**
 - Set `ADMIN_USER_UID` in `.env.local`
 - Run seeding script
-- User gets admin role automatically
+- User gets admin role automatically with custom claim
 
-**Method 2: Manual Promotion**
+**Method 2: Firebase CLI with Custom Claim** (Recommended)
+```bash
+# Set custom claim (more efficient than Firestore)
+firebase auth:update USER_UID --custom-claims '{"role":"admin"}' --project your-project-id
+```
+
+**Method 3: Manual Firestore Update** (Legacy)
 1. User signs in with Google
 2. Go to Firestore Console
 3. Find user document in `users` collection
 4. Edit document, change `role` field to `"admin"`
 5. Save
+6. **Important**: User must sign out and sign back in for changes to take effect
 
-**Method 3: Firebase CLI**
-```bash
-# Using Firebase CLI (install first)
-firebase firestore:write users/USER_UID_HERE '{
-  "role": "admin",
-  "displayName": "New Admin",
-  "email": "admin@example.com"
-}' --project your-project-id
-```
+> **Note**: Custom claims (Method 2) are more efficient than Firestore-based roles (Method 3) as they don't require database reads during permission checks. For new admin users, use Method 1 or 2.
+
+### Understanding Role Storage
+
+Open-EDU v1.5+ uses **Firebase Custom Claims** for role-based access control:
+
+**Custom Claims** (Preferred):
+- Stored in Firebase Auth token
+- No database reads required for permission checks
+- More efficient and scalable
+- Set with: `firebase auth:update UID --custom-claims '{"role":"admin"}'`
+- User must sign out/in after claim changes
+
+**Firestore Role Field** (Fallback):
+- Stored in `users/{uid}` document
+- Used for backwards compatibility
+- Requires database read for permission checks
+- Less efficient for frequent operations
 
 ### Role Hierarchy
 
@@ -397,6 +350,35 @@ firebase firestore:write users/USER_UID_HERE '{
    - Take quizzes
    - Track progress
    - Add notes/bookmarks
+
+### Deleting Courses
+
+**Admin Course Deletion** (v1.5.0+):
+
+Admins can delete courses with automatic cascading deletion of all related data:
+
+**What Gets Deleted**:
+- ✅ Course document
+- ✅ All enrollments  
+- ✅ All student progress records
+- ✅ All quizzes and quiz attempts
+- ✅ All student notes, bookmarks, and highlights
+- ✅ All reading positions
+
+**How to Delete**:
+1. Navigate to course admin page: `/admin/courses/[courseId]`
+2. Click red "Delete Course" button in sidebar
+3. Review deletion warning dialog
+4. Confirm deletion
+5. Redirected to admin dashboard
+
+**Implementation Details**:
+- Processes deletions in batches of 50 documents
+- Handles large datasets with pagination
+- Uses atomic operations where possible
+- Comprehensive error handling
+
+> **Warning**: Course deletion is **permanent** and cannot be undone. All student progress and data will be lost.
 
 ### Removing Users
 

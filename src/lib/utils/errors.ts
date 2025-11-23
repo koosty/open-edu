@@ -55,15 +55,3 @@ export function getFirebaseErrorMessage(error: unknown): string {
 
 	return errorMessages[error.code] || error.message
 }
-
-/**
- * Type guard for objects with toDate method (Firestore Timestamp)
- */
-export function hasToDate(value: unknown): value is { toDate: () => Date } {
-	return (
-		value !== null &&
-		typeof value === 'object' &&
-		'toDate' in value &&
-		typeof value.toDate === 'function'
-	)
-}

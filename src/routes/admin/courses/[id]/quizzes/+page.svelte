@@ -343,7 +343,7 @@
 	{:else}
 		<div class="min-h-screen bg-muted/30">
 			<!-- Header -->
-			<div class="bg-white border-b">
+			<div class="bg-background border-b">
 				<div class="container mx-auto px-4 py-6">
 					<div class="flex items-center justify-between">
 						<div>
@@ -364,7 +364,7 @@
 								<span>/</span>
 								<span class="text-foreground">Quizzes</span>
 							</div>
-							<h1 class="text-3xl font-bold">Manage Quizzes</h1>
+							<h1 class="text-3xl font-bold text-foreground">Manage Quizzes</h1>
 							<p class="text-muted-foreground mt-1">
 								{quizzes.length} {quizzes.length === 1 ? 'quiz' : 'quizzes'} in this course
 							</p>
@@ -506,7 +506,7 @@
 						</Card>
 					{:else}
 						<!-- Select All Header -->
-						<div class="mb-4 flex items-center gap-3 p-3 bg-white rounded-lg border">
+						<div class="mb-4 flex items-center gap-3 p-3 bg-card rounded-lg border">
 							<input
 								type="checkbox"
 								checked={selectedQuizIds.size === quizzes.length}
@@ -687,7 +687,7 @@
 	<!-- Delete Confirmation Modal -->
 	{#if showDeleteModal && quizToDelete}
 		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
+			<div class="bg-card rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
 				<!-- Header -->
 				<div class="p-6 border-b border-border">
 					<div class="flex items-center gap-3">
@@ -761,7 +761,7 @@
 	<!-- Bulk Delete Confirmation Modal -->
 	{#if showBulkDeleteModal}
 		<div class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-in fade-in duration-200">
-			<div class="bg-white rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
+			<div class="bg-card rounded-xl shadow-2xl max-w-md w-full animate-in zoom-in-95 duration-200">
 				<!-- Header -->
 				<div class="p-6 border-b border-border">
 					<div class="flex items-center gap-3">

@@ -115,7 +115,6 @@
 				>
 					<ChevronLeft class="icon" />
 					<span class="nav-text">
-						<span class="nav-label">Previous</span>
 						<span class="nav-title">{previousLesson!.title}</span>
 					</span>
 				</Button>
@@ -164,12 +163,11 @@
 					variant="outline"
 					onclick={() => onNavigate(nextLesson!)}
 					disabled={!canNavigateNext}
-					class="nav-button"
+					class="nav-button flex justify-center"
 					aria-label="Next lesson: {nextLesson!.title}"
 					title={!canNavigateNext ? 'Complete current lesson to continue' : ''}
 				>
 					<span class="nav-text">
-						<span class="nav-label">Next</span>
 						<span class="nav-title">{nextLesson!.title}</span>
 					</span>
 					<ChevronRight class="icon" />

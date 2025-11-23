@@ -15,23 +15,7 @@ import {
 import { db } from "$lib/firebase";
 import type { UserProgress, Course, Lesson } from "$lib/types";
 import { COLLECTIONS } from "$lib/firebase/collections";
-import { hasToDate } from "$lib/utils/errors";
-
-// Helper to convert Firestore timestamps
-function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
-  if (!data) return data;
-
-  const converted = { ...data } as Record<string, unknown>;
-
-  Object.keys(converted).forEach((key) => {
-    const value = converted[key];
-    if (hasToDate(value)) {
-      converted[key] = value.toDate().toISOString();
-    }
-  });
-
-  return converted as T;
-}
+import { convertTimestamps } from "$lib/utils/firestore";
 
 export class ProgressService {
   /**

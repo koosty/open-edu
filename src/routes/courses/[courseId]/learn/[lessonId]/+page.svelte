@@ -79,7 +79,6 @@
 	// Reading mode state
 	let focusMode = $state(false)
 	let fontSize = $state<'sm' | 'base' | 'lg' | 'xl'>('base')
-	let theme = $state<'light' | 'dark' | 'system'>('system')
 	
 	// Reading position management
 	let positionManager: ReadingPositionManager | null = null
@@ -106,9 +105,9 @@
 		progress?.completedLessons.includes(lessonId) || false
 	)
 	const canNavigateNext = $derived(
-		isCompleted || currentLesson?.type === 'lesson'
+		isCompleted || !currentLesson?.quiz
 	)
-	const isQuizLesson = $derived(currentLesson?.type === 'quiz')
+	const isQuizLesson = $derived(!!currentLesson?.quiz)
 	// Sorted lessons to prevent mutation in template
 	const sortedLessons = $derived(
 		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
@@ -125,8 +124,8 @@
 		const query = sidebarSearchQuery.toLowerCase()
 		return sortedLessons.filter(lesson =>
 			lesson.title.toLowerCase().includes(query) ||
-			lesson.type.toLowerCase().includes(query) ||
-			lesson.description?.toLowerCase().includes(query)
+			lesson.description?.toLowerCase().includes(query) ||
+			(lesson.quiz && 'quiz'.includes(query))
 		)
 	})
 
@@ -245,7 +244,10 @@
 
 			currentLesson = lesson
 
-			// Find lesson navigation
+			// Find lesson navigation - Reset first to ensure clean state
+			previousLesson = null
+			nextLesson = null
+			
 			if (courseData.lessons) {
 				const sortedLessons = [...courseData.lessons].sort((a, b) => a.order - b.order)
 				currentLessonIndex = sortedLessons.findIndex(l => l.id === lessonId)
@@ -262,8 +264,8 @@
 		// Mark lesson as started (AuthGuard guarantees user exists)
 		await ProgressService.startLesson(authState.user!.id, courseId, lessonId)
 		
-		// Load quiz data if this is a quiz lesson
-		if (lesson.type === 'quiz') {
+		// Load quiz data if this lesson has a quiz
+		if (lesson.quiz) {
 			await loadQuizData()
 		}
 
@@ -493,7 +495,7 @@
 
 	// Load quiz data for quiz lessons
 	async function loadQuizData() {
-		if (!authState.user || !currentLesson || currentLesson.type !== 'quiz') return
+		if (!authState.user || !currentLesson || !currentLesson.quiz) return
 		
 		loadingQuiz = true
 		try {
@@ -655,22 +657,7 @@
 		return `Lesson ${order}`
 	}
 	
-	/**
-	 * Handle theme change
-	 */
-	function handleThemeChange(newTheme: 'light' | 'dark' | 'system') {
-		theme = newTheme
-		
-		// Apply theme to document
-		if (newTheme === 'system') {
-			// Use system preference
-			const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-			document.documentElement.classList.toggle('dark', isDark)
-		} else {
-			document.documentElement.classList.toggle('dark', newTheme === 'dark')
-		}
-	}
-	
+
 	/**
 	 * Handle swipe navigation with visual feedback
 	 */
@@ -853,7 +840,7 @@
 									<div class="flex-1 min-w-0">
 										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-primary' : 'text-foreground'}">{lesson.title}</p>
 										<div class="flex items-center gap-2 text-xs text-muted-foreground">
-											<span class="capitalize">{lesson.type}</span>
+											<span class="capitalize">{lesson.quiz ? 'Quiz' : 'Lesson'}</span>
 											{#if lesson.duration}
 												<span>• {lesson.duration} min</span>
 											{/if}
@@ -1015,8 +1002,6 @@
 										<ReadingModeToggle
 											bind:focusMode
 											bind:fontSize
-											bind:theme
-											onThemeChange={handleThemeChange}
 										/>
 									</div>
 									<BookmarkButton

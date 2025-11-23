@@ -69,6 +69,7 @@
         "marked": "^17.0.0",
         "mode-watcher": "^1.1.0",
         "tailwind-merge": "^3.4.0",
+        "yaml": "^2.8.1",
         "zod": "^4.1.12"
     }
 }

@@ -182,24 +182,23 @@
 					<h3 class="text-sm font-semibold text-foreground">Platform</h3>
 					<ul class="space-y-1 text-sm">
 						<li><a href={getPath('/courses')} class="text-muted-foreground hover:text-primary hover:underline">Browse Courses</a></li>
-						<li><a href={getPath('/about')} class="text-muted-foreground hover:text-primary hover:underline">About Us</a></li>
-						<li><a href={getPath('/pricing')} class="text-muted-foreground hover:text-primary hover:underline">Pricing</a></li>
+						<li><a href="https://github.com/koostyy/open-edu#readme" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">About Us</a></li>
+						<li><a href="https://github.com/koostyy/open-edu#pricing" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Pricing</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-foreground">Support</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/help')} class="text-muted-foreground hover:text-primary hover:underline">Help Center</a></li>
-						<li><a href={getPath('/contact')} class="text-muted-foreground hover:text-primary hover:underline">Contact</a></li>
-						<li><a href={getPath('/community')} class="text-muted-foreground hover:text-primary hover:underline">Community</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/wiki" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Help Center</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/issues/new" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Contact</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/discussions" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Community</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-foreground">Legal</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/privacy')} class="text-muted-foreground hover:text-primary hover:underline">Privacy Policy</a></li>
-						<li><a href={getPath('/terms')} class="text-muted-foreground hover:text-primary hover:underline">Terms of Service</a></li>
-						<li><a href={getPath('/cookies')} class="text-muted-foreground hover:text-primary hover:underline">Cookie Policy</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Privacy Policy</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Terms of Service</a></li>
 					</ul>
 				</div>
 			</div>

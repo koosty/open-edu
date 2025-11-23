@@ -255,21 +255,21 @@
 					
 					<!-- Stats Grid -->
 					<div class="grid grid-cols-3 gap-4 max-w-xl mx-auto">
-						<div class="bg-white rounded-lg p-4 shadow-sm">
+						<div class="bg-card rounded-lg p-4 shadow-sm">
 							<div class="text-sm text-slate-600 mb-1">Time Spent</div>
 							<div class="text-lg font-semibold text-slate-900">
 								{formatTime(attempt.timeSpent)}
 							</div>
 						</div>
 						
-						<div class="bg-white rounded-lg p-4 shadow-sm">
+						<div class="bg-card rounded-lg p-4 shadow-sm">
 							<div class="text-sm text-slate-600 mb-1">Passing Score</div>
 							<div class="text-lg font-semibold text-slate-900">
 								{quiz.passingScore}%
 							</div>
 						</div>
 						
-						<div class="bg-white rounded-lg p-4 shadow-sm">
+						<div class="bg-card rounded-lg p-4 shadow-sm">
 							<div class="text-sm text-slate-600 mb-1">Attempt #{attempt.attemptNumber}</div>
 							<div class="text-lg font-semibold text-slate-900">
 								{attempt.isPassed ? 'Passed' : 'Failed'}
@@ -307,7 +307,7 @@
 								</Button>
 								
 								{#if showShareMenu}
-									<div class="absolute top-full mt-2 right-0 bg-white rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-10 animate-in fade-in zoom-in-95 duration-150">
+									<div class="absolute top-full mt-2 right-0 bg-card rounded-lg shadow-xl border border-border py-2 min-w-[200px] z-10 animate-in fade-in zoom-in-95 duration-150">
 										<button
 											onclick={handleDownloadHTML}
 											class="w-full px-4 py-2 text-left hover:bg-muted/30 flex items-center gap-3 text-sm transition-colors"

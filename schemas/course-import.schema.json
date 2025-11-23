@@ -1,0 +1,373 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://open-edu.dev/schemas/course-import.schema.json",
+  "title": "Open-EDU Course Import Schema",
+  "description": "Schema for importing courses into Open-EDU platform via JSON files",
+  "type": "object",
+  "required": [
+    "title",
+    "description",
+    "category",
+    "difficulty",
+    "duration",
+    "level",
+    "lessons"
+  ],
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Course title",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["Introduction to JavaScript"]
+    },
+    "description": {
+      "type": "string",
+      "description": "Detailed course description",
+      "minLength": 10,
+      "maxLength": 2000,
+      "examples": ["Learn JavaScript from scratch with hands-on examples and projects"]
+    },
+    "category": {
+      "type": "string",
+      "description": "Course category",
+      "minLength": 1,
+      "examples": ["Programming", "Web Development", "Data Science"]
+    },
+    "difficulty": {
+      "type": "string",
+      "description": "Course difficulty level",
+      "enum": ["Beginner", "Intermediate", "Advanced"]
+    },
+    "duration": {
+      "type": "string",
+      "description": "Estimated course duration (human-readable format)",
+      "minLength": 1,
+      "examples": ["4 weeks", "20 hours", "3 months"]
+    },
+    "thumbnail": {
+      "type": "string",
+      "description": "Course thumbnail image URL",
+      "format": "uri",
+      "examples": ["https://example.com/image.jpg"]
+    },
+    "level": {
+      "type": "string",
+      "description": "Course access level",
+      "enum": ["free", "premium"]
+    },
+    "price": {
+      "type": "number",
+      "description": "Course price (required for premium courses)",
+      "minimum": 0,
+      "examples": [49.99, 99.00]
+    },
+    "currency": {
+      "type": "string",
+      "description": "Price currency code (ISO 4217)",
+      "pattern": "^[A-Z]{3}$",
+      "default": "USD",
+      "examples": ["USD", "EUR", "GBP"]
+    },
+    "tags": {
+      "type": "array",
+      "description": "Course tags for discoverability",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "maxItems": 10,
+      "default": [],
+      "examples": [["javascript", "programming", "web"]]
+    },
+    "prerequisites": {
+      "type": "array",
+      "description": "Required knowledge before taking this course",
+      "items": {
+        "type": "string"
+      },
+      "default": [],
+      "examples": [["Basic HTML", "CSS fundamentals"]]
+    },
+    "learningOutcomes": {
+      "type": "array",
+      "description": "What students will learn",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "maxItems": 10,
+      "default": [],
+      "examples": [["Build web applications", "Master JavaScript ES6+"]]
+    },
+    "isPublished": {
+      "type": "boolean",
+      "description": "Whether the course is published and visible to students",
+      "default": false
+    },
+    "isFeatured": {
+      "type": "boolean",
+      "description": "Whether the course should be featured on the homepage",
+      "default": false
+    },
+    "lessons": {
+      "type": "array",
+      "description": "Course lessons and quizzes",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/lesson"
+      }
+    }
+  },
+  "definitions": {
+    "lesson": {
+      "type": "object",
+      "required": ["title", "type", "duration"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Lesson title",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "description": "Optional lesson description",
+          "maxLength": 500
+        },
+        "type": {
+          "type": "string",
+          "description": "Lesson type",
+          "enum": ["lesson", "quiz"]
+        },
+        "duration": {
+          "type": "string",
+          "description": "Estimated duration (human-readable)",
+          "minLength": 1,
+          "examples": ["10 min", "1 hour"]
+        },
+        "content": {
+          "type": "string",
+          "description": "Lesson content in Markdown format (required for lesson type)"
+        },
+        "videoUrl": {
+          "type": "string",
+          "description": "Optional video URL",
+          "format": "uri"
+        },
+        "quiz": {
+          "$ref": "#/definitions/quiz",
+          "description": "Quiz data (required for quiz type)"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "lesson" } }
+          },
+          "then": {
+            "required": ["content"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "quiz" } }
+          },
+          "then": {
+            "required": ["quiz"]
+          }
+        }
+      ]
+    },
+    "quiz": {
+      "type": "object",
+      "required": ["title", "passingScore", "questions"],
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Quiz title"
+        },
+        "description": {
+          "type": "string",
+          "description": "Quiz description"
+        },
+        "passingScore": {
+          "type": "number",
+          "description": "Passing score percentage",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 70
+        },
+        "timeLimit": {
+          "type": "number",
+          "description": "Time limit in seconds",
+          "minimum": 1
+        },
+        "questions": {
+          "type": "array",
+          "description": "Quiz questions",
+          "minItems": 1,
+          "items": {
+            "oneOf": [
+              { "$ref": "#/definitions/multipleChoiceQuestion" },
+              { "$ref": "#/definitions/trueFalseQuestion" },
+              { "$ref": "#/definitions/multipleSelectQuestion" },
+              { "$ref": "#/definitions/fillBlankQuestion" },
+              { "$ref": "#/definitions/orderingQuestion" },
+              { "$ref": "#/definitions/matchingQuestion" }
+            ]
+          }
+        }
+      }
+    },
+    "multipleChoiceQuestion": {
+      "type": "object",
+      "description": "Multiple choice question (single correct answer)",
+      "required": ["id", "type", "question", "options", "correctAnswer", "points", "explanation"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique question identifier"
+        },
+        "type": {
+          "const": "multiple-choice"
+        },
+        "question": {
+          "type": "string",
+          "description": "Question text",
+          "minLength": 1
+        },
+        "options": {
+          "type": "array",
+          "description": "Answer options",
+          "items": { "type": "string" },
+          "minItems": 2
+        },
+        "correctAnswer": {
+          "type": "number",
+          "description": "Index of correct answer (0-based)",
+          "minimum": 0
+        },
+        "points": {
+          "type": "number",
+          "description": "Points for correct answer",
+          "minimum": 0
+        },
+        "explanation": {
+          "type": "string",
+          "description": "Explanation of the correct answer"
+        }
+      }
+    },
+    "trueFalseQuestion": {
+      "type": "object",
+      "description": "True/False question",
+      "required": ["id", "type", "question", "correctAnswer", "points", "explanation"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "true-false" },
+        "question": { "type": "string", "minLength": 1 },
+        "correctAnswer": {
+          "type": "boolean",
+          "description": "Correct answer (true or false)"
+        },
+        "points": { "type": "number", "minimum": 0 },
+        "explanation": { "type": "string" }
+      }
+    },
+    "multipleSelectQuestion": {
+      "type": "object",
+      "description": "Multiple select question (multiple correct answers)",
+      "required": ["id", "type", "question", "options", "correctAnswers", "points", "explanation"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "multiple-select" },
+        "question": { "type": "string", "minLength": 1 },
+        "options": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 2
+        },
+        "correctAnswers": {
+          "type": "array",
+          "description": "Indices of correct answers (0-based)",
+          "items": { "type": "number", "minimum": 0 },
+          "minItems": 1
+        },
+        "points": { "type": "number", "minimum": 0 },
+        "explanation": { "type": "string" }
+      }
+    },
+    "fillBlankQuestion": {
+      "type": "object",
+      "description": "Fill in the blank question",
+      "required": ["id", "type", "question", "correctAnswer", "points", "explanation"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "fill-blank" },
+        "question": { "type": "string", "minLength": 1 },
+        "correctAnswer": {
+          "type": "string",
+          "description": "Correct answer text",
+          "minLength": 1
+        },
+        "caseSensitive": {
+          "type": "boolean",
+          "description": "Whether answer matching is case-sensitive",
+          "default": false
+        },
+        "points": { "type": "number", "minimum": 0 },
+        "explanation": { "type": "string" }
+      }
+    },
+    "orderingQuestion": {
+      "type": "object",
+      "description": "Ordering question (arrange items in correct order)",
+      "required": ["id", "type", "question", "items", "correctOrder", "points", "explanation"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "ordering" },
+        "question": { "type": "string", "minLength": 1 },
+        "items": {
+          "type": "array",
+          "description": "Items to be ordered",
+          "items": { "type": "string" },
+          "minItems": 2
+        },
+        "correctOrder": {
+          "type": "array",
+          "description": "Correct order as array of indices",
+          "items": { "type": "number", "minimum": 0 },
+          "minItems": 2
+        },
+        "points": { "type": "number", "minimum": 0 },
+        "explanation": { "type": "string" }
+      }
+    },
+    "matchingQuestion": {
+      "type": "object",
+      "description": "Matching question (match items from two columns)",
+      "required": ["id", "type", "question", "pairs", "points", "explanation"],
+      "properties": {
+        "id": { "type": "string" },
+        "type": { "const": "matching" },
+        "question": { "type": "string", "minLength": 1 },
+        "pairs": {
+          "type": "array",
+          "description": "Pairs to match",
+          "items": {
+            "type": "object",
+            "required": ["left", "right"],
+            "properties": {
+              "left": { "type": "string" },
+              "right": { "type": "string" }
+            }
+          },
+          "minItems": 2
+        },
+        "points": { "type": "number", "minimum": 0 },
+        "explanation": { "type": "string" }
+      }
+    }
+  }
+}

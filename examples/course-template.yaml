@@ -1,0 +1,316 @@
+---
+# yaml-language-server: $schema=../schemas/course-import.schema.json
+# Course Import Template - YAML Format
+# This file demonstrates how to create a course with lessons and quizzes
+
+title: "Introduction to Python Programming"
+description: "Learn Python from scratch with hands-on examples and projects. Master the fundamentals and build real-world applications."
+category: "Programming"
+difficulty: "Beginner"
+duration: "10 weeks"
+thumbnail: "https://via.placeholder.com/400x225/3776ab/white?text=Python+Course"
+level: "premium"
+price: 49.99
+currency: "USD"
+
+# Tags help students discover your course
+tags:
+  - python
+  - programming
+  - beginner
+  - coding
+
+# What students should know before starting
+prerequisites:
+  - Basic computer skills
+  - Ability to install software
+
+# What students will achieve
+learningOutcomes:
+  - Write clean, efficient Python code
+  - Build command-line applications
+  - Work with files and data
+  - Use Python libraries and frameworks
+  - Debug and test Python programs
+
+# Publishing settings
+isPublished: false
+isFeatured: false
+
+# Course content
+lessons:
+  # Regular lesson with Markdown content
+  - title: "Getting Started with Python"
+    type: "lesson"
+    duration: "20 min"
+    content: |
+      # Getting Started with Python
+
+      Welcome to your Python programming journey!
+
+      ## What is Python?
+
+      Python is a versatile, high-level programming language known for:
+
+      - **Easy to learn**: Clear, readable syntax
+      - **Powerful**: Used by Google, NASA, Netflix
+      - **Versatile**: Web, data science, AI, automation
+
+      ## Installing Python
+
+      1. Visit [python.org](https://python.org)
+      2. Download Python 3.x for your system
+      3. Run the installer
+      4. Verify installation: `python --version`
+
+      ## Your First Program
+
+      ```python
+      print("Hello, World!")
+      ```
+
+      Congratulations! You've written your first Python program.
+
+      ## What's Next?
+
+      In the next lessons, we'll explore:
+      - Variables and data types
+      - Control structures
+      - Functions
+      - And much more!
+
+  # Quiz lesson with various question types
+  - title: "Python Basics Quiz"
+    type: "quiz"
+    duration: "15 min"
+    quiz:
+      title: "Python Fundamentals Assessment"
+      description: "Test your understanding of Python basics"
+      passingScore: 70
+      timeLimit: 900  # 15 minutes in seconds
+
+      questions:
+        # Multiple choice question
+        - id: "q1"
+          type: "multiple-choice"
+          question: "What is the correct file extension for Python files?"
+          options:
+            - ".py"
+            - ".python"
+            - ".pt"
+            - ".pyt"
+          correctAnswer: 0
+          points: 10
+          explanation: "Python files use the .py extension"
+
+        # True/False question
+        - id: "q2"
+          type: "true-false"
+          question: "Python is a compiled language"
+          correctAnswer: false
+          points: 5
+          explanation: "Python is an interpreted language, not compiled"
+
+        # Multiple select (checkboxes)
+        - id: "q3"
+          type: "multiple-select"
+          question: "Which of these are valid Python data types?"
+          options:
+            - "int"
+            - "string"
+            - "list"
+            - "array"
+          correctAnswers: [0, 1, 2]
+          points: 15
+          explanation: "int, string (str), and list are built-in Python types. array requires importing a module."
+
+        # Fill in the blank
+        - id: "q4"
+          type: "fill-blank"
+          question: "The keyword to define a function in Python is ___"
+          correctAnswer: "def"
+          caseSensitive: false
+          points: 10
+          explanation: "The 'def' keyword is used to define functions in Python"
+
+        # Ordering question
+        - id: "q5"
+          type: "ordering"
+          question: "Order these Python operations from highest to lowest precedence:"
+          items:
+            - "Exponentiation (**)"
+            - "Multiplication (*)"
+            - "Addition (+)"
+            - "Comparison (==)"
+          correctOrder: [0, 1, 2, 3]
+          points: 20
+          explanation: "Python follows PEMDAS order: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction, Comparisons"
+
+        # Matching question
+        - id: "q6"
+          type: "matching"
+          question: "Match the Python built-in function with its purpose:"
+          pairs:
+            - left: "print()"
+              right: "Output to console"
+            - left: "len()"
+              right: "Get length"
+            - left: "type()"
+              right: "Get data type"
+            - left: "input()"
+              right: "Get user input"
+          points: 20
+          explanation: "These are fundamental Python built-in functions you'll use frequently"
+
+  # Another regular lesson
+  - title: "Variables and Data Types"
+    type: "lesson"
+    duration: "25 min"
+    content: |
+      # Variables and Data Types
+
+      Learn how to store and work with data in Python.
+
+      ## Variables
+
+      Variables are containers for storing data:
+
+      ```python
+      name = "Alice"
+      age = 25
+      height = 5.6
+      is_student = True
+      ```
+
+      ## Basic Data Types
+
+      ### Numbers
+      ```python
+      integer = 42          # int
+      decimal = 3.14        # float
+      complex_num = 2 + 3j  # complex
+      ```
+
+      ### Strings
+      ```python
+      greeting = "Hello"
+      message = 'World'
+      multiline = """This is
+      a multiline string"""
+      ```
+
+      ### Booleans
+      ```python
+      is_active = True
+      is_complete = False
+      ```
+
+      ### Collections
+      ```python
+      # List (mutable)
+      fruits = ["apple", "banana", "cherry"]
+
+      # Tuple (immutable)
+      coordinates = (10, 20)
+
+      # Dictionary (key-value pairs)
+      person = {
+          "name": "Bob",
+          "age": 30
+      }
+
+      # Set (unique values)
+      unique_numbers = {1, 2, 3, 4, 5}
+      ```
+
+      ## Type Conversion
+
+      ```python
+      # String to integer
+      num = int("42")
+
+      # Integer to string
+      text = str(42)
+
+      # String to float
+      decimal = float("3.14")
+      ```
+
+      ## Practice Exercise
+
+      Try creating variables of different types and converting between them!
+
+  # Another lesson
+  - title: "Control Flow: If Statements"
+    type: "lesson"
+    duration: "20 min"
+    content: |
+      # Control Flow: If Statements
+
+      Make decisions in your code with conditional statements.
+
+      ## Basic If Statement
+
+      ```python
+      age = 18
+
+      if age >= 18:
+          print("You are an adult")
+      ```
+
+      ## If-Else
+
+      ```python
+      temperature = 25
+
+      if temperature > 30:
+          print("It's hot!")
+      else:
+          print("It's comfortable")
+      ```
+
+      ## If-Elif-Else
+
+      ```python
+      score = 85
+
+      if score >= 90:
+          grade = "A"
+      elif score >= 80:
+          grade = "B"
+      elif score >= 70:
+          grade = "C"
+      else:
+          grade = "F"
+
+      print(f"Your grade: {grade}")
+      ```
+
+      ## Comparison Operators
+
+      - `==` : Equal to
+      - `!=` : Not equal to
+      - `>` : Greater than
+      - `<` : Less than
+      - `>=` : Greater than or equal
+      - `<=` : Less than or equal
+
+      ## Logical Operators
+
+      ```python
+      age = 25
+      has_license = True
+
+      if age >= 18 and has_license:
+          print("You can drive")
+
+      is_weekend = True
+      is_holiday = False
+
+      if is_weekend or is_holiday:
+          print("You can relax!")
+      ```
+
+      ## Practice Challenge
+
+      Write a program that checks if a number is positive, negative, or zero!

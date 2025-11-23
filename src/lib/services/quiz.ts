@@ -82,14 +82,13 @@ export async function createQuizWithLesson(
 	// Generate lesson ID
 	const lessonId = `lesson-${Date.now()}`
 	
-	// Create lesson object with type: 'quiz'
+	// Create lesson object
 	// Note: Only include duration if it's actually provided (Firestore doesn't support undefined)
 	const newLesson: Lesson = {
 		id: lessonId,
 		courseId,
 		title: lessonData.title,
 		description: lessonData.description || '',
-		type: 'quiz',
 		order: lessonData.order ?? existingLessons.length + 1,
 		...(lessonData.duration !== undefined && { duration: lessonData.duration }),
 		isRequired: lessonData.isRequired ?? true,

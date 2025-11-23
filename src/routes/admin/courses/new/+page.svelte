@@ -8,7 +8,11 @@
 	import * as Select from '$lib/components/ui/select'
 	import * as RadioGroup from '$lib/components/ui/radio-group'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
+	import CourseImporter from '$lib/components/CourseImporter.svelte'
 
+	// Mode selection
+	type CreationMode = 'manual' | 'import'
+	let mode = $state<CreationMode>('manual')
 
 	// Form state
 	const form = $state({
@@ -23,7 +27,7 @@
 		prerequisites: '',
 		learningOutcomes: '',
 		tags: '',
-		thumbnail: 'https://via.placeholder.com/400x225/6366f1/white?text=Course+Thumbnail',
+		thumbnail: 'https://placehold.co/400x225/6366f1/white?text=Course+Thumbnail',
 		isPublished: false,
 		isFeatured: false
 	})
@@ -159,8 +163,11 @@
 				<div class="flex items-center justify-between">
 					<div>
 						<h1 class="text-3xl font-bold">Create New Course</h1>
-						<p class="text-muted-foreground mt-1">Build an engaging learning experience for your students</p>
+						<p class="text-muted-foreground mt-1">
+							{mode === 'import' ? 'Upload a course file to get started' : 'Build an engaging learning experience for your students'}
+						</p>
 					</div>
+					{#if mode === 'manual'}
 					<div class="flex gap-3">
 						<Button variant="outline" onclick={handleCancel}>
 							Cancel
@@ -173,12 +180,44 @@
 							{submitting ? 'Creating...' : 'Create Course'}
 						</Button>
 								</div>
+					{/if}
 								</div>
 							</div>
 		</div>
 
 		<div class="container mx-auto px-4 py-8">
 			<div class="max-w-4xl mx-auto">
+				<!-- Mode Tabs -->
+				<div class="flex gap-2 mb-6 p-1 bg-muted rounded-lg w-fit">
+					<button
+						type="button"
+						onclick={() => mode = 'manual'}
+						class={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+							mode === 'manual'
+								? 'bg-card text-foreground shadow-sm'
+								: 'text-muted-foreground hover:text-foreground'
+						}`}
+					>
+						Manual Entry
+					</button>
+					<button
+						type="button"
+						onclick={() => mode = 'import'}
+						class={`px-6 py-2 rounded-md text-sm font-medium transition-all ${
+							mode === 'import'
+								? 'bg-card text-foreground shadow-sm'
+								: 'text-muted-foreground hover:text-foreground'
+						}`}
+					>
+						Import from File
+					</button>
+				</div>
+
+				{#if mode === 'import'}
+					<!-- Import Mode -->
+					<CourseImporter />
+				{:else}
+					<!-- Manual Entry Mode -->
 				<form onsubmit={handleSubmit} class="space-y-8">
 					
 					<!-- Basic Information -->
@@ -268,7 +307,12 @@
 										class="mt-3 w-48 h-27 object-cover rounded-lg border"
 										onerror={(e) => {
 											const target = e.currentTarget as HTMLImageElement
-											target.src = 'https://via.placeholder.com/400x225/6366f1/white?text=Invalid+Image'
+											// Prevent infinite loop by checking if already replaced
+											if (target.src !== target.dataset.fallback) {
+												// Use a simple SVG data URI as fallback
+												target.dataset.fallback = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="225" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%236366f1"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="white"%3EInvalid Image%3C/text%3E%3C/svg%3E'
+												target.src = target.dataset.fallback
+											}
 										}}
 									/>
 								{/if}
@@ -459,6 +503,7 @@ Familiarity with command line"
 							</div>
 						</div>
 					</div>
+				{/if}
 				{/if}
 			</div>
 		</div>

@@ -5,31 +5,25 @@
 	 * Controls for enhancing the reading experience:
 	 * - Focus mode (hide sidebar)
 	 * - Font size adjustment (4 sizes)
-	 * - Theme toggle (light/dark/system)
 	 */
 	
-	import { Eye, EyeOff, Type, Sun, Moon, Monitor } from 'lucide-svelte'
+	import { Eye, EyeOff, Type } from 'lucide-svelte'
 	
 	interface Props {
 		focusMode?: boolean
 		fontSize?: 'sm' | 'base' | 'lg' | 'xl'
-		theme?: 'light' | 'dark' | 'system'
 		onFocusModeChange?: (enabled: boolean) => void
 		onFontSizeChange?: (size: 'sm' | 'base' | 'lg' | 'xl') => void
-		onThemeChange?: (theme: 'light' | 'dark' | 'system') => void
 	}
 	
 	let {
 		focusMode = $bindable(false),
 		fontSize = $bindable<'sm' | 'base' | 'lg' | 'xl'>('base'),
-		theme = $bindable<'light' | 'dark' | 'system'>('system'),
 		onFocusModeChange,
-		onFontSizeChange,
-		onThemeChange
+		onFontSizeChange
 	}: Props = $props()
 	
 	let showFontMenu = $state(false)
-	let showThemeMenu = $state(false)
 	
 	// Font size options
 	const fontSizes = [
@@ -37,13 +31,6 @@
 		{ value: 'base' as const, label: 'Medium', size: '16px' },
 		{ value: 'lg' as const, label: 'Large', size: '18px' },
 		{ value: 'xl' as const, label: 'Extra Large', size: '20px' }
-	]
-	
-	// Theme options
-	const themes = [
-		{ value: 'light' as const, label: 'Light', icon: Sun },
-		{ value: 'dark' as const, label: 'Dark', icon: Moon },
-		{ value: 'system' as const, label: 'System', icon: Monitor }
 	]
 	
 	/**
@@ -64,26 +51,10 @@
 	}
 	
 	/**
-	 * Change theme
-	 */
-	function changeTheme(newTheme: 'light' | 'dark' | 'system') {
-		theme = newTheme
-		showThemeMenu = false
-		onThemeChange?.(newTheme)
-	}
-	
-	/**
 	 * Get current font size label
 	 */
 	const currentFontLabel = $derived(
 		fontSizes.find(f => f.value === fontSize)?.label || 'Medium'
-	)
-	
-	/**
-	 * Get current theme icon
-	 */
-	const CurrentThemeIcon = $derived(
-		themes.find(t => t.value === theme)?.icon || Monitor
 	)
 </script>
 
@@ -137,50 +108,14 @@
 			</div>
 		{/if}
 	</div>
-	
-	<!-- Theme Selector -->
-	<div class="relative">
-		<button
-			onclick={() => showThemeMenu = !showThemeMenu}
-			class="control-button"
-			title="Theme"
-			aria-label="Theme"
-			aria-expanded={showThemeMenu}
-		>
-			<CurrentThemeIcon size={18} />
-			<span class="button-label">Theme</span>
-		</button>
-		
-		{#if showThemeMenu}
-			<div class="dropdown-menu">
-				{#each themes as themeOption (themeOption.value)}
-					{@const ThemeIcon = themeOption.icon}
-					<button
-						onclick={() => changeTheme(themeOption.value)}
-						class="dropdown-item"
-						class:active={theme === themeOption.value}
-					>
-						<ThemeIcon size={16} />
-						<span class="ml-2">{themeOption.label}</span>
-						{#if theme === themeOption.value}
-							<svg class="w-4 h-4 ml-auto" fill="currentColor" viewBox="0 0 16 16">
-								<path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-							</svg>
-						{/if}
-					</button>
-				{/each}
-			</div>
-		{/if}
-	</div>
 </div>
 
-<!-- Click outside to close dropdowns -->
+<!-- Click outside to close dropdown -->
 <svelte:window
 	onclick={(e) => {
 		const target = e.target as HTMLElement
 		if (!target.closest('.reading-mode-toggle')) {
 			showFontMenu = false
-			showThemeMenu = false
 		}
 	}}
 />

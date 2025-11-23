@@ -108,6 +108,12 @@
 			const enrollmentData = await EnrollmentService.getEnrollment(authState.user.id, courseId)
 			enrollment = enrollmentData
 			
+			// Reload course data to get updated enrolled count
+			const courseData = await CourseService.getCourse(courseId)
+			if (courseData) {
+				course = courseData
+			}
+			
 		} catch (err: any) {
 			error = err.message || 'Failed to enroll in course'
 			console.error('Error enrolling:', err)
@@ -189,12 +195,17 @@
 				<div class="lg:w-1/3">
 					<img 
 						src={course.thumbnail} 
-						alt={course.title}
-						class="w-full aspect-video object-cover rounded-lg shadow-lg"
-					onerror={(e) => {
-						const target = e.currentTarget as HTMLImageElement
-						target.src = 'https://via.placeholder.com/400x225/6366f1/white?text=Course'
-					}}
+					alt={course.title}
+					class="w-full aspect-video object-cover rounded-lg shadow-lg"
+				onerror={(e) => {
+					const target = e.currentTarget as HTMLImageElement
+					// Prevent infinite loop by checking if already replaced
+					if (target.src !== target.dataset.fallback) {
+						// Use a simple SVG data URI as fallback
+						target.dataset.fallback = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="225" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%236366f1"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="white"%3ECourse Image%3C/text%3E%3C/svg%3E'
+						target.src = target.dataset.fallback
+					}
+				}}
 					/>
 				</div>
 
@@ -355,7 +366,7 @@
 													</div>
 												{/if}
 												<div class="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-md capitalize font-medium">
-													{lesson.type}
+													{lesson.quiz ? 'Quiz' : 'Lesson'}
 												</div>
 												{#if lesson.isRequired}
 													<div class="px-2 py-1 bg-destructive/10 text-destructive rounded-md font-semibold">
@@ -454,6 +465,7 @@
 	.line-clamp-2 {
 		display: -webkit-box;
 		-webkit-line-clamp: 2;
+		line-clamp: 2;
 		-webkit-box-orient: vertical;
 		overflow: hidden;
 	}

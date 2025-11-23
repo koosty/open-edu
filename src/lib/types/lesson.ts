@@ -8,10 +8,9 @@ export interface Lesson {
   courseId: string;
   title: string;
   description?: string;
-  type: "lesson" | "quiz";
   order: number;
   content?: string; // Markdown content for lessons
-  quiz?: Quiz; // Quiz data for quiz lessons
+  quiz?: Quiz; // Quiz data for quiz lessons (populated when loaded)
   duration?: number; // Duration in minutes
   isRequired: boolean;
   createdAt: Date;
@@ -47,4 +46,4 @@ export interface LessonCompletion {
   quizAttempts?: number;
 }
 
-export type LessonType = "lesson" | "quiz";
+

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Button, Card, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
 	import { authState } from '$lib/auth.svelte'
-	import { BookOpen, Users, Star } from 'lucide-svelte'
+	import { BookOpen, Users, Star, Github, Flame, Rocket } from 'lucide-svelte'
 	import { base } from '$app/paths'
 </script>
 
@@ -94,24 +94,80 @@
 	</div>
 </section>
 
-<!-- Stats Section -->
+<!-- Platform Features Section -->
 <section class="py-20 px-4 bg-primary">
 	<div class="container mx-auto max-w-7xl">
-		<div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
-			<div class="p-6 rounded-xl bg-primary-foreground/10 backdrop-blur-sm interactive hover:bg-primary-foreground/20">
-				<div class="text-4xl font-bold text-primary-foreground mb-2">50+</div>
-				<div class="text-lg font-semibold text-primary-foreground mb-1">Expert Instructors</div>
-				<div class="text-primary-foreground/90">Industry professionals</div>
+		<div class="text-center mb-12">
+			<h2 class="text-3xl md:text-4xl font-bold text-primary-foreground mb-3">
+				Built Different
+			</h2>
+			<p class="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
+				Modern, open-source architecture designed for developers and educators
+			</p>
+		</div>
+		
+		<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+			<!-- Feature 1: Open Source -->
+			<div class="p-8 rounded-xl bg-primary-foreground/10 backdrop-blur-sm hover:bg-primary-foreground/20 transition-all duration-300 cursor-pointer group">
+				<div class="flex justify-center mb-6">
+					<div class="w-16 h-16 rounded-full bg-primary-foreground/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+						<Github class="w-8 h-8 text-primary-foreground" />
+					</div>
+				</div>
+				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+					100% Open Source
+				</h3>
+				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+					MIT licensed, community-driven development. Fork, customize, and deploy your own instance.
+				</p>
+				<div class="text-center">
+					<a href="https://github.com/koosty/open-edu" 
+					   target="_blank"
+					   rel="noopener noreferrer"
+					   class="inline-flex items-center text-primary-foreground/80 hover:text-primary-foreground text-sm font-medium transition-colors">
+						View on GitHub →
+					</a>
+				</div>
 			</div>
-			<div class="p-6 rounded-xl bg-primary-foreground/10 backdrop-blur-sm interactive hover:bg-primary-foreground/20">
-				<div class="text-4xl font-bold text-primary-foreground mb-2">10,000+</div>
-				<div class="text-lg font-semibold text-primary-foreground mb-1">Active Students</div>
-				<div class="text-primary-foreground/90">Learning worldwide</div>
+			
+			<!-- Feature 2: Firebase-Powered -->
+			<div class="p-8 rounded-xl bg-primary-foreground/10 backdrop-blur-sm hover:bg-primary-foreground/20 transition-all duration-300 cursor-pointer group">
+				<div class="flex justify-center mb-6">
+					<div class="w-16 h-16 rounded-full bg-primary-foreground/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+						<Flame class="w-8 h-8 text-primary-foreground" />
+					</div>
+				</div>
+				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+					Firebase-Powered
+				</h3>
+				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+					No backend needed. Real-time database, authentication, and hosting with serverless architecture.
+				</p>
+				<div class="text-center">
+					<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
+						Serverless & Scalable
+					</span>
+				</div>
 			</div>
-			<div class="p-6 rounded-xl bg-primary-foreground/10 backdrop-blur-sm interactive hover:bg-primary-foreground/20">
-				<div class="text-4xl font-bold text-primary-foreground mb-2">200+</div>
-				<div class="text-lg font-semibold text-primary-foreground mb-1">Courses Available</div>
-				<div class="text-primary-foreground/90">Across multiple domains</div>
+			
+			<!-- Feature 3: Deploy Anywhere -->
+			<div class="p-8 rounded-xl bg-primary-foreground/10 backdrop-blur-sm hover:bg-primary-foreground/20 transition-all duration-300 cursor-pointer group">
+				<div class="flex justify-center mb-6">
+					<div class="w-16 h-16 rounded-full bg-primary-foreground/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+						<Rocket class="w-8 h-8 text-primary-foreground" />
+					</div>
+				</div>
+				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+					Deploy Anywhere
+				</h3>
+				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+					GitHub Pages, Vercel, Netlify, Cloudflare Pages. Global CDN-powered performance in minutes.
+				</p>
+				<div class="text-center">
+					<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
+						Deploy in &lt; 5 min
+					</span>
+				</div>
 			</div>
 		</div>
 	</div>

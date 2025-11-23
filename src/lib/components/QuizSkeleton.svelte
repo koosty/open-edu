@@ -8,7 +8,7 @@
 
 <div class="quiz-skeleton">
 	<!-- Header Skeleton -->
-	<div class="bg-white border-b border-slate-200 p-4 md:p-6 sticky top-0 shadow-sm">
+	<div class="bg-background border-b border-slate-200 p-4 md:p-6 sticky top-0 shadow-sm">
 		<div class="max-w-4xl mx-auto">
 			<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
 				<div class="flex-1 min-w-0 space-y-2">
@@ -68,7 +68,7 @@
 	</div>
 	
 	<!-- Navigation Footer Skeleton -->
-	<div class="border-t border-slate-200 bg-white p-3 md:p-6 sticky bottom-0 shadow-lg">
+	<div class="border-t border-slate-200 bg-background p-3 md:p-6 sticky bottom-0 shadow-lg">
 		<div class="max-w-4xl mx-auto">
 			<!-- Question navigator -->
 			<div class="flex gap-2 mb-3 md:mb-4 overflow-x-auto pb-2">

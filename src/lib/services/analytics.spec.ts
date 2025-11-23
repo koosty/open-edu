@@ -57,7 +57,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-1',
 						title: 'Test Lesson',
 						description: 'A test lesson',
-						type: 'lesson',
+						
 						order: 1,
 						duration: 30,
 						isRequired: true,
@@ -149,7 +149,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-1',
 						title: 'Empty Lesson',
 						description: '',
-						type: 'lesson',
+						
 						order: 1,
 						duration: 30,
 						isRequired: true,
@@ -217,7 +217,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-1',
 						title: 'Lesson 1',
 						description: '',
-						type: 'lesson',
+						
 						order: 1,
 						duration: 30,
 						isRequired: true,
@@ -329,7 +329,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-1',
 						title: 'Lesson 1',
 						description: '',
-						type: 'lesson',
+						
 						order: 1,
 						duration: 30,
 						isRequired: true,
@@ -341,7 +341,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-2',
 						title: 'Lesson 2',
 						description: '',
-						type: 'lesson',
+						
 						order: 2,
 						duration: 30,
 						isRequired: true,
@@ -456,7 +456,7 @@ describe('AnalyticsService', () => {
 						id: 'lesson-1',
 						title: 'Lesson 1',
 						description: '',
-						type: 'lesson',
+						
 						order: 1,
 						duration: 30,
 						isRequired: true,

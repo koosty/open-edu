@@ -14,6 +14,7 @@ import {
   orderBy,
   serverTimestamp,
   limit as firestoreLimit,
+  writeBatch,
 } from "firebase/firestore";
 import { db } from "$lib/firebase";
 import type { Course } from "$lib/types";
@@ -26,25 +27,11 @@ import {
   type Pagination,
 } from "$lib/validation/course";
 import { COLLECTIONS } from "$lib/firebase/collections";
-import { hasToDate } from "$lib/utils/errors";
+import { convertTimestamps } from "$lib/utils/firestore";
 import type { QueryConstraint } from "firebase/firestore";
-
-// Helper to convert Firestore timestamps to ISO strings
-function convertTimestamps<T extends Record<string, unknown>>(data: T): T {
-  if (!data) return data;
-
-  const converted = { ...data } as Record<string, unknown>;
-
-  // Convert Firestore Timestamps to ISO strings
-  Object.keys(converted).forEach((key) => {
-    const value = converted[key];
-    if (hasToDate(value)) {
-      converted[key] = value.toDate().toISOString();
-    }
-  });
-
-  return converted as T;
-}
+import type { CourseImportData } from "$lib/validation/course-import";
+import { createQuiz } from "$lib/services/quiz";
+import { parseDurationToMinutes } from "$lib/utils/course-import";
 
 // Course CRUD Operations
 export class CourseService {
@@ -300,14 +287,135 @@ export class CourseService {
   }
 
   /**
-   * Delete a course
+   * Delete a course and all related data (cascading delete)
+   * Deletes in separate batches to avoid Firestore limits (500 ops/batch, 10 reads in security rules)
+   * Deletes:
+   * - Course document
+   * - All enrollments
+   * - All course progress records
+   * - All quizzes associated with course lessons
+   * - All quiz attempts for those quizzes
+   * - All notes, bookmarks, highlights
+   * - All reading positions
    */
   static async deleteCourse(courseId: string): Promise<void> {
     try {
+      let totalDeleteCount = 0;
+      const BATCH_SIZE = 50; // Small batches to avoid security rule read limits
+
+      // Helper function to delete documents in batches
+      const deleteBatch = async (docs: any[], label: string) => {
+        if (docs.length === 0) return 0;
+        
+        let count = 0;
+        for (let i = 0; i < docs.length; i += BATCH_SIZE) {
+          const batch = writeBatch(db);
+          const chunk = docs.slice(i, i + BATCH_SIZE);
+          
+          chunk.forEach((docRef) => {
+            batch.delete(docRef);
+            count++;
+          });
+          
+          await batch.commit();
+          console.log(`Deleted ${chunk.length} ${label} (${i + chunk.length}/${docs.length})`);
+        }
+        
+        return count;
+      };
+
+      console.log(`Starting deletion of course ${courseId}...`);
+
+      // 1. Delete all enrollments for this course
+      const enrollmentsQuery = query(
+        collection(db, COLLECTIONS.ENROLLMENTS),
+        where("courseId", "==", courseId),
+      );
+      const enrollmentsSnap = await getDocs(enrollmentsQuery);
+      const enrollmentRefs = enrollmentsSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(enrollmentRefs, "enrollments");
+
+      // 2. Delete all course progress records
+      const progressQuery = query(
+        collection(db, COLLECTIONS.COURSE_PROGRESS),
+        where("courseId", "==", courseId),
+      );
+      const progressSnap = await getDocs(progressQuery);
+      const progressRefs = progressSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(progressRefs, "progress records");
+
+      // 3. Delete all quizzes for this course and collect quiz IDs
+      const quizzesQuery = query(
+        collection(db, COLLECTIONS.QUIZZES),
+        where("courseId", "==", courseId),
+      );
+      const quizzesSnap = await getDocs(quizzesQuery);
+      const quizIds = quizzesSnap.docs.map(d => d.id);
+      const quizRefs = quizzesSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(quizRefs, "quizzes");
+
+      // 4. Delete all quiz attempts for those quizzes
+      if (quizIds.length > 0) {
+        // Firestore 'in' query has a limit of 30 items
+        const chunkSize = 30;
+        for (let i = 0; i < quizIds.length; i += chunkSize) {
+          const chunk = quizIds.slice(i, i + chunkSize);
+          const attemptsQuery = query(
+            collection(db, COLLECTIONS.QUIZ_ATTEMPTS),
+            where("quizId", "in", chunk),
+          );
+          const attemptsSnap = await getDocs(attemptsQuery);
+          const attemptRefs = attemptsSnap.docs.map(d => d.ref);
+          totalDeleteCount += await deleteBatch(attemptRefs, "quiz attempts");
+        }
+      }
+
+      // 5. Delete notes for this course
+      const notesQuery = query(
+        collection(db, "notes"),
+        where("courseId", "==", courseId),
+      );
+      const notesSnap = await getDocs(notesQuery);
+      const noteRefs = notesSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(noteRefs, "notes");
+
+      // 6. Delete bookmarks for this course
+      const bookmarksQuery = query(
+        collection(db, "bookmarks"),
+        where("courseId", "==", courseId),
+      );
+      const bookmarksSnap = await getDocs(bookmarksQuery);
+      const bookmarkRefs = bookmarksSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(bookmarkRefs, "bookmarks");
+
+      // 7. Delete highlights for this course
+      const highlightsQuery = query(
+        collection(db, "highlights"),
+        where("courseId", "==", courseId),
+      );
+      const highlightsSnap = await getDocs(highlightsQuery);
+      const highlightRefs = highlightsSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(highlightRefs, "highlights");
+
+      // 8. Delete reading positions for this course
+      const readingPositionsQuery = query(
+        collection(db, "readingPositions"),
+        where("courseId", "==", courseId),
+      );
+      const readingPositionsSnap = await getDocs(readingPositionsQuery);
+      const positionRefs = readingPositionsSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(positionRefs, "reading positions");
+
+      // 9. Finally, delete the course document itself
       const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
       await deleteDoc(courseRef);
+      totalDeleteCount++;
+
+      console.log(
+        `✅ Successfully deleted course ${courseId} and ${totalDeleteCount} related documents`,
+      );
     } catch (error) {
-      console.error("Error deleting course:", error);
+      console.error("❌ Error deleting course:", error);
       throw error;
     }
   }
@@ -526,6 +634,222 @@ export class CourseService {
       throw error;
     }
   }
+
+  /**
+   * Import a course from JSON/YAML data with lessons and quizzes
+   * Uses batched writes for better atomicity - all operations succeed or all fail
+   */
+  static async importCourse(
+    data: CourseImportData,
+    instructorId: string,
+    instructorName: string,
+  ): Promise<string> {
+    const batch = writeBatch(db);
+    let courseId: string | null = null;
+    
+    try {
+      // Generate lesson IDs
+      const generateId = () => `${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
+
+      // Prepare lessons array (without quiz data) - filter out undefined values
+      const lessons = data.lessons.map((lesson, index) => {
+        const lessonDoc: Record<string, any> = {
+          id: generateId(),
+          courseId: '', // Will be set after course creation
+          title: lesson.title,
+          order: index + 1, // Auto-generate order based on array position
+          duration: parseDurationToMinutes(lesson.duration), // Convert string to minutes
+          isRequired: true, // Default to required
+          completed: false,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+
+        // Add optional fields only if they exist
+        if (lesson.description) {
+          lessonDoc.description = lesson.description;
+        }
+        if (lesson.content) {
+          lessonDoc.content = lesson.content;
+        }
+        if (lesson.videoUrl) {
+          lessonDoc.videoUrl = lesson.videoUrl;
+        }
+
+        return lessonDoc;
+      });
+
+      // Prepare course document - filter out undefined values
+      const courseDoc: Record<string, any> = {
+        title: data.title,
+        description: data.description,
+        instructor: instructorName,
+        instructorId: instructorId,
+        category: data.category,
+        difficulty: data.difficulty,
+        duration: data.duration,
+        enrolled: 0,
+        rating: 0,
+        ratingCount: 0,
+        lessons: lessons,
+        chapters: [],
+        tags: data.tags ?? [],
+        isPublished: data.isPublished ?? false,
+        isFeatured: data.isFeatured ?? false,
+        currency: data.currency ?? 'USD',
+        level: data.level,
+        prerequisites: data.prerequisites ?? [],
+        learningOutcomes: data.learningOutcomes ?? [],
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // Add optional fields only if they have values
+      if (data.thumbnail) {
+        courseDoc.thumbnail = data.thumbnail;
+      }
+      if (data.price !== undefined) {
+        courseDoc.price = data.price;
+      }
+
+      // Create course reference with auto-generated ID
+      const courseRef = doc(collection(db, COLLECTIONS.COURSES));
+      courseId = courseRef.id;
+
+      // Update lessons with courseId
+      const lessonsWithCourseId = lessons.map(lesson => ({
+        ...lesson,
+        courseId: courseId,
+      })) as Array<Record<string, any> & { id: string; courseId: string }>;
+
+      // Add course document with ID and updated lessons to batch
+      batch.set(courseRef, {
+        ...courseDoc,
+        id: courseId,
+        lessons: lessonsWithCourseId,
+      });
+
+      // Create quiz documents in the same batch
+      for (let i = 0; i < data.lessons.length; i++) {
+        const lessonData = data.lessons[i];
+        const lessonDoc = lessonsWithCourseId[i];
+
+        if (lessonData.quiz) {
+          // Transform quiz questions to match Quiz type
+          const transformedQuestions = lessonData.quiz.questions.map((q: any, qIndex: number) => {
+            const transformedQuestion: Record<string, any> = {
+              id: q.id,
+              type: q.type === 'multiple-choice' ? 'multiple_choice' 
+                  : q.type === 'true-false' ? 'true_false'
+                  : q.type === 'multiple-select' ? 'multiple_select'
+                  : q.type === 'fill-blank' ? 'fill_blank'
+                  : q.type,
+              question: q.question,
+              points: q.points,
+              order: qIndex,
+            };
+
+            // Transform options from string array to QuestionOption objects
+            if (q.options && Array.isArray(q.options)) {
+              transformedQuestion.options = q.options.map((optText: string, optIndex: number) => ({
+                id: `opt-${optIndex}`,
+                text: optText,
+                isCorrect: q.type === 'multiple-choice' 
+                  ? q.correctAnswer === optIndex
+                  : q.type === 'multiple-select'
+                  ? (q.correctAnswers || []).includes(optIndex)
+                  : false,
+              }));
+            }
+
+            // Set correctAnswer based on question type
+            if (q.type === 'multiple-choice') {
+              transformedQuestion.correctAnswer = `opt-${q.correctAnswer}`;
+            } else if (q.type === 'multiple-select') {
+              transformedQuestion.correctAnswer = (q.correctAnswers || []).map((idx: number) => `opt-${idx}`);
+            } else if (q.type === 'true-false') {
+              transformedQuestion.correctAnswer = q.correctAnswer;
+            } else if (q.type === 'fill-blank') {
+              transformedQuestion.correctAnswer = q.correctAnswer;
+              if (q.caseSensitive !== undefined) {
+                transformedQuestion.caseSensitive = q.caseSensitive;
+              }
+            } else if (q.type === 'ordering') {
+              transformedQuestion.correctAnswer = q.correctOrder;
+              transformedQuestion.options = q.items.map((item: string, idx: number) => ({
+                id: `opt-${idx}`,
+                text: item,
+                isCorrect: false,
+              }));
+            } else if (q.type === 'matching') {
+              transformedQuestion.correctAnswer = q.pairs;
+            }
+
+            // Add optional fields
+            if (q.explanation) {
+              transformedQuestion.explanation = q.explanation;
+            }
+            if (q.hint) {
+              transformedQuestion.hint = q.hint;
+            }
+            if (q.difficulty) {
+              transformedQuestion.difficulty = q.difficulty;
+            }
+
+            return transformedQuestion;
+          });
+
+          // Build quiz data object, filtering out undefined values
+          const quizData: Record<string, any> = {
+            lessonId: lessonDoc.id as string,
+            courseId: courseId,
+            title: lessonData.quiz.title,
+            questions: transformedQuestions,
+            passingScore: lessonData.quiz.passingScore ?? 70,
+            allowMultipleAttempts: lessonData.quiz.allowMultipleAttempts ?? true,
+            showCorrectAnswers: lessonData.quiz.showCorrectAnswers ?? true,
+            showExplanations: lessonData.quiz.showExplanations ?? true,
+            randomizeQuestions: lessonData.quiz.randomizeQuestions ?? false,
+            randomizeOptions: lessonData.quiz.randomizeOptions ?? false,
+            allowReview: lessonData.quiz.allowReview ?? true,
+            isPublished: data.isPublished ?? false,
+            createdBy: instructorId,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          };
+
+          // Add optional fields only if they exist
+          if (lessonData.quiz.description) {
+            quizData.description = lessonData.quiz.description;
+          }
+          if (lessonData.quiz.instructions) {
+            quizData.instructions = lessonData.quiz.instructions;
+          }
+          if (lessonData.quiz.timeLimit) {
+            quizData.timeLimit = lessonData.quiz.timeLimit;
+          }
+          if (lessonData.quiz.maxAttempts) {
+            quizData.maxAttempts = lessonData.quiz.maxAttempts;
+          }
+
+          // Create quiz reference and add to batch
+          const quizRef = doc(collection(db, COLLECTIONS.QUIZZES));
+          batch.set(quizRef, {
+            ...quizData,
+            id: quizRef.id,
+          });
+        }
+      }
+
+      // Commit all operations atomically
+      await batch.commit();
+
+      return courseId;
+    } catch (error) {
+      console.error("Error importing course:", error);
+      throw error;
+    }
+  }
 }
 
 // Re-export for convenience
@@ -541,4 +865,5 @@ export const {
   searchCourses,
   getCourseStats,
   updateCourseRating,
+  importCourse,
 } = CourseService;

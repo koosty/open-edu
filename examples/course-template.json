@@ -1,0 +1,129 @@
+{
+  "$schema": "../schemas/course-import.schema.json",
+  "title": "Introduction to Web Development",
+  "description": "Learn the fundamentals of web development including HTML, CSS, and JavaScript. Build real-world projects and launch your career as a web developer.",
+  "category": "Web Development",
+  "difficulty": "Beginner",
+  "duration": "8 weeks",
+  "thumbnail": "https://via.placeholder.com/400x225/6366f1/white?text=Web+Development",
+  "level": "free",
+  "tags": ["html", "css", "javascript", "web", "frontend"],
+  "prerequisites": [
+    "Basic computer skills",
+    "Familiarity with using a web browser"
+  ],
+  "learningOutcomes": [
+    "Build responsive websites from scratch",
+    "Understand HTML structure and semantics",
+    "Style web pages with modern CSS",
+    "Add interactivity with JavaScript",
+    "Deploy websites to production"
+  ],
+  "isPublished": false,
+  "isFeatured": false,
+  "lessons": [
+    {
+      "title": "Welcome to Web Development",
+      "type": "lesson",
+      "duration": "15 min",
+      "content": "# Welcome to Web Development\n\nIn this course, you'll learn the fundamentals of building websites.\n\n## What You'll Learn\n\n- HTML for structure\n- CSS for styling\n- JavaScript for interactivity\n\n## Course Structure\n\nThis course is divided into 3 main sections:\n\n1. HTML Basics\n2. CSS Fundamentals\n3. JavaScript Introduction\n\nLet's get started!"
+    },
+    {
+      "title": "HTML Basics Quiz",
+      "type": "quiz",
+      "duration": "10 min",
+      "quiz": {
+        "title": "HTML Fundamentals",
+        "description": "Test your knowledge of HTML basics",
+        "passingScore": 70,
+        "timeLimit": 600,
+        "questions": [
+          {
+            "id": "q1",
+            "type": "multiple-choice",
+            "question": "What does HTML stand for?",
+            "options": [
+              "Hyper Text Markup Language",
+              "High Tech Modern Language",
+              "Home Tool Markup Language",
+              "Hyperlinks and Text Markup Language"
+            ],
+            "correctAnswer": 0,
+            "points": 10,
+            "explanation": "HTML stands for Hyper Text Markup Language. It's the standard markup language for creating web pages."
+          },
+          {
+            "id": "q2",
+            "type": "true-false",
+            "question": "HTML tags are case-sensitive",
+            "correctAnswer": false,
+            "points": 5,
+            "explanation": "HTML tags are not case-sensitive. Both <div> and <DIV> work the same way, though lowercase is recommended."
+          },
+          {
+            "id": "q3",
+            "type": "multiple-select",
+            "question": "Which of these are valid HTML5 semantic elements?",
+            "options": [
+              "<header>",
+              "<section>",
+              "<article>",
+              "<content>"
+            ],
+            "correctAnswers": [0, 1, 2],
+            "points": 15,
+            "explanation": "header, section, and article are valid HTML5 semantic elements. There is no <content> element."
+          },
+          {
+            "id": "q4",
+            "type": "fill-blank",
+            "question": "The HTML element used to define the title of a document is ___",
+            "correctAnswer": "title",
+            "caseSensitive": false,
+            "points": 10,
+            "explanation": "The <title> element defines the title shown in the browser tab or window title bar."
+          },
+          {
+            "id": "q5",
+            "type": "ordering",
+            "question": "Order these HTML elements from outermost to innermost in a typical document structure:",
+            "items": [
+              "html",
+              "body",
+              "div",
+              "p"
+            ],
+            "correctOrder": [0, 1, 2, 3],
+            "points": 15,
+            "explanation": "The correct nesting is: html > body > div > p"
+          },
+          {
+            "id": "q6",
+            "type": "matching",
+            "question": "Match the HTML tag with its purpose:",
+            "pairs": [
+              { "left": "<a>", "right": "Link" },
+              { "left": "<img>", "right": "Image" },
+              { "left": "<p>", "right": "Paragraph" },
+              { "left": "<h1>", "right": "Heading" }
+            ],
+            "points": 20,
+            "explanation": "Each tag serves a specific semantic purpose in HTML documents."
+          }
+        ]
+      }
+    },
+    {
+      "title": "CSS Fundamentals",
+      "type": "lesson",
+      "duration": "20 min",
+      "content": "# CSS Fundamentals\n\nCSS (Cascading Style Sheets) is used to style HTML elements.\n\n## Selectors\n\nCSS uses selectors to target HTML elements:\n\n```css\n/* Element selector */\np {\n  color: blue;\n}\n\n/* Class selector */\n.highlight {\n  background-color: yellow;\n}\n\n/* ID selector */\n#header {\n  font-size: 24px;\n}\n```\n\n## Box Model\n\nEvery HTML element is a box with:\n\n- Content\n- Padding\n- Border\n- Margin\n\n## Practice Exercise\n\nTry styling a simple HTML page with different colors, fonts, and layouts!"
+    },
+    {
+      "title": "JavaScript Introduction",
+      "type": "lesson",
+      "duration": "25 min",
+      "content": "# JavaScript Introduction\n\nJavaScript adds interactivity to web pages.\n\n## Variables\n\n```javascript\nlet name = 'John';\nconst age = 25;\nvar city = 'New York'; // old syntax\n```\n\n## Functions\n\n```javascript\nfunction greet(name) {\n  return `Hello, ${name}!`;\n}\n\nconsole.log(greet('Alice')); // Hello, Alice!\n```\n\n## DOM Manipulation\n\n```javascript\n// Select an element\nconst button = document.querySelector('button');\n\n// Add event listener\nbutton.addEventListener('click', () => {\n  alert('Button clicked!');\n});\n```\n\n## Next Steps\n\nIn the next lessons, we'll build a complete interactive web application!"
+    }
+  ]
+}

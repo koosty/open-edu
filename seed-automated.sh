@@ -3,7 +3,7 @@
 # Automated Firebase Seeding Script
 # This script:
 # 1. Deploys open rules (allows all operations)
-# 2. Seeds the database with admin user and sample data
+# 2. Seeds the database with admin user only
 # 3. Restores production security rules
 
 set -e  # Exit on any error
@@ -14,12 +14,12 @@ PROJECT_ID="openedu-1f258"
 echo "🚀 Starting Automated Firebase Seeding Process"
 echo "=============================================="
 
-# Step 1: Deploy open rules for seeding
+# Step 1: Deploy open rules and indexes for seeding
 echo ""
-echo "🔓 Step 1: Deploying open rules for seeding..."
+echo "🔓 Step 1: Deploying open rules and indexes for seeding..."
 cp firestore.open.rules firestore.rules
-firebase deploy --only firestore:rules
-echo "✅ Open rules deployed successfully"
+firebase deploy --only firestore
+echo "✅ Open rules and indexes deployed successfully"
 
 # Step 2: Wait a moment for rules to propagate
 echo "⏳ Waiting 5 seconds for rules to propagate..."
@@ -27,7 +27,7 @@ sleep 5
 
 # Step 3: Run the seeding script
 echo ""
-echo "🌱 Step 2: Seeding database with admin user and sample data..."
+echo "🌱 Step 2: Seeding database with admin user..."
 
 # Get the current user UID from Firebase
 echo "🔍 Getting admin user UID from Firebase Auth..."
@@ -58,26 +58,29 @@ fi
 
 echo "✅ Database seeding completed"
 
-# Step 4: Restore production rules
+# Step 4: Restore production rules and ensure indexes are deployed
 echo ""
-echo "🔒 Step 3: Restoring production security rules..."
+echo "🔒 Step 3: Restoring production security rules and indexes..."
 cp firestore.production.rules firestore.rules
-firebase deploy --only firestore:rules
-echo "✅ Production rules restored successfully"
+firebase deploy --only firestore
+echo "✅ Production rules and indexes deployed successfully"
 
 echo ""
 echo "🎉 Automated seeding process completed!"
 echo ""
 echo "Summary:"
 echo "✅ Database seeded with admin user (UID: $USER_UID)"
-echo "✅ Sample course 'Complete JavaScript Fundamentals' created"
 echo "✅ Production security rules active"
+echo "✅ Firestore indexes deployed (31 composite indexes)"
+echo ""
+echo "Note: Using Firestore database from .env.local (FIREBASE_DATABASE_NAME)"
+echo "      If not set, defaults to '(default)' database"
 echo ""
 echo "Next steps:"
 echo "1. Visit http://localhost:5173"
-echo "2. Login with your Google account (ken.kustian@gmail.com)"
+echo "2. Login with your Google account ($EMAIL)"
 echo "3. You should now have admin access!"
-echo "4. Check /admin dashboard"
-echo "5. Verify courses appear in /courses"
+echo "4. Go to /admin/courses/new to create your first course"
+echo "5. Check /admin dashboard to manage courses"
 echo ""
-echo "🔗 Firebase Console: https://console.firebase.google.com/project/openedu-1f258/firestore/data"
+echo "🔗 Firebase Console: https://console.firebase.google.com/project/$PROJECT_ID/firestore/data"

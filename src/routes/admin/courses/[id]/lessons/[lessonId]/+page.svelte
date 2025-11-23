@@ -27,7 +27,6 @@
 	const form = $state({
 		title: '',
 		description: '',
-		type: 'lesson' as 'lesson' | 'quiz',
 		content: '# Welcome\n\nStart writing your lesson content here using **Markdown**.\n\n## Code Example\n\n```javascript\nconst hello = "world";\nconsole.log(hello);\n```\n\n## Math Formula\n\nThe quadratic formula: $x = \\frac{-b \\pm \\sqrt{b^2-4ac}}{2a}$',
 		duration: 30,
 		order: 1,
@@ -44,7 +43,7 @@
 	const isValid = $derived(
 		form.title.trim().length > 0 &&
 		form.duration > 0 &&
-		(form.type === 'quiz' || form.content.trim().length > 0)
+		form.content.trim().length > 0
 	)
 	
 	// Load data
@@ -87,7 +86,6 @@
 				// Populate form
 				form.title = existingLesson.title
 				form.description = existingLesson.description || ''
-				form.type = existingLesson.type
 				form.content = existingLesson.content || ''
 				form.duration = existingLesson.duration || 30
 				form.order = existingLesson.order
@@ -124,7 +122,6 @@
 				courseId: courseId,
 				title: form.title.trim(),
 				description: form.description.trim(),
-				type: form.type,
 				content: form.content.trim(),
 				duration: form.duration,
 				order: form.order,
@@ -337,20 +334,7 @@
 								/>
 							</div>
 
-							<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-						<div>
-							<Label for="type" class="mb-2">Type *</Label>
-							<Select.Root type="single" bind:value={form.type}>
-									<Select.Trigger class="w-full">
-										{form.type === 'lesson' ? 'Lesson' : 'Quiz'}
-									</Select.Trigger>
-									<Select.Content>
-										<Select.Item value="lesson" label="Lesson">Lesson</Select.Item>
-										<Select.Item value="quiz" label="Quiz">Quiz</Select.Item>
-									</Select.Content>
-								</Select.Root>
-							</div>
-
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 							<div>
 								<Label for="duration" class="mb-2">Duration (minutes) *</Label>
 								<Input
@@ -404,8 +388,7 @@
 					</Card>
 
 					<!-- Markdown Editor -->
-					{#if form.type === 'lesson'}
-						<Card class="shadow-sm">
+					<Card class="shadow-sm">
 							<CardHeader>
 								<div class="flex items-center justify-between">
 									<CardTitle>Lesson Content</CardTitle>
@@ -515,8 +498,8 @@
 
 									<!-- Preview -->
 									{#if previewMode !== 'edit'}
-										<div class="border border-input rounded-xl p-6 bg-white overflow-auto max-h-[600px] shadow-sm">
-											<div class="prose prose-slate max-w-none">
+										<div class="border border-input rounded-xl p-6 bg-card overflow-auto max-h-[600px] shadow-sm">
+											<div class="prose prose-slate max-w-none dark:prose-invert">
 												<MarkdownRenderer content={form.content} />
 											</div>
 										</div>
@@ -528,71 +511,6 @@
 								</p>
 							</CardContent>
 						</Card>
-					{:else}
-						<Card class="shadow-sm">
-							<CardContent class="p-8">
-								<div class="text-center mb-6">
-									<svg class="w-16 h-16 mx-auto text-primary-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-										<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-									</svg>
-									<h3 class="text-lg font-semibold text-foreground mb-2">📋 Create Quiz Content</h3>
-									<p class="text-muted-foreground">This lesson is marked as a Quiz. To add quiz questions:</p>
-								</div>
-
-								<div class="bg-primary-50 border border-primary-200 rounded-xl p-6 text-left space-y-4">
-									<div class="flex items-start gap-3">
-										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">1</span>
-										<div>
-											<p class="font-medium text-foreground">Save this lesson first</p>
-											<p class="text-sm text-muted-foreground mt-1">Click "Create Lesson" or "Save Changes" above to create the lesson placeholder</p>
-										</div>
-									</div>
-									
-									<div class="flex items-start gap-3">
-										<span class="flex-shrink-0 w-6 h-6 bg-primary-600 text-white rounded-full flex items-center justify-center text-sm font-bold">2</span>
-										<div>
-											<p class="font-medium text-foreground">Create Quiz with Visual Builder</p>
-											<p class="text-sm text-muted-foreground mt-1">
-												{#if !isNewLesson && lesson}
-													Click the button below to create a quiz for this lesson using our visual builder
-												{:else}
-													After saving this lesson, you'll see a button to create the quiz
-												{/if}
-											</p>
-										</div>
-									</div>
-								</div>
-
-								{#if !isNewLesson && lesson}
-									<div class="mt-6 flex items-center justify-center">
-										<Button
-											onclick={() => navigate(`/admin/courses/${courseId}/quizzes/new?lessonId=${lesson?.id || lessonId}`)}
-											class="shadow-sm px-6"
-										>
-											<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-											</svg>
-											Create Quiz for This Lesson
-										</Button>
-									</div>
-								{:else}
-									<div class="mt-6 p-4 bg-yellow-500/10 border border-yellow-500/30 rounded-lg text-center">
-										<p class="text-sm text-yellow-600 dark:text-yellow-400">
-											💡 Save this lesson first, then you can create the quiz using our visual builder
-										</p>
-									</div>
-								{/if}
-
-								<div class="mt-6 p-4 bg-muted border border-border rounded-lg">
-									<p class="text-xs text-muted-foreground leading-relaxed">
-										<strong>Note:</strong> Quiz lessons serve as navigation placeholders in the course structure. 
-										The actual quiz questions are managed separately through the Quiz Management interface, 
-										which provides detailed statistics and publishing controls.
-									</p>
-								</div>
-							</CardContent>
-						</Card>
-					{/if}
 				</form>
 			</div>
 		</div>

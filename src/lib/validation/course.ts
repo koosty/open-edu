@@ -85,7 +85,6 @@ export const lessonSchema = z
       .string()
       .max(500, "Description cannot exceed 500 characters")
       .optional(),
-    type: z.enum(["lesson", "quiz"]),
     content: z.string().optional(),
     quiz: quizSchema.optional(),
     order: z.number().min(0, "Order must be non-negative"),
@@ -104,17 +103,18 @@ export const lessonSchema = z
   })
   .refine(
     (data) => {
-      // Validate lesson content or quiz is present
-      if (data.type === "lesson") {
-        return data.content && data.content.trim().length > 0;
-      } else if (data.type === "quiz") {
-        return data.quiz !== undefined;
+      // Validate that lessons with quiz data don't also have content
+      // Lessons should have either content OR quiz, but not necessarily require content
+      // if they will have a quiz added separately
+      if (data.quiz && data.content) {
+        return false; // Can't have both inline quiz and content
       }
+      // Allow lessons without content (quiz lessons) or with content (regular lessons)
       return true;
     },
     {
-      message: "Lesson must have content or quiz must have quiz data",
-      path: ["content", "quiz"],
+      message: "Lesson cannot have both content and inline quiz data",
+      path: ["content"],
     },
   );
 

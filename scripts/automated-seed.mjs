@@ -4,6 +4,13 @@
  * Automated Firebase Seeding Script
  * Runs with temporarily open security rules
  * Uses environment variables for Firebase configuration
+ * 
+ * Environment Variables:
+ * - PUBLIC_FIREBASE_* - Firebase project configuration
+ * - ADMIN_USER_UID - Firebase Auth UID for admin user
+ * - ADMIN_USER_EMAIL - Admin user email address
+ * - ADMIN_USER_DISPLAY_NAME - Admin user display name (optional)
+ * - FIREBASE_DATABASE_NAME - Custom Firestore database name (optional, defaults to "(default)")
  */
 
 import { initializeApp } from 'firebase/app';
@@ -65,9 +72,14 @@ if (missingKeys.length > 0) {
   process.exit(1);
 }
 
+// Get optional database name (defaults to "(default)" if not provided)
+const databaseName = getEnv('FIREBASE_DATABASE_NAME') || '(default)';
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = databaseName === '(default)' 
+  ? getFirestore(app) 
+  : getFirestore(app, databaseName);
 
 // Get admin user UID from environment variable
 const USER_UID = getEnv('ADMIN_USER_UID');
@@ -92,6 +104,7 @@ const USER_DISPLAY_NAME = getEnv('ADMIN_USER_DISPLAY_NAME') || 'Admin User';
 
 console.log('🌱 Starting automated database seeding...');
 console.log(`📊 Project: ${firebaseConfig.projectId}`);
+console.log(`🗄️  Database: ${databaseName}`);
 console.log(`👤 Admin: ${USER_DISPLAY_NAME} (${USER_EMAIL}) [UID: ${USER_UID}]`);
 
 // Admin user data
@@ -114,95 +127,7 @@ const adminUser = {
   }
 };
 
-// Sample course data
-const sampleCourse = {
-  id: 'js-fundamentals-001',
-  title: 'Complete JavaScript Fundamentals',
-  description: 'Master JavaScript from basics to advanced concepts. Learn variables, functions, objects, DOM manipulation, and modern ES6+ features.',
-  instructor: USER_DISPLAY_NAME,
-  instructorId: USER_UID,
-  thumbnail: 'https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80',
-  category: 'Programming',
-  difficulty: 'Beginner',
-  duration: '12 weeks',
-  level: 'free',
-  isPublished: true,
-  isFeatured: true,
-  enrolled: 15,
-  rating: 4.8,
-  ratingCount: 32,
-  tags: ['JavaScript', 'Programming', 'Web Development'],
-  prerequisites: [],
-  learningOutcomes: [
-    'Understand JavaScript syntax and fundamentals',
-    'Work with DOM elements and events',
-    'Build interactive web applications',
-    'Use modern ES6+ features effectively'
-  ],
-  lessons: [
-    {
-      id: 'js-basics',
-      courseId: 'js-fundamentals-001',
-      title: 'JavaScript Basics',
-      type: 'lesson',
-      order: 1,
-      duration: 30,
-      content: 'Introduction to JavaScript syntax, variables, and data types.',
-      videoUrl: 'https://www.youtube.com/watch?v=W6NZfCO5SIk',
-      isRequired: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ],
-  chapters: [],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
-
-// Additional sample course
-const reactCourse = {
-  id: 'react-beginners-001',
-  title: 'React for Beginners',
-  description: 'Build modern web applications with React. Learn components, hooks, state management, and more.',
-  instructor: USER_DISPLAY_NAME,
-  instructorId: USER_UID,
-  thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&h=600&fit=crop&crop=entropy&auto=format&q=80',
-  category: 'Web Development',
-  difficulty: 'Intermediate',
-  duration: '8 weeks',
-  level: 'free',
-  isPublished: true,
-  isFeatured: true,
-  enrolled: 8,
-  rating: 4.9,
-  ratingCount: 18,
-  tags: ['React', 'JavaScript', 'Frontend', 'Components'],
-  prerequisites: ['Basic JavaScript knowledge'],
-  learningOutcomes: [
-    'Build React components effectively',
-    'Manage state with hooks',
-    'Create single-page applications',
-    'Handle events and user interactions'
-  ],
-  lessons: [
-    {
-      id: 'react-intro',
-      courseId: 'react-beginners-001', 
-      title: 'Introduction to React',
-      type: 'lesson',
-      order: 1,
-      duration: 40,
-      content: 'What is React and why use it for building user interfaces.',
-      videoUrl: 'https://www.youtube.com/watch?v=Ke90Tje7VS0',
-      isRequired: true,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString()
-    }
-  ],
-  chapters: [],
-  createdAt: new Date().toISOString(),
-  updatedAt: new Date().toISOString()
-};
+// No sample courses - admin can create courses via the UI
 
 async function cleanupExistingData() {
   try {
@@ -239,16 +164,10 @@ async function seedDatabase() {
     await setDoc(doc(db, COLLECTIONS.USERS, USER_UID), adminUser);
     console.log('✅ Admin user created successfully');
 
-    // Create sample courses
-    console.log('📚 Creating JavaScript course...');
-    await setDoc(doc(db, COLLECTIONS.COURSES, 'js-fundamentals-001'), sampleCourse);
-    console.log('✅ JavaScript course created successfully');
-
-    console.log('⚛️ Creating React course...');
-    await setDoc(doc(db, COLLECTIONS.COURSES, 'react-beginners-001'), reactCourse);
-    console.log('✅ React course created successfully');
-
     console.log('🎉 Database seeding completed successfully!');
+    console.log('');
+    console.log('📝 Note: No sample courses created.');
+    console.log('   You can create courses via the admin interface at /admin/courses/new');
 
   } catch (error) {
     console.error('❌ Seeding failed:', error);

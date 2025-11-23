@@ -60,7 +60,6 @@ export interface Lesson {
   courseId: string;
   title: string;
   description?: string;
-  type: "lesson" | "quiz";
   content?: string;
   quiz?: Quiz;
   order: number;

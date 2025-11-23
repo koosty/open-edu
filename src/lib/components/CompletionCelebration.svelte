@@ -185,7 +185,7 @@
 		
 		<!-- Celebration Modal -->
 		<div 
-			class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-[scale-in_0.3s_ease-out] z-10"
+			class="relative bg-card rounded-2xl shadow-2xl max-w-md w-full p-8 text-center animate-[scale-in_0.3s_ease-out] z-10"
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={(e) => e.key === 'Enter' && e.stopPropagation()}
 			role="dialog"

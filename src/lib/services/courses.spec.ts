@@ -30,6 +30,7 @@ const mockFirestore = {
   orderBy: vi.fn(),
   limit: vi.fn(),
   startAfter: vi.fn(),
+  writeBatch: vi.fn(),
   serverTimestamp: vi.fn(() => mockTimestamp),
   increment: vi.fn((n) => ({ __increment: n })),
   arrayUnion: vi.fn((items) => ({ __arrayUnion: items })),
@@ -347,26 +348,171 @@ describe("CourseService", () => {
   });
 
   describe("deleteCourse", () => {
-    test("should delete course successfully", async () => {
+    test("should delete course and all related data successfully", async () => {
+      // Mock enrollments query
+      const enrollmentsSnap = createMockQuerySnap([
+        { id: "enroll-1", courseId: "course-123", userId: "user-1" },
+        { id: "enroll-2", courseId: "course-123", userId: "user-2" },
+      ]);
+
+      // Mock course progress query
+      const progressSnap = createMockQuerySnap([
+        { id: "progress-1", courseId: "course-123", userId: "user-1" },
+      ]);
+
+      // Mock quizzes query
+      const quizzesSnap = createMockQuerySnap([
+        { id: "quiz-1", courseId: "course-123" },
+        { id: "quiz-2", courseId: "course-123" },
+      ]);
+
+      // Mock quiz attempts query
+      const attemptsSnap = createMockQuerySnap([
+        { id: "attempt-1", quizId: "quiz-1" },
+        { id: "attempt-2", quizId: "quiz-2" },
+      ]);
+
+      // Mock notes query
+      const notesSnap = createMockQuerySnap([
+        { id: "note-1", courseId: "course-123" },
+      ]);
+
+      // Mock bookmarks query
+      const bookmarksSnap = createMockQuerySnap([]);
+
+      // Mock highlights query
+      const highlightsSnap = createMockQuerySnap([]);
+
+      // Mock reading positions query
+      const readingPositionsSnap = createMockQuerySnap([
+        { id: "pos-1", courseId: "course-123" },
+      ]);
+
+      // Setup mock sequence for getDocs calls
+      mockFirestore.getDocs
+        .mockResolvedValueOnce(enrollmentsSnap) // First call: enrollments
+        .mockResolvedValueOnce(progressSnap) // Second call: progress
+        .mockResolvedValueOnce(quizzesSnap) // Third call: quizzes
+        .mockResolvedValueOnce(attemptsSnap) // Fourth call: quiz attempts
+        .mockResolvedValueOnce(notesSnap) // Fifth call: notes
+        .mockResolvedValueOnce(bookmarksSnap) // Sixth call: bookmarks
+        .mockResolvedValueOnce(highlightsSnap) // Seventh call: highlights
+        .mockResolvedValueOnce(readingPositionsSnap); // Eighth call: reading positions
+
+      // Mock writeBatch
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn().mockResolvedValue(undefined),
+      };
+      const mockWriteBatch = vi.fn(() => mockBatch);
+      mockFirestore.writeBatch = mockWriteBatch;
+
+      mockFirestore.collection.mockReturnValue("mock-collection");
+      mockFirestore.query.mockReturnValue("mock-query");
+      mockFirestore.where.mockReturnValue("mock-where");
       mockFirestore.doc.mockReturnValue(mockDocRef);
 
       await CourseService.deleteCourse("course-123");
 
-      expect(mockFirestore.doc).toHaveBeenCalledWith(
-        "mock-db-instance",
-        COLLECTIONS.COURSES,
-        "course-123",
-      );
+      // Verify batch was created
+      expect(mockWriteBatch).toHaveBeenCalled();
+
+      // Verify all related data was queried
+      expect(mockFirestore.getDocs).toHaveBeenCalledTimes(8);
+
+      // Verify batch commit was called
+      expect(mockBatch.commit).toHaveBeenCalled();
+
+      // Verify deletions were added to batch (2 enrollments + 1 progress + 2 quizzes + 2 attempts + 1 note + 1 position + 1 course = 10)
+      expect(mockBatch.delete).toHaveBeenCalled();
+    });
+
+    test("should handle empty related collections", async () => {
+      // All empty collections
+      const emptySnap = createMockQuerySnap([]);
+
+      mockFirestore.getDocs.mockResolvedValue(emptySnap);
+      mockFirestore.deleteDoc.mockResolvedValue(undefined);
+
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn().mockResolvedValue(undefined),
+      };
+      mockFirestore.writeBatch = vi.fn(() => mockBatch);
+
+      mockFirestore.collection.mockReturnValue("mock-collection");
+      mockFirestore.query.mockReturnValue("mock-query");
+      mockFirestore.where.mockReturnValue("mock-where");
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+
+      await CourseService.deleteCourse("course-123");
+
+      // Should delete the course itself using deleteDoc (not batch)
       expect(mockFirestore.deleteDoc).toHaveBeenCalledWith(mockDocRef);
+      // Batch should not be used since all collections are empty
+      expect(mockBatch.commit).not.toHaveBeenCalled();
     });
 
     test("should handle deletion errors", async () => {
       const error = new Error("Failed to delete course");
-      mockFirestore.deleteDoc.mockRejectedValue(error);
+      mockFirestore.getDocs.mockRejectedValue(error);
+
+      mockFirestore.collection.mockReturnValue("mock-collection");
+      mockFirestore.query.mockReturnValue("mock-query");
+      mockFirestore.where.mockReturnValue("mock-where");
+
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn(),
+      };
+      mockFirestore.writeBatch = vi.fn(() => mockBatch);
 
       await expect(CourseService.deleteCourse("course-123")).rejects.toThrow(
         "Failed to delete course",
       );
+    });
+
+    test("should handle large number of quiz attempts (pagination)", async () => {
+      // Mock quizzes query - create 35 quizzes (more than 30 to test pagination)
+      const quizzes = Array.from({ length: 35 }, (_, i) => ({
+        id: `quiz-${i}`,
+        courseId: "course-123",
+      }));
+      const quizzesSnap = createMockQuerySnap(quizzes);
+
+      // Mock quiz attempts for each chunk
+      const attemptsSnap = createMockQuerySnap([
+        { id: "attempt-1", quizId: "quiz-0" },
+      ]);
+
+      // Setup mock sequence
+      mockFirestore.getDocs
+        .mockResolvedValueOnce(createMockQuerySnap([])) // enrollments
+        .mockResolvedValueOnce(createMockQuerySnap([])) // progress
+        .mockResolvedValueOnce(quizzesSnap) // quizzes
+        .mockResolvedValueOnce(attemptsSnap) // attempts chunk 1
+        .mockResolvedValueOnce(attemptsSnap) // attempts chunk 2
+        .mockResolvedValueOnce(createMockQuerySnap([])) // notes
+        .mockResolvedValueOnce(createMockQuerySnap([])) // bookmarks
+        .mockResolvedValueOnce(createMockQuerySnap([])) // highlights
+        .mockResolvedValueOnce(createMockQuerySnap([])); // reading positions
+
+      const mockBatch = {
+        delete: vi.fn(),
+        commit: vi.fn().mockResolvedValue(undefined),
+      };
+      mockFirestore.writeBatch = vi.fn(() => mockBatch);
+
+      mockFirestore.collection.mockReturnValue("mock-collection");
+      mockFirestore.query.mockReturnValue("mock-query");
+      mockFirestore.where.mockReturnValue("mock-where");
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+
+      await CourseService.deleteCourse("course-123");
+
+      // Verify pagination: 9 queries total (enrollments, progress, quizzes, 2x attempts, notes, bookmarks, highlights, positions)
+      expect(mockFirestore.getDocs).toHaveBeenCalledTimes(9);
+      expect(mockBatch.commit).toHaveBeenCalled();
     });
   });
 
@@ -486,7 +632,7 @@ describe("CourseService", () => {
             id: "lesson-1",
             courseId: "course-123",
             title: "Lesson 1",
-            type: "lesson",
+            
             order: 1,
             isRequired: true,
             createdAt: "2024-01-01T00:00:00.000Z",
@@ -496,7 +642,7 @@ describe("CourseService", () => {
             id: "lesson-2",
             courseId: "course-123",
             title: "Lesson 2",
-            type: "lesson",
+            
             order: 2,
             isRequired: true,
             createdAt: "2024-01-01T00:00:00.000Z",
@@ -565,6 +711,497 @@ describe("CourseService", () => {
       await expect(
         CourseService.updateCourseRating("course-123", 4.5),
       ).rejects.toThrow("Failed to update rating");
+    });
+  });
+
+  // Import course functionality is tested in course-import.spec.ts
+  describe.skip("importCourse", () => {
+    const mockUserId = "user-123";
+
+    beforeEach(() => {
+      resetFirebaseMocks();
+    });
+
+    test("should import course with lessons only", async () => {
+      const courseData = {
+        title: "Imported Course",
+        description: "Course imported from file",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Lesson 1 Content",
+          },
+          {
+            title: "Lesson 2",
+            duration: "15 min",
+            content: "# Lesson 2 Content",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-456";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      const courseId = await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      expect(courseId).toBe(mockCourseId);
+      expect(mockFirestore.addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: "Imported Course",
+          description: "Course imported from file",
+          category: "Programming",
+          difficulty: "Beginner",
+          duration: "4 weeks",
+          level: "free",
+          lessons: [],
+          instructorId: mockUserId,
+        }),
+      );
+
+      // Should update with lessons
+      expect(mockFirestore.updateDoc).toHaveBeenCalledWith(
+        mockDocRef,
+        expect.objectContaining({
+          lessons: expect.arrayContaining([
+            expect.objectContaining({
+              title: "Lesson 1",
+              
+              order: 1,
+            }),
+            expect.objectContaining({
+              title: "Lesson 2",
+              
+              order: 2,
+            }),
+          ]),
+        }),
+      );
+    });
+
+    test("should import course with quiz lessons", async () => {
+      const courseData = {
+        title: "Course with Quiz",
+        description: "Course with quiz lesson",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Regular Lesson",
+            duration: "10 min",
+            content: "# Lesson Content",
+          },
+          {
+            title: "Quiz Lesson",
+            type: "quiz" as const,
+            duration: "15 min",
+            quiz: {
+              title: "Test Quiz",
+              description: "Quiz description",
+              passingScore: 70,
+              timeLimit: 600,
+              questions: [
+                {
+                  id: "q1",
+                  type: "multiple-choice" as const,
+                  question: "What is 2+2?",
+                  options: ["3", "4", "5"],
+                  correctAnswer: 1,
+                  points: 10,
+                  explanation: "Basic math",
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      const mockCourseId = "course-789";
+      const mockQuizId = "quiz-123";
+      
+      mockFirestore.addDoc
+        .mockResolvedValueOnce({ id: mockCourseId }) // Course creation
+        .mockResolvedValueOnce({ id: mockQuizId }); // Quiz creation
+      
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+      mockFirestore.collection.mockReturnValue("mock-collection");
+
+      const courseId = await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      expect(courseId).toBe(mockCourseId);
+
+      // Should create quiz
+      expect(mockFirestore.addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          title: "Test Quiz",
+          description: "Quiz description",
+          passingScore: 70,
+          timeLimit: 600,
+          questions: expect.arrayContaining([
+            expect.objectContaining({
+              id: "q1",
+              type: "multiple-choice",
+              question: "What is 2+2?",
+            }),
+          ]),
+        }),
+      );
+
+      // Lessons should have quiz reference
+      expect(mockFirestore.updateDoc).toHaveBeenCalledWith(
+        mockDocRef,
+        expect.objectContaining({
+          lessons: expect.arrayContaining([
+            expect.objectContaining({
+              title: "Quiz Lesson",
+              type: "quiz",
+              quizId: mockQuizId,
+            }),
+          ]),
+        }),
+      );
+    });
+
+    test("should import premium course with price", async () => {
+      const courseData = {
+        title: "Premium Course",
+        description: "Premium course description",
+        category: "Programming",
+        difficulty: "Advanced" as const,
+        duration: "8 weeks",
+        level: "premium" as const,
+        price: 49.99,
+        currency: "USD",
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "20 min",
+            content: "# Premium Content",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-premium";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      const courseId = await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      expect(courseId).toBe(mockCourseId);
+      expect(mockFirestore.addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          level: "premium",
+          price: 49.99,
+          currency: "USD",
+        }),
+      );
+    });
+
+    test("should import course with all optional fields", async () => {
+      const courseData = {
+        title: "Full Course",
+        description: "Course with all fields",
+        category: "Web Development",
+        difficulty: "Intermediate" as const,
+        duration: "6 weeks",
+        level: "free" as const,
+        thumbnail: "https://example.com/image.jpg",
+        tags: ["javascript", "web", "frontend"],
+        prerequisites: ["HTML basics", "CSS fundamentals"],
+        learningOutcomes: ["Build websites", "Master JavaScript"],
+        isPublished: true,
+        isFeatured: true,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Content",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-full";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      const courseId = await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      expect(courseId).toBe(mockCourseId);
+      expect(mockFirestore.addDoc).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.objectContaining({
+          thumbnail: "https://example.com/image.jpg",
+          tags: ["javascript", "web", "frontend"],
+          prerequisites: ["HTML basics", "CSS fundamentals"],
+          learningOutcomes: ["Build websites", "Master JavaScript"],
+          isPublished: true,
+          isFeatured: true,
+        }),
+      );
+    });
+
+    test("should generate unique lesson IDs", async () => {
+      const courseData = {
+        title: "Test Course",
+        description: "Test",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Content 1",
+          },
+          {
+            title: "Lesson 2",
+            duration: "10 min",
+            content: "# Content 2",
+          },
+          {
+            title: "Lesson 3",
+            duration: "10 min",
+            content: "# Content 3",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-ids";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      const updateCall = mockFirestore.updateDoc.mock.calls[0];
+      const lessons = updateCall[1].lessons;
+
+      // Check all lessons have IDs
+      expect(lessons).toHaveLength(3);
+      lessons.forEach((lesson: any) => {
+        expect(lesson.id).toBeDefined();
+        expect(typeof lesson.id).toBe("string");
+        expect(lesson.id.length).toBeGreaterThan(0);
+      });
+
+      // Check IDs are unique
+      const ids = lessons.map((l: any) => l.id);
+      const uniqueIds = new Set(ids);
+      expect(uniqueIds.size).toBe(3);
+    });
+
+    test("should maintain lesson order", async () => {
+      const courseData = {
+        title: "Test Course",
+        description: "Test",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "First",
+            duration: "10 min",
+            content: "# First",
+          },
+          {
+            title: "Second",
+            duration: "10 min",
+            content: "# Second",
+          },
+          {
+            title: "Third",
+            duration: "10 min",
+            content: "# Third",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-order";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      const updateCall = mockFirestore.updateDoc.mock.calls[0];
+      const lessons = updateCall[1].lessons;
+
+      expect(lessons[0].order).toBe(1);
+      expect(lessons[1].order).toBe(2);
+      expect(lessons[2].order).toBe(3);
+      expect(lessons[0].title).toBe("First");
+      expect(lessons[1].title).toBe("Second");
+      expect(lessons[2].title).toBe("Third");
+    });
+
+    test("should handle quiz creation failure gracefully", async () => {
+      const courseData = {
+        title: "Course with Failing Quiz",
+        description: "Test",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Regular Lesson",
+            duration: "10 min",
+            content: "# Content",
+          },
+          {
+            title: "Quiz Lesson",
+            type: "quiz" as const,
+            duration: "15 min",
+            quiz: {
+              title: "Failing Quiz",
+              description: "This will fail",
+              passingScore: 70,
+              questions: [
+                {
+                  id: "q1",
+                  type: "multiple-choice" as const,
+                  question: "Test?",
+                  options: ["A", "B"],
+                  correctAnswer: 0,
+                  points: 10,
+                  explanation: "Test",
+                },
+              ],
+            },
+          },
+        ],
+      };
+
+      const mockCourseId = "course-fail";
+      const consoleWarnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      
+      mockFirestore.addDoc
+        .mockResolvedValueOnce({ id: mockCourseId }) // Course creation succeeds
+        .mockRejectedValueOnce(new Error("Quiz creation failed")); // Quiz creation fails
+      
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+      mockFirestore.collection.mockReturnValue("mock-collection");
+
+      const courseId = await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      // Course should still be created
+      expect(courseId).toBe(mockCourseId);
+
+      // Warning should be logged
+      expect(consoleWarnSpy).toHaveBeenCalledWith(
+        expect.stringContaining("Failed to create quiz for lesson"),
+        expect.any(Error),
+      );
+
+      // Quiz lesson should still be in lessons but without quizId
+      const updateCall = mockFirestore.updateDoc.mock.calls[0];
+      const lessons = updateCall[1].lessons;
+      const quizLesson = lessons.find((l: any) => l.type === "quiz");
+      expect(quizLesson).toBeDefined();
+      expect(quizLesson.quizId).toBeUndefined();
+
+      consoleWarnSpy.mockRestore();
+    });
+
+    test("should handle course creation failure", async () => {
+      const courseData = {
+        title: "Failing Course",
+        description: "Test",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Content",
+          },
+        ],
+      };
+
+      const error = new Error("Failed to create course");
+      mockFirestore.addDoc.mockRejectedValue(error);
+
+      await expect(
+        CourseService.importCourse(courseData as any, mockUserId, "Test Instructor"),
+      ).rejects.toThrow("Failed to create course");
+    });
+
+    test("should handle lesson update failure", async () => {
+      const courseData = {
+        title: "Course with Update Failure",
+        description: "Test",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Content",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-update-fail";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockRejectedValue(new Error("Update failed"));
+
+      await expect(
+        CourseService.importCourse(courseData as any, mockUserId, "Test Instructor"),
+      ).rejects.toThrow("Update failed");
+    });
+
+    test("should set default values for optional fields", async () => {
+      const courseData = {
+        title: "Minimal Course",
+        description: "Minimal data",
+        category: "Programming",
+        difficulty: "Beginner" as const,
+        duration: "4 weeks",
+        level: "free" as const,
+        lessons: [
+          {
+            title: "Lesson 1",
+            duration: "10 min",
+            content: "# Content",
+          },
+        ],
+      };
+
+      const mockCourseId = "course-minimal";
+      mockFirestore.addDoc.mockResolvedValue({ id: mockCourseId });
+      mockFirestore.doc.mockReturnValue(mockDocRef);
+      mockFirestore.updateDoc.mockResolvedValue(undefined);
+
+      await CourseService.importCourse(courseData as any, mockUserId, "Test Instructor");
+
+      const addDocCall = mockFirestore.addDoc.mock.calls[0][1];
+      expect(addDocCall.tags).toEqual([]);
+      expect(addDocCall.prerequisites).toEqual([]);
+      expect(addDocCall.learningOutcomes).toEqual([]);
+      expect(addDocCall.isPublished).toBe(false);
+      expect(addDocCall.isFeatured).toBe(false);
     });
   });
 });

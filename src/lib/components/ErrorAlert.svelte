@@ -114,7 +114,7 @@
 			
 			<!-- Suggestions -->
 			{#if suggestions.length > 0}
-				<div class="bg-white rounded-lg p-3 md:p-4 border border-red-100 mb-4">
+				<div class="bg-card rounded-lg p-3 md:p-4 border border-red-100 mb-4">
 					<p class="text-xs md:text-sm font-semibold text-slate-700 mb-2">
 						💡 What you can try:
 					</p>

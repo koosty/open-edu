@@ -188,19 +188,41 @@
 		navigate(`/admin/courses/${courseId}/lessons/${lessonId}`)
 	}
 	
-	async function handleDeleteLesson(lessonId: string) {
-		if (!confirm('Are you sure you want to delete this lesson?')) return
+	function handleDeleteLesson(lessonId: string) {
+		const lesson = lessons.find(l => l.id === lessonId)
+		if (!lesson) return
 		
-		lessons = lessons.filter(l => l.id !== lessonId)
+		lessonToDelete = lesson
+		showDeleteLessonDialog = true
+	}
+	
+	async function confirmDeleteLesson() {
+		if (!lessonToDelete || deletingLesson) return
 		
-		// Update course with new lessons array
+		deletingLesson = true
+		error = null
+		
 		try {
+			lessons = lessons.filter(l => l.id !== lessonToDelete!.id)
+			
+			// Update course with new lessons array
 			await CourseService.updateCourse(courseId, { lessons })
 			success = true
 			setTimeout(() => success = false, 2000)
+			
+			// Close modal
+			showDeleteLessonDialog = false
+			lessonToDelete = null
 		} catch (err: any) {
 			error = err.message || 'Failed to delete lesson'
+		} finally {
+			deletingLesson = false
 		}
+	}
+	
+	function cancelDeleteLesson() {
+		showDeleteLessonDialog = false
+		lessonToDelete = null
 	}
 	
 	function handleReorderLesson(index: number, direction: 'up' | 'down') {
@@ -217,6 +239,44 @@
 			...lesson,
 			order: idx + 1
 		}))
+	}
+	
+	// Delete lesson with confirmation
+	let showDeleteLessonDialog = $state(false)
+	let lessonToDelete = $state<Lesson | null>(null)
+	let deletingLesson = $state(false)
+	
+	// Delete course with confirmation
+	let showDeleteDialog = $state(false)
+	let deleting = $state(false)
+	
+	async function handleDeleteCourse() {
+		if (!course) return
+		
+		showDeleteDialog = true
+	}
+	
+	async function confirmDeleteCourse() {
+		if (!course || deleting) return
+		
+		deleting = true
+		error = null
+		
+		try {
+			await CourseService.deleteCourse(courseId)
+			
+			// Redirect to admin dashboard after successful deletion
+			navigate('/admin')
+		} catch (err: any) {
+			error = err.message || 'Failed to delete course'
+			console.error('Error deleting course:', err)
+			deleting = false
+			showDeleteDialog = false
+		}
+	}
+	
+	function cancelDelete() {
+		showDeleteDialog = false
 	}
 </script>
 
@@ -434,12 +494,17 @@
 										{#if form.thumbnail}
 											<img 
 												src={form.thumbnail} 
-												alt="Course thumbnail preview"
-												class="mt-3 w-48 h-27 object-cover rounded-lg border"
-												onerror={(e) => {
-													const target = e.currentTarget as HTMLImageElement
-													target.src = 'https://via.placeholder.com/400x225/6366f1/white?text=Invalid+Image'
-												}}
+											alt="Course thumbnail preview"
+											class="mt-3 w-48 h-27 object-cover rounded-lg border"
+											onerror={(e) => {
+												const target = e.currentTarget as HTMLImageElement
+												// Prevent infinite loop by checking if already replaced
+												if (target.src !== target.dataset.fallback) {
+													// Use a simple SVG data URI as fallback
+													target.dataset.fallback = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="400" height="225" viewBox="0 0 400 225"%3E%3Crect width="400" height="225" fill="%236366f1"/%3E%3Ctext x="50%25" y="50%25" dominant-baseline="middle" text-anchor="middle" font-family="sans-serif" font-size="18" fill="white"%3EInvalid Image%3C/text%3E%3C/svg%3E'
+													target.src = target.dataset.fallback
+												}
+											}}
 											/>
 										{/if}
 									</div>
@@ -557,7 +622,7 @@
 																<h4 class="font-medium text-sm truncate">{lesson.title}</h4>
 															</div>
 															<div class="flex items-center gap-2 mt-1">
-																<span class="text-xs text-muted-foreground capitalize">{lesson.type}</span>
+																<span class="text-xs text-muted-foreground capitalize">{lesson.quiz ? 'Quiz' : 'Lesson'}</span>
 																{#if lesson.duration}
 																	<span class="text-xs text-muted-foreground/70">• {lesson.duration} min</span>
 																{/if}
@@ -638,50 +703,119 @@
 										onclick={() => navigate('/admin')}
 									>
 										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-										</svg>
-										View Analytics
-									</Button>
-									
-									<Button
-										variant="outline"
-										class="w-full justify-start"
-										onclick={() => navigate(`/admin/courses/${courseId}/quizzes`)}
-									>
-										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
-										</svg>
-										Manage Quizzes
-									</Button>
-									
-									<Button
-										variant="outline"
-										class="w-full justify-start"
-										onclick={() => navigate(`/courses/${courseId}`)}
-									>
-										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-										</svg>
-										View Course Page
-									</Button>
-									
-									<Button
-										variant="outline"
-										class="w-full justify-start"
-										onclick={() => navigate('/admin')}
-									>
-										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
 										</svg>
 										Back to Admin
 									</Button>
+									
+									<div class="pt-3 border-t border-border">
+										<Button
+											variant="destructive"
+											class="w-full justify-start"
+											onclick={handleDeleteCourse}
+											disabled={deleting}
+										>
+											<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+												<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+											</svg>
+											Delete Course
+										</Button>
+									</div>
 								</CardContent>
 							</Card>
 						</div>
 					</div>
 				</div>
 			</div>
+		</div>
+	{/if}
+	
+	<!-- Delete Lesson Confirmation Dialog -->
+	{#if showDeleteLessonDialog && lessonToDelete}
+		<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+			<Card class="max-w-md w-full">
+				<CardHeader>
+					<CardTitle class="text-destructive">Delete Lesson</CardTitle>
+				</CardHeader>
+				<CardContent class="space-y-4">
+					<p class="text-foreground">
+						Are you sure you want to delete <strong class="text-foreground">"{lessonToDelete.title}"</strong>?
+					</p>
+					<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+						<p class="text-sm text-destructive font-medium mb-2">⚠️ This action cannot be undone</p>
+						<p class="text-xs text-muted-foreground">
+							This will permanently delete:
+						</p>
+						<ul class="text-xs text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+							<li>The lesson and all its content</li>
+							<li>Any associated quizzes</li>
+							<li>Student progress for this lesson</li>
+						</ul>
+					</div>
+					
+					<div class="flex gap-3 justify-end">
+						<Button
+							variant="outline"
+							onclick={cancelDeleteLesson}
+							disabled={deletingLesson}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onclick={confirmDeleteLesson}
+							disabled={deletingLesson}
+						>
+							{deletingLesson ? 'Deleting...' : 'Delete Lesson'}
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
+		</div>
+	{/if}
+	
+	<!-- Delete Course Confirmation Dialog -->
+	{#if showDeleteDialog}
+		<div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+			<Card class="max-w-md w-full">
+				<CardHeader>
+					<CardTitle class="text-destructive">Delete Course</CardTitle>
+				</CardHeader>
+				<CardContent class="space-y-4">
+					<p class="text-foreground">
+						Are you sure you want to delete <strong class="text-foreground">"{course?.title}"</strong>?
+					</p>
+					<div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4">
+						<p class="text-sm text-destructive font-medium mb-2">⚠️ This action cannot be undone</p>
+						<p class="text-xs text-muted-foreground">
+							This will permanently delete:
+						</p>
+						<ul class="text-xs text-muted-foreground mt-2 space-y-1 list-disc list-inside">
+							<li>Course and all {lessons.length} lesson(s)</li>
+							<li>All quizzes and quiz attempts</li>
+							<li>All student enrollments and progress</li>
+							<li>All notes, bookmarks, and highlights</li>
+						</ul>
+					</div>
+					
+					<div class="flex gap-3 justify-end">
+						<Button
+							variant="outline"
+							onclick={cancelDelete}
+							disabled={deleting}
+						>
+							Cancel
+						</Button>
+						<Button
+							variant="destructive"
+							onclick={confirmDeleteCourse}
+							disabled={deleting}
+						>
+							{deleting ? 'Deleting...' : 'Delete Course'}
+						</Button>
+					</div>
+				</CardContent>
+			</Card>
 		</div>
 	{/if}
 </AuthGuard>

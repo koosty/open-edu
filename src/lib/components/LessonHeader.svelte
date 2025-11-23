@@ -67,15 +67,15 @@
 		return remainingMins > 0 ? `${hours}h ${remainingMins}m` : `${hours}h`
 	}
 	
-	// Lesson type badge
+	// Lesson type badge - check if lesson has quiz data
 	const lessonTypeBadge = $derived(
-		lesson.type === 'quiz' 
+		lesson.quiz 
 			? { text: 'Quiz', class: 'bg-purple-100 text-purple-700 border-purple-200' }
 			: { text: 'Lesson', class: 'bg-blue-100 text-blue-700 border-blue-200' }
 	)
 </script>
 
-<header class="bg-white border-b border-border sticky top-20 z-20 shadow-sm">
+<header class="bg-background border-b border-border sticky top-20 z-20 shadow-sm">
 	<div class="max-w-5xl mx-auto px-6 py-6">
 		<!-- Title and Type Badge -->
 		<div class="flex items-start justify-between gap-4 mb-4">
@@ -111,7 +111,7 @@
 				</div>
 				<div class="min-w-0">
 					<div class="text-xs text-muted-foreground font-medium">
-						{lesson.type === 'quiz' ? 'Est. Time' : 'Reading Time'}
+						{lesson.quiz ? 'Est. Time' : 'Reading Time'}
 					</div>
 					<div class="text-sm font-semibold text-foreground truncate">
 						{readingTime()} min

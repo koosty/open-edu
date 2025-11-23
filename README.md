@@ -1,9 +1,9 @@
 # 🎓 Open-EDU - Interactive Learning Platform
 
 [![Live Demo](https://img.shields.io/badge/🚀_Live_Demo-blue?style=for-the-badge)](https://koosty.github.io/open-edu/)
-[![Version](https://img.shields.io/badge/Version-v1.3.0-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.3.0)
+[![Version](https://img.shields.io/badge/Version-v1.6.0-green?style=for-the-badge)](https://github.com/koosty/open-edu/releases/tag/v1.6.0)
 [![License](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Tests](https://img.shields.io/badge/Tests-89_Passing-success?style=for-the-badge)](package.json)
+[![codecov](https://codecov.io/gh/koosty/open-edu/graph/badge.svg?token=IMAX8MJSEQ)](https://codecov.io/gh/koosty/open-edu)
 
 **A modern, feature-rich learning platform with markdown rendering, interactive quizzes, progress tracking, and comprehensive course management.**
 
@@ -11,59 +11,165 @@ Built with SvelteKit, Firebase, and TypeScript. Transform your learning journey 
 
 ---
 
+## 🎯 About Us
+
+Open-EDU is a **100% open-source learning management system** built for developers, educators, and institutions who value:
+
+- **🔓 Full Control** - Self-hosted on your infrastructure, no vendor lock-in
+- **💰 Zero Cost** - Free forever, no hidden fees or premium tiers
+- **🔒 Privacy-First** - Your data stays in your Firebase project, no tracking
+- **🛠️ Developer-Friendly** - Modern tech stack (SvelteKit, TypeScript, Firebase)
+- **🚀 Easy Deployment** - Deploy to GitHub Pages, Vercel, Netlify, or Cloudflare in <5 minutes
+- **📚 Rich Features** - Markdown lessons, interactive quizzes, progress tracking, note-taking
+
+### Why Open-EDU?
+
+Traditional LMS platforms (Moodle, Canvas, Blackboard) are either:
+- ❌ **Expensive** - $1-5 per student/month (adds up fast!)
+- ❌ **Clunky** - Old UI/UX, slow performance
+- ❌ **Closed Source** - Can't customize or audit code
+- ❌ **Vendor Lock-In** - Hard to migrate data out
+
+**Open-EDU is different:**
+- ✅ MIT licensed - Use commercially, modify freely
+- ✅ Modern stack - Fast, responsive, mobile-first
+- ✅ Firebase-powered - Serverless, scales automatically
+- ✅ Active development - New features added regularly
+
+### Who Uses Open-EDU?
+
+- **Bootcamps & Training Programs** - Teach programming, design, or any skill
+- **Educational Institutions** - Schools, universities, online academies
+- **Corporate Training** - Employee onboarding and skill development
+- **Content Creators** - Bloggers, YouTubers building course businesses
+- **Open Source Projects** - Community learning resources
+
+### Our Mission
+
+Make high-quality education technology accessible to everyone. No subscriptions, no usage limits, no tracking. Just a powerful, privacy-respecting learning platform that you control.
+
+---
+
+## 💰 Pricing
+
+### Free Forever
+
+Open-EDU is **100% free** and **open source** under the MIT License.
+
+**What you get:**
+- ✅ Unlimited courses, lessons, and quizzes
+- ✅ Unlimited students and instructors
+- ✅ All features (no premium tier)
+- ✅ Commercial use allowed
+- ✅ Self-hosted (you control your data)
+- ✅ Community support (GitHub Issues & Discussions)
+
+### Firebase Costs (Your Only Expense)
+
+Open-EDU uses Firebase for backend services. **Most small deployments run for free** on Firebase's generous free tier:
+
+| Service | Free Tier | Typical Usage (100 students) | Est. Cost |
+|---------|-----------|------------------------------|-----------|
+| **Authentication** | 50,000 MAU | 100 users | **$0** |
+| **Firestore Reads** | 50,000/day | ~5,000/day | **$0** |
+| **Firestore Writes** | 20,000/day | ~1,000/day | **$0** |
+| **Firestore Storage** | 1 GB | ~100 MB | **$0** |
+| **Hosting** | 10 GB/month | ~2 GB/month | **$0** |
+| **Functions** | 2M invocations | ~50k/month | **$0** |
+
+**Total Monthly Cost (100 students):** **$0** ✨
+
+#### Scaling Costs (Large Deployments)
+
+For larger deployments (1,000+ active students):
+
+| Students | Reads/Day | Est. Firebase Cost | Open-EDU Cost |
+|----------|-----------|-------------------|---------------|
+| 100 | 5,000 | **$0** (free tier) | **$0** |
+| 500 | 25,000 | **$0** (free tier) | **$0** |
+| 1,000 | 50,000 | **$0-5/month** | **$0** |
+| 5,000 | 250,000 | **$20-40/month** | **$0** |
+| 10,000 | 500,000 | **$60-100/month** | **$0** |
+
+**Compare with Competitors:**
+
+| Platform | 100 Students | 1,000 Students | 10,000 Students | Control |
+|----------|--------------|----------------|-----------------|---------|
+| **Open-EDU** | **$0** | **$0-5/mo** | **$60-100/mo** | ✅ Full |
+| Teachable | $119/mo | $299/mo | $2,000+/mo | ❌ None |
+| Thinkific | $99/mo | $499/mo | Custom ($$$$) | ❌ None |
+| Kajabi | $149/mo | $399/mo | Custom ($$$$) | ❌ None |
+| Canvas LMS | $200+/mo | $1,000+/mo | $10,000+/mo | ⚠️ Limited |
+
+### Hidden Savings
+
+Beyond infrastructure costs, Open-EDU saves you money on:
+- ❌ **No Transaction Fees** - Keep 100% of course revenue
+- ❌ **No Per-User Fees** - Scale without paying more
+- ❌ **No Setup Fees** - Start immediately, no contracts
+- ❌ **No Consulting Fees** - Open source code is self-documenting
+- ❌ **No Migration Fees** - Own your data, export anytime
+
+### Cost Optimization Tips
+
+**Keep Firebase costs low:**
+1. Enable caching (reduce reads)
+2. Use composite indexes (faster queries)
+3. Implement pagination (limit query size)
+4. Archive old courses (reduce storage)
+5. Use Firebase Emulators for development (free local testing)
+
+See [Firebase Pricing Calculator](https://firebase.google.com/pricing) for detailed estimates.
+
+### Enterprise Support (Optional)
+
+While Open-EDU is free, you can purchase optional services:
+- **Custom Development** - Need custom features? Hire the maintainers
+- **Migration Services** - Import from Moodle, Canvas, etc.
+- **Training & Onboarding** - Live workshops for your team
+- **Priority Support** - SLA-backed responses
+
+📧 Interested? Open a [GitHub Discussion](https://github.com/koosty/open-edu/discussions) to discuss.
+
+---
+
 ## 🌟 Features
 
-### ✅ **v1.3.0 - Interactive Features & Assessments (Current)**
-- 📝 **Quiz System** - Complete quiz creation, taking, and grading workflow
-- 🎯 **6 Question Types** - Multiple choice, multiple select, true/false, short answer, essay, fill-in-the-blank
-- ⏱️ **Quiz Timer** - Countdown timer with time limit enforcement
-- 🔄 **Multiple Attempts** - Configurable retry system with attempt tracking
-- 📊 **Automated Grading** - Instant scoring for objective questions, manual grading for essays
-- 📈 **Quiz Analytics** - Real-time statistics (attempts, average score, pass rate)
-- 🎨 **Visual Quiz Builder** - Drag-and-drop interface for instructors to create quizzes
-- 💡 **Hints & Explanations** - Optional hints during quiz, detailed explanations in results
-- 🔒 **Quiz Settings** - Pass threshold, time limits, attempt limits, randomization, feedback control
-- 🧪 **Quiz Management** - Admin interface for publishing, monitoring, and editing quizzes
-
-### ✅ **v1.2.1 - Design System & UI Polish**
-- 🎨 **Multi-Theme System** - 3 color variants (Progressive, Academic, Warm)
-- ♿ **WCAG AA Compliance** - 100% Lighthouse accessibility score
-- 📱 **Responsive Design** - Tested on mobile (375px), tablet (768px), desktop (1440px)
-- 🎯 **Professional UI** - Gradient buttons, micro-interactions, smooth transitions
-- 🔧 **Design System** - Consistent colors, typography, spacing across all pages
-- 🌈 **Light Mode Polish** - Complete color system with proper contrast ratios
-- 💎 **Updated Pages** - Landing, Catalog, Dashboard, Lesson Viewer with new design
-- 🐛 **Accessibility Fixes** - Fixed 12+ color contrast violations for WCAG compliance
-
-### ✅ **v1.2.0 - Enhanced Reading Experience**
-- 📝 **Rich Markdown Rendering** - GFM support with syntax highlighting (180+ languages)
-- 🧮 **LaTeX Math Support** - Inline and block math with KaTeX
-- 📊 **Reading Progress Tracking** - Scroll-based progress with time estimation
-- 📒 **Note-Taking System** - Create notes with tags, colors, and bookmarks
+### 🎓 **Learning Experience**
+- 📝 **Rich Markdown Lessons** - GFM support with syntax highlighting (180+ languages) and LaTeX math (KaTeX)
+- 📊 **Progress Tracking** - Scroll-based reading progress with time estimation and auto-save position
+- 📒 **Note-Taking System** - Create notes with tags, colors, and bookmarks with full-text search
 - 📑 **Table of Contents** - Auto-generated TOC with active heading tracking
-- 📱 **Mobile-Optimized** - Touch gestures, bottom sheet notes, responsive design
-- 📈 **Content Analytics** - Instructor dashboard with engagement metrics
-- 🔍 **Search & Filter** - Full-text search across notes and bookmarks
-- 🎨 **Reading Modes** - Focus mode, font size control, light/dark themes
-- ⌨️ **Keyboard Navigation** - Arrow keys for lesson navigation
-- 💾 **Auto-Save** - Reading position and progress auto-saved
-- 🧪 **Comprehensive Tests** - 89 unit tests with 100% core coverage
+- ⌨️ **Keyboard Navigation** - Arrow keys for lesson navigation, focus mode, font size control
+- 🌙 **Dark Mode** - Light/dark themes with WCAG AA compliance
 
-### ✅ **v1.1.0 - Core Course Features**
-- 📚 **Course Management** - Full CRUD for courses and lessons
+### 📝 **Quiz System**
+- 🎯 **6 Question Types** - Multiple choice, multiple select, true/false, short answer, essay, fill-in-the-blank
+- 🎨 **Visual Quiz Builder** - Drag-and-drop interface for instructors
+- ⏱️ **Quiz Timer** - Countdown timer with time limit enforcement
+- 📊 **Automated Grading** - Instant scoring with configurable pass thresholds
+- 🔄 **Multiple Attempts** - Configurable retry system with attempt tracking
+- 💡 **Hints & Explanations** - Optional hints during quiz, detailed explanations in results
+- 📈 **Quiz Analytics** - Real-time statistics (attempts, average score, pass rate)
+
+### 👥 **User Management**
+- 🔐 **Google OAuth** - One-click sign-in with Firebase Authentication
 - 👥 **Role-Based Access** - Admin, instructor, and student roles
-- 📋 **Enrollment System** - Course discovery and enrollment
-- 🎯 **Progress Tracking** - Lesson completion and course progress
-- 🏫 **Instructor Tools** - Course creation, lesson management, analytics
+- 📋 **Enrollment System** - Course discovery and enrollment management
+- 🔒 **Route Protection** - Secure pages with AuthGuard component
 
-### ✅ **v1.0.0 - Foundation**
-- 🔐 **Google OAuth Authentication** - One-click sign-in
-- 🎨 **Modern UI/UX** - Responsive design with Tailwind CSS 4.x
-- 🔒 **Route Protection** - AuthGuard component for secure pages
-- 📱 **Mobile Responsive** - Perfect experience on all devices
-- 🚀 **GitHub Pages Deployment** - Live at [koosty.github.io/open-edu](https://koosty.github.io/open-edu/)
+### 🏫 **Instructor Tools**
+- 📚 **Course Management** - Full CRUD for courses, lessons, and quizzes
+- 📈 **Content Analytics** - Engagement metrics and student progress insights
+- 🧪 **Quiz Management** - Publishing, monitoring, and editing interface
+- 📱 **Mobile-Optimized** - Touch gestures, responsive design, bottom sheet UI
+
+### 🛠️ **Technical Stack**
 - ⚡ **SvelteKit + Svelte 5** - Modern reactive frontend with runes
-- 🔥 **Firebase Integration** - Authentication, Firestore, and Storage
+- 🔥 **Firebase** - Authentication, Firestore database, and Cloud Storage
+- 🎨 **Tailwind CSS 4.x** - Modern styling with custom component library
+- 🧪 **Vitest** - Comprehensive testing with browser and unit tests
+- 📦 **TypeScript** - Strict mode with full type safety
 
 ---
 
@@ -124,7 +230,6 @@ After setting up Firebase, you need to seed the database with initial data (admi
 This automated script will:
 1. ✅ Temporarily deploy open security rules 
 2. ✅ Create admin user with your Google account
-3. ✅ Add sample courses (JavaScript & React)
 4. ✅ Restore production security rules
 
 #### **📋 Manual Seeding (Alternative)**
@@ -189,128 +294,16 @@ npm run preview
 - **Database**: Firestore (NoSQL) with composite indexes
 - **Storage**: Firebase Cloud Storage
 - **Markdown**: Marked.js + Highlight.js + KaTeX
-- **Testing**: Vitest (89 unit tests)
+- **Testing**: Vitest with browser and unit tests
 - **TypeScript**: Strict mode with full type safety
-
-### **Project Structure**
-```
-src/
-├── lib/
-│   ├── components/
-│   │   ├── ui/                    # Reusable UI components
-│   │   ├── AuthGuard.svelte       # Route protection
-│   │   ├── MarkdownRenderer.svelte # Rich markdown display
-│   │   ├── CodeBlock.svelte       # Syntax-highlighted code
-│   │   ├── TableOfContents.svelte # Auto-generated TOC
-│   │   ├── NotesPanel.svelte      # Notes sidebar
-│   │   ├── NoteWidget.svelte      # Note creation modal
-│   │   ├── BookmarkButton.svelte  # Quick bookmarking
-│   │   ├── ReadingProgress.svelte # Progress indicator
-│   │   └── LessonNavigation.svelte # Prev/next navigation
-│   ├── services/
-│   │   ├── markdown.ts            # Markdown parsing + sanitization
-│   │   ├── markdown.spec.ts       # 35 tests
-│   │   ├── readingProgress.ts     # Progress tracking
-│   │   ├── readingProgress.spec.ts # 33 tests
-│   │   ├── notes.ts               # Note-taking CRUD
-│   │   ├── notes.spec.ts          # 21 tests
-│   │   ├── courses.ts             # Course management
-│   │   ├── enrollment.ts          # Enrollment service
-│   │   ├── progress.ts            # Progress tracking
-│   │   ├── analytics.ts           # Content analytics
-│   │   └── readingPosition.ts     # Auto-save position
-│   ├── types/
-│   │   ├── lesson.ts              # Lesson types
-│   │   ├── notes.ts               # Note/bookmark types
-│   │   ├── progress.ts            # Progress types
-│   │   └── analytics.ts           # Analytics types
-│   ├── auth.svelte.ts             # Authentication service (Svelte 5 runes)
-│   ├── firebase.ts                # Firebase configuration
-│   └── utils.ts                   # Utility functions
-├── routes/
-│   ├── +layout.svelte             # Main application layout
-│   ├── +page.svelte               # Homepage
-│   ├── auth/
-│   │   ├── login/                 # Google OAuth login
-│   │   └── profile/               # User profile management
-│   ├── dashboard/                 # Student dashboard
-│   ├── courses/
-│   │   ├── [courseId]/+page.svelte          # Course detail
-│   │   └── [courseId]/learn/[lessonId]/     # Lesson viewer
-│   └── admin/
-│       ├── +page.svelte           # Admin dashboard
-│       ├── analytics/+page.svelte # Content analytics
-│       └── courses/[id]/          # Course editor
-scripts/
-├── automated-seed.mjs             # Database seeding script
-└── validate-firebase-config.mjs   # Config validation
-firestore.rules                    # Firebase security rules
-firestore.indexes.json             # Composite indexes
-seed-automated.sh                  # Automated Firebase seeding
-```
 
 ### **Key Design Decisions**
 - **Google OAuth Only**: Simplified authentication (no email/password complexity)
 - **Svelte 5 Runes**: Modern reactive state with `$state()` in `.svelte.ts` files
-- **bits-ui Components**: Headless UI components with full customization
+- **shadcn-svelte Components**: Beautifully designed, accessible UI components built on Bits UI
 - **Markdown-First**: Rich content rendering with full GFM support
 - **Mobile-First**: Touch gestures and responsive design throughout
 - **Analytics-Driven**: Instructor insights for engagement optimization
-- **Test Coverage**: Comprehensive unit tests for core services
-
----
-
-## 🧪 Testing
-
-We use a comprehensive testing strategy with Vitest:
-
-### **Unit Tests** (Node.js environment)
-- Authentication service logic
-- Utility functions
-- Business logic components
-- Service layer (CRUD operations)
-- **Pattern**: `*.{test,spec}.{js,ts}`
-
-### **Component Tests** (Browser environment with vitest-browser-svelte)
-- UI component interactions
-- User interface behavior
-- Svelte component logic
-- **Pattern**: `*.svelte.{test,spec}.{js,ts}`
-
-### **Current Coverage**
-```bash
-✓ 89 tests passing across 3 test suites
-
-Markdown Service (35 tests):
-  ✓ Markdown parsing and sanitization
-  ✓ Syntax highlighting (180+ languages)
-  ✓ XSS protection with DOMPurify
-  ✓ KaTeX math rendering
-  ✓ Heading extraction for TOC
-  ✓ Reading time estimation
-
-Reading Progress (33 tests):
-  ✓ Scroll tracking and percentages
-  ✓ Time spent calculation
-  ✓ Section completion tracking
-  ✓ Progress state management
-  ✓ Time formatting utilities
-
-Notes Service (21 tests):
-  ✓ Note CRUD operations
-  ✓ Bookmark management
-  ✓ Query filters (tags, colors, lessons)
-  ✓ Search functionality
-  ✓ Error handling
-```
-
-Run tests:
-```bash
-npm run test          # Run all tests once
-npm run test:unit     # Run tests in watch mode
-npm run check         # TypeScript + Svelte validation
-vitest run src/lib/services/markdown.spec.ts  # Single file
-```
 
 ---
 
@@ -334,99 +327,7 @@ npm run build
 
 For detailed deployment setup, see [DEPLOYMENT.md](DEPLOYMENT.md).
 
----
 
-## 🗺️ Roadmap
-
-### **✅ v1.0.0 - Foundation (Complete)**
-- [x] Google OAuth authentication system
-- [x] Responsive UI with Tailwind CSS
-- [x] Firebase integration (Auth + Firestore)
-- [x] GitHub Pages deployment with CI/CD
-- [x] Unit testing framework
-- [x] TypeScript strict mode
-- [x] Mobile-responsive design
-
-### **✅ v1.1.0 - Core Course Features (Complete)**
-- [x] Course management system (CRUD)
-- [x] Lesson creation and editing
-- [x] Role-based access control (admin/instructor/student)
-- [x] Enrollment system
-- [x] Progress tracking
-- [x] Course catalog and discovery
-
-### **✅ v1.2.0 - Enhanced Reading Experience (Complete)**
-- [x] Rich markdown rendering with GFM
-- [x] Syntax highlighting (Highlight.js)
-- [x] LaTeX math support (KaTeX)
-- [x] Reading progress tracking
-- [x] Note-taking system with bookmarks
-- [x] Table of contents auto-generation
-- [x] Mobile reading experience (touch gestures)
-- [x] Content analytics for instructors
-- [x] Auto-save reading position
-- [x] Comprehensive test coverage (89 tests)
-
-### **✅ v1.3.0 - Interactive Features & Assessments (Complete - Current)**
-- [x] Quiz creation and management (visual builder)
-- [x] Multiple question types (6 types supported)
-- [x] Automatic grading system with manual review
-- [x] Student performance tracking
-- [x] Quiz analytics and insights
-- [x] Admin quiz management interface
-- [x] Quiz timer and attempt tracking
-- [x] Hints, explanations, and feedback system
-
-### **🔮 v1.4.0 - Quality Assurance & UX Polish (Next)**
-- [ ] Comprehensive E2E testing with Playwright
-- [ ] Quiz UX improvements (timer display, attempt history, certificates)
-- [ ] Mobile quiz optimization and touch interactions
-- [ ] Student and instructor documentation guides
-- [ ] Analytics dashboard for instructors
-- [ ] Loading states and error message improvements
-
-### **🌟 v2.0.0 - Advanced Features & Scaling (Future)**
-- [ ] Assignment submission and grading system
-- [ ] Discussion forums and Q&A
-- [ ] Full-text search across courses and content
-- [ ] Achievement system with badges and streaks
-- [ ] Advanced analytics dashboard for instructors
-- [ ] Progressive Web App with offline support
-- [ ] Learning path builder and recommendations
-- [ ] API access and integration capabilities
-- [ ] Multi-language internationalization
-- [ ] Advanced security and performance optimizations
-
-### **🌟 v3.0.0 - Premium Features (Future)**
-- [ ] Monaco Editor integration for code challenges
-- [ ] Real-time code execution sandbox
-- [ ] Multi-language support (Python, JavaScript, Java, etc.)
-- [ ] Advanced code analysis and hints
-- [ ] Peer code review system
-- [ ] Discussion forums and Q&A
-- [ ] Video content support
-- [ ] Mobile app (React Native/Flutter)
-
-See detailed roadmap files: [roadmap/](roadmap/)
-
----
-
-## 📊 Project Statistics
-
-### **Codebase**
-- **Lines of Code**: ~20,000+
-- **Components**: 40+ Svelte components
-- **Services**: 12+ service modules
-- **Tests**: 89 unit tests (markdown, progress, notes)
-- **Firestore Collections**: 10+ collections
-- **Test Coverage**: Core services 100%
-
-### **Features Delivered**
-- **Releases**: 4 major versions (v1.0, v1.1, v1.2, v1.3)
-- **Tasks Completed**: 121/158 core roadmap tasks (77%)
-- **Quiz System**: 9 tasks completed, 6 question types supported
-- **Security**: Role-based access control with Firestore rules
-- **Performance**: Optimized with code splitting and lazy loading
 
 ---
 
@@ -447,7 +348,7 @@ We welcome contributions! Here's how to get started:
 - TypeScript strict mode
 - Svelte 5 runes for reactivity  
 - Tailwind CSS 4.x for styling
-- bits-ui for headless components
+- shadcn-svelte for UI components
 - ESLint + Prettier for formatting
 - Comprehensive JSDoc comments
 
@@ -475,27 +376,13 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-## 🙏 Acknowledgments
+## 📞 Support & Community
 
-- Built with [SvelteKit](https://kit.svelte.dev/) and [Svelte 5](https://svelte.dev/)
-- UI components with [bits-ui](https://bits-ui.com/) - Headless component library for Svelte
-- Markdown parsing with [Marked.js](https://marked.js.org/)
-- Syntax highlighting by [Highlight.js](https://highlightjs.org/)
-- Math rendering with [KaTeX](https://katex.org/)
-- Icons by [Lucide Svelte](https://lucide.dev/)
-- Styling utilities: [Tailwind Merge](https://github.com/dcastil/tailwind-merge) + [clsx](https://github.com/lukeed/clsx) + [CVA](https://cva.style/)
-- Testing with [Vitest](https://vitest.dev/)
-- Deployment powered by [GitHub Pages](https://pages.github.com/)
-- Backend services by [Firebase](https://firebase.google.com/)
-
----
-
-## 📞 Support
-
-- 📚 [Documentation](roadmap/)
+- 🌐 [Live Demo](https://koosty.github.io/open-edu/)
+- 📚 [Documentation](docs/)
 - 🐛 [Issue Tracker](https://github.com/koosty/open-edu/issues)
 - 💬 [Discussions](https://github.com/koosty/open-edu/discussions)
-- 🌐 [Live Demo](https://koosty.github.io/open-edu/)
+- 🔒 [Privacy Policy](PRIVACY.md)
 
 ---
 
@@ -521,10 +408,10 @@ A: Ensure Firestore indexes are deployed with `firebase deploy --only firestore:
   <p><strong>Made with ❤️ for the developer community</strong></p>
   <p>
     <a href="https://koosty.github.io/open-edu/">Live Demo</a> •
-    <a href="roadmap/">Roadmap</a> •
-    <a href="DEPLOYMENT.md">Deploy Guide</a>
+    <a href="docs/">Documentation</a> •
+    <a href="PRIVACY.md">Privacy</a>
   </p>
   <p>
-    <strong>v1.3.0</strong> - Interactive Features & Assessments
+    <strong>v1.6.0</strong> - Open Source Learning Platform
   </p>
 </div>

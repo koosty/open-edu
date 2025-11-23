@@ -25,7 +25,7 @@ import type {
 	AnalyticsFilters
 } from '$lib/types/analytics'
 import type { Course, UserProgress, User } from '$lib/types'
-import { hasToDate } from '$lib/utils/errors'
+import { hasToDate } from '$lib/utils/firestore'
 
 // Helper to convert Firestore timestamps
 function convertTimestamp(timestamp: unknown): string {

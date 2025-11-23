@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { parseMarkdown } from '$lib/services/markdown'
 	import { onMount } from 'svelte'
+	import { mode } from 'mode-watcher'
 	
 	// Props
 	const {
@@ -15,6 +16,9 @@
 	let html = $state('')
 	let isLoading = $state(true)
 	let error = $state<string | null>(null)
+	
+	// Track loaded theme to avoid duplicate imports
+	let currentTheme = $state<'light' | 'dark' | null>(null)
 	
 	// Parse markdown reactively when content changes
 	$effect(() => {
@@ -37,13 +41,44 @@
 		}
 	})
 	
-	// Load required CSS for syntax highlighting and math
-	onMount(() => {
-		// Import highlight.js theme
-		if (typeof window !== 'undefined') {
-			import('highlight.js/styles/github-dark.css')
-			import('katex/dist/katex.min.css')
+	// Load highlight.js theme based on current mode
+	function loadHighlightTheme(themeMode: 'light' | 'dark' | undefined) {
+		if (typeof window === 'undefined') return
+		if (!themeMode) return
+		if (currentTheme === themeMode) return // Already loaded
+		
+		// Remove previous theme stylesheet if it exists
+		const existingLink = document.querySelector('link[data-highlight-theme]')
+		if (existingLink) {
+			existingLink.remove()
 		}
+		
+		// Determine theme file
+		const themeFile = themeMode === 'dark' 
+			? 'github-dark.css'
+			: 'github.css'
+		
+		// Create and append new stylesheet link
+		const link = document.createElement('link')
+		link.rel = 'stylesheet'
+		link.href = `https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/${themeFile}`
+		link.setAttribute('data-highlight-theme', themeMode)
+		document.head.appendChild(link)
+		
+		currentTheme = themeMode
+	}
+	
+	// Load initial themes on mount
+	onMount(() => {
+		if (typeof window !== 'undefined') {
+			import('katex/dist/katex.min.css')
+			loadHighlightTheme(mode.current)
+		}
+	})
+	
+	// Watch for theme changes and reload highlight.js theme
+	$effect(() => {
+		loadHighlightTheme(mode.current)
 	})
 </script>
 
@@ -58,7 +93,7 @@
 	</div>
 {:else}
 	<div 
-		class="markdown-content prose prose-slate dark:prose-invert max-w-none {className}"
+		class="markdown-content {className}"
 		role="article"
 	>
 		<!-- eslint-disable-next-line svelte/no-at-html-tags -->
@@ -77,9 +112,9 @@
 	}
 	
 	.loading-spinner {
-		border: 3px solid rgba(0, 0, 0, 0.1);
+		border: 3px solid hsl(var(--muted));
 		border-radius: 50%;
-		border-top-color: #3498db;
+		border-top-color: hsl(var(--primary));
 		width: 40px;
 		height: 40px;
 		animation: spin 1s linear infinite;
@@ -106,10 +141,10 @@
 	/* Error state */
 	.markdown-error {
 		padding: 1rem;
-		background-color: #fee;
-		border: 1px solid #fcc;
+		background-color: hsl(var(--destructive) / 0.1);
+		border: 1px solid hsl(var(--destructive) / 0.3);
 		border-radius: 0.5rem;
-		color: #c33;
+		color: hsl(var(--destructive));
 	}
 	
 	.error-message {
@@ -120,16 +155,12 @@
 	/* Markdown content styles */
 	.markdown-content {
 		line-height: 1.7;
-		color: #333;
+		color: hsl(var(--foreground));
+		background: transparent; /* Inherit background from parent */
 	}
 	
-	:global(.dark) .markdown-content {
-		color: #e5e7eb;
-	}
-	
-	/* Code blocks from highlight.js */
+	/* Code blocks from highlight.js - let highlight.js theme handle the background */
 	.markdown-content :global(pre.hljs) {
-		background-color: #1e1e1e;
 		border-radius: 0.5rem;
 		padding: 1rem;
 		overflow-x: auto;
@@ -137,15 +168,11 @@
 	}
 	
 	.markdown-content :global(code.inline-code) {
-		background-color: #f3f4f6;
+		background-color: hsl(var(--muted));
 		padding: 0.125rem 0.375rem;
 		border-radius: 0.25rem;
 		font-size: 0.875em;
 		font-family: 'Courier New', Courier, monospace;
-	}
-	
-	:global(.dark) .markdown-content :global(code.inline-code) {
-		background-color: #374151;
 	}
 	
 	/* Callout blocks */
@@ -225,8 +252,12 @@
 	
 	.markdown-content :global(h1) {
 		font-size: 2.25em;
-		border-bottom: 2px solid #e5e7eb;
+		border-bottom: 2px solid hsl(var(--border));
 		padding-bottom: 0.3em;
+	}
+	
+	:global(.dark) .markdown-content :global(h1) {
+		border-bottom-color: hsl(var(--border));
 	}
 	
 	.markdown-content :global(h2) {
@@ -238,13 +269,13 @@
 	}
 	
 	.markdown-content :global(a) {
-		color: #3b82f6;
+		color: hsl(var(--primary));
 		text-decoration: underline;
 		transition: color 0.2s;
 	}
 	
 	.markdown-content :global(a:hover) {
-		color: #2563eb;
+		opacity: 0.8;
 	}
 	
 	.markdown-content :global(img) {
@@ -263,22 +294,13 @@
 	.markdown-content :global(th),
 	.markdown-content :global(td) {
 		padding: 0.75rem;
-		border: 1px solid #e5e7eb;
+		border: 1px solid hsl(var(--border));
 		text-align: left;
 	}
 	
 	.markdown-content :global(th) {
-		background-color: #f9fafb;
+		background-color: hsl(var(--muted));
 		font-weight: 600;
-	}
-	
-	:global(.dark) .markdown-content :global(th) {
-		background-color: #374151;
-	}
-	
-	:global(.dark) .markdown-content :global(th),
-	:global(.dark) .markdown-content :global(td) {
-		border-color: #4b5563;
 	}
 	
 	/* KaTeX math rendering */
@@ -293,9 +315,9 @@
 	}
 	
 	.markdown-content :global(.math-error) {
-		color: #ef4444;
+		color: hsl(var(--destructive));
 		font-family: monospace;
-		background-color: #fee2e2;
+		background-color: hsl(var(--destructive) / 0.1);
 		padding: 0.25rem 0.5rem;
 		border-radius: 0.25rem;
 	}
