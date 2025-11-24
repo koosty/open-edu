@@ -30,3 +30,6 @@ firestore.rules
 
 # Coverage reports
 coverage/
+
+# Paraglide
+src/lib/paraglide

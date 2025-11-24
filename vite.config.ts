@@ -1,3 +1,4 @@
+import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
@@ -6,21 +7,27 @@ import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 
 // Read version from package.json
-const packageJson = JSON.parse(
-	readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8')
-);
+const packageJson = JSON.parse(readFileSync(fileURLToPath(new URL('./package.json', import.meta.url)), 'utf-8'));
 
 export default defineConfig({
 	plugins: [
-		tailwindcss(), 
+		tailwindcss(),
 		sveltekit(),
 		// Add Codecov plugin for bundle analysis - disabled during testing
-		...(process.env.NODE_ENV !== 'test' ? [codecovSvelteKitPlugin({
-			enableBundleAnalysis: true,
-			bundleName: 'open-edu-sveltekit',
-			uploadToken: process.env.CODECOV_TOKEN,
-			telemetry: false // Privacy-conscious default
-		})] : [])
+		...process.env.NODE_ENV !== 'test'
+			? [
+				codecovSvelteKitPlugin({
+					enableBundleAnalysis: true,
+					bundleName: 'open-edu-sveltekit',
+					uploadToken: process.env.CODECOV_TOKEN,
+					telemetry: false // Privacy-conscious default
+				})
+			]
+			: [],
+		paraglideVitePlugin({
+			project: './project.inlang',
+			outdir: './src/lib/paraglide'
+		})
 	],
 	define: {
 		// Inject version from package.json into the app
@@ -62,10 +69,7 @@ export default defineConfig({
 				'roadmap/',
 				'coverage/'
 			],
-			include: [
-				'src/lib/**/*.{js,ts}'
-				// Exclude SSR routes and Svelte components to prevent SSR conflicts
-			]
+			include: ['src/lib/**/*.{js,ts}'] // Exclude SSR routes and Svelte components to prevent SSR conflicts
 		}
 	}
 });

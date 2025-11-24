@@ -5,6 +5,7 @@
 	import { page } from '$app/state'
 	import { initializeAuth, authState, logout } from '$lib/auth.svelte'
 	import { Button } from '$lib/components/ui'
+	import { LanguageSwitcher } from '$lib/components'
 	import { LogOut, BookOpen, Menu, Settings } from 'lucide-svelte'
 	import { isAdmin } from '$lib/utils/admin'
 	import { initTheme } from '$lib/config/theme'
@@ -102,6 +103,7 @@
 						<span class="hidden sm:inline-block text-sm text-muted-foreground">
 							Welcome, {authState.user.displayName || authState.user.email}
 						</span>
+						<LanguageSwitcher />
 						<ThemeToggle />
 						<Button variant="ghost" size="icon" onclick={handleLogout} title="Logout">
 							<LogOut class="h-4 w-4" />
@@ -109,6 +111,7 @@
 					</div>
 				{:else}
 					<!-- Guest User Menu -->
+					<LanguageSwitcher />
 					<ThemeToggle />
 					<Button size="sm">
 						<a href={getPath('/auth/login')}>Sign In with Google</a>
@@ -155,6 +158,10 @@
 							</a>
 						{/if}
 					{/if}
+					<!-- Language Switcher in Mobile Menu -->
+					<div class="py-2">
+						<LanguageSwitcher />
+					</div>
 				</nav>
 			</div>
 		{/if}

@@ -5,7 +5,6 @@
 	import { getErrorMessage } from '$lib/utils/errors'
 	import { LogIn } from 'lucide-svelte'
 	import AuthGuard from '$lib/components/AuthGuard.svelte'
-	import LanguageSwitcher from '$lib/components/LanguageSwitcher.svelte'
 	import * as m from '$lib/paraglide/messages'
 	
 	let loading = $state(false)
@@ -33,11 +32,6 @@
 
 <AuthGuard requireAuth={false}>
 	<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-		<!-- Language Switcher (Top Right) -->
-		<div class="absolute top-4 right-4">
-			<LanguageSwitcher />
-		</div>
-
 		<div class="max-w-md w-full space-y-8">
 		<!-- Header -->
 		<div class="text-center">
