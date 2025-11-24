@@ -14,3 +14,4 @@ export { default as NoteWidget } from "./NoteWidget.svelte";
 export { default as ReadingProgress } from "./ReadingProgress.svelte";
 export { default as ReadingModeToggle } from "./ReadingModeToggle.svelte";
 export { default as TableOfContents } from "./TableOfContents.svelte";
+export { default as LanguageSwitcher } from "./LanguageSwitcher.svelte";
