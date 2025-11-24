@@ -7,6 +7,9 @@
 		id: { name: 'Bahasa Indonesia', flag: '🇮🇩' }
 	}
 
+	// Make currentLocale reactive to URL changes
+	$: currentLocale = getLocale()
+
 	function switchLanguage(newLang: string) {
 		const currentUrl = $page.url.pathname + $page.url.search
 		const newUrl = localizeUrl(currentUrl, { locale: newLang })
@@ -16,7 +19,7 @@
 
 <div class="relative inline-block">
 	<select
-		value={getLocale()}
+		value={currentLocale}
 		onchange={(e) => switchLanguage(e.currentTarget.value)}
 		class="appearance-none bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg px-4 py-2 pr-10 text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer transition-colors"
 		aria-label="Select language"
