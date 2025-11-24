@@ -215,7 +215,7 @@
 						<span class="hidden sm:inline">•</span>
 						<span class="hidden sm:inline font-mono">Build {formatBuildId()}</span>
 						<span class="hidden md:inline">•</span>
-						<span class="hidden md:inline capitalize">{ENVIRONMENT}</span>
+						<span class="hidden md:inline font-mono capitalize">{ENVIRONMENT}</span>
 					</div>
 				</div>
 			</div>
