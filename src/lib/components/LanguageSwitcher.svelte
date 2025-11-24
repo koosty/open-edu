@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getLocale, locales, localizeUrl } from '$lib/paraglide/runtime'
+	import { locales, localizeUrl, baseLocale, extractLocaleFromUrl } from '$lib/paraglide/runtime'
 	import { page } from '$app/stores'
 
 	const languages = {
@@ -7,8 +7,8 @@
 		id: { name: 'Bahasa Indonesia', flag: '🇮🇩' }
 	}
 
-	// Make currentLocale reactive to URL changes
-	$: currentLocale = getLocale()
+	// Extract locale from current URL path - reactive to page changes
+	$: currentLocale = extractLocaleFromUrl($page.url.href) || baseLocale
 
 	function switchLanguage(newLang: string) {
 		const currentUrl = $page.url.pathname + $page.url.search
