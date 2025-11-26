@@ -13,6 +13,8 @@
 	import { ModeWatcher } from 'mode-watcher'
 	import ThemeToggle from '$lib/components/ThemeToggle.svelte'
 	import { VERSION, formatBuildId, ENVIRONMENT } from '$lib/version'
+	import * as m from '$lib/paraglide/messages'
+	import { setLocale, getLocale } from '$lib/paraglide/runtime'
 	
 	const { children } = $props()
 	let mobileMenuOpen = $state(false)
@@ -25,6 +27,26 @@
 
 	// Initialize auth immediately when script runs
 	initializeAuth()
+
+	// Initialize locale from URL on client side (since ssr = false)
+	$effect(() => {
+		const pathSegments = page.url.pathname.split('/').filter(Boolean)
+		const firstSegment = pathSegments[0]
+		
+		// Check if first segment is a valid locale
+		if (firstSegment === 'en' || firstSegment === 'id') {
+			const currentLocale = getLocale()
+			if (currentLocale !== firstSegment) {
+				setLocale(firstSegment)
+			}
+		} else {
+			// Default to English if no locale in URL
+			const currentLocale = getLocale()
+			if (currentLocale !== 'en') {
+				setLocale('en')
+			}
+		}
+	})
 
 	// Initialize theme on mount
 	onMount(() => {
@@ -66,20 +88,20 @@
 					href={getPath('/')} 
 					class="transition-colors hover:text-foreground/80 {page.url.pathname === '/' ? 'text-foreground' : 'text-foreground/60'}"
 				>
-					Home
+					{m.nav_home()}
 				</a>
 				<a 
 					href={getPath('/courses')} 
 					class="transition-colors hover:text-foreground/80 {page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-foreground/60'}"
 				>
-					Courses
+					{m.nav_courses()}
 				</a>
 				{#if authState.user}
 					<a 
 						href={getPath('/dashboard')} 
 						class="transition-colors hover:text-foreground/80 {page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-foreground/60'}"
 					>
-						Dashboard
+						{m.nav_dashboard()}
 					</a>
 					{#if isAdmin(authState.user)}
 						<a 
@@ -87,7 +109,7 @@
 							class="transition-colors hover:text-foreground/80 {page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-foreground/60'} flex items-center space-x-1"
 						>
 							<Settings class="h-3 w-3" />
-							<span>Admin</span>
+							<span>{m.nav_admin()}</span>
 						</a>
 					{/if}
 				{/if}
@@ -101,11 +123,11 @@
 					<!-- Authenticated User Menu -->
 					<div class="flex items-center space-x-3">
 						<span class="hidden sm:inline-block text-sm text-muted-foreground">
-							Welcome, {authState.user.displayName || authState.user.email}
+							{m.nav_welcome({ name: authState.user.displayName || authState.user.email || '' })}
 						</span>
 						<LanguageSwitcher />
 						<ThemeToggle />
-						<Button variant="ghost" size="icon" onclick={handleLogout} title="Logout">
+						<Button variant="ghost" size="icon" onclick={handleLogout} title={m.nav_logout()}>
 							<LogOut class="h-4 w-4" />
 						</Button>
 					</div>
@@ -114,7 +136,7 @@
 					<LanguageSwitcher />
 					<ThemeToggle />
 					<Button size="sm">
-						<a href={getPath('/auth/login')}>Sign In with Google</a>
+						<a href={getPath('/auth/login')}>{m.nav_signIn()}</a>
 					</Button>
 				{/if}
 
@@ -133,20 +155,20 @@
 						href={getPath('/')} 
 						class="block py-2 text-sm font-medium {page.url.pathname === '/' ? 'text-foreground' : 'text-muted-foreground'}"
 					>
-						Home
+						{m.nav_home()}
 					</a>
 					<a 
 						href={getPath('/courses')} 
 						class="block py-2 text-sm font-medium {page.url.pathname.startsWith('/courses') ? 'text-foreground' : 'text-muted-foreground'}"
 					>
-						Courses
+						{m.nav_courses()}
 					</a>
 					{#if authState.user}
 						<a 
 							href={getPath('/dashboard')} 
 							class="block py-2 text-sm font-medium {page.url.pathname === '/dashboard' ? 'text-foreground' : 'text-muted-foreground'}"
 						>
-							Dashboard
+							{m.nav_dashboard()}
 						</a>
 						{#if isAdmin(authState.user)}
 							<a 
@@ -154,7 +176,7 @@
 								class="block py-2 text-sm font-medium flex items-center space-x-1 {page.url.pathname.startsWith('/admin') ? 'text-foreground' : 'text-muted-foreground'}"
 							>
 								<Settings class="h-3 w-3" />
-								<span>Admin</span>
+								<span>{m.nav_admin()}</span>
 							</a>
 						{/if}
 					{/if}
@@ -183,30 +205,30 @@
 						<span class="font-bold">Open-EDU</span>
 					</div>
 					<p class="text-sm text-muted-foreground">
-						Empowering learners worldwide with accessible, high-quality online education.
+						{m.footer_tagline()}
 					</p>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-foreground">Platform</h3>
+					<h3 class="text-sm font-semibold text-foreground">{m.footer_platform()}</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href={getPath('/courses')} class="text-muted-foreground hover:text-primary hover:underline">Browse Courses</a></li>
-						<li><a href="https://github.com/koostyy/open-edu#readme" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">About Us</a></li>
-						<li><a href="https://github.com/koostyy/open-edu#pricing" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Pricing</a></li>
+						<li><a href={getPath('/courses')} class="text-muted-foreground hover:text-primary hover:underline">{m.footer_browseCourses()}</a></li>
+						<li><a href="https://github.com/koostyy/open-edu#readme" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_about()}</a></li>
+						<li><a href="https://github.com/koostyy/open-edu#pricing" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_pricing()}</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-foreground">Support</h3>
+					<h3 class="text-sm font-semibold text-foreground">{m.footer_support()}</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="https://github.com/koostyy/open-edu/wiki" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Help Center</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/issues/new" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Contact</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/discussions" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Community</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/wiki" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_help()}</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/issues/new" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_contact()}</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/discussions" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_community()}</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
-					<h3 class="text-sm font-semibold text-foreground">Legal</h3>
+					<h3 class="text-sm font-semibold text-foreground">{m.footer_legal()}</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="https://github.com/koostyy/open-edu/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Privacy Policy</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">Terms of Service</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_privacy()}</a></li>
+						<li><a href="https://github.com/koostyy/open-edu/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_terms()}</a></li>
 					</ul>
 				</div>
 			</div>
@@ -215,7 +237,7 @@
 			<div class="container mx-auto px-4 py-4 max-w-7xl">
 				<div class="flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
 					<div class="text-center md:text-left">
-						© {new Date().getFullYear()} Open-EDU. All rights reserved.
+						{m.footer_copyright({ year: new Date().getFullYear() })}
 					</div>
 					<div class="flex items-center gap-3 text-center md:text-right">
 						<span class="font-mono">v{VERSION}</span>

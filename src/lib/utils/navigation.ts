@@ -1,24 +1,27 @@
 import { goto } from '$app/navigation';
 import { resolve } from '$app/paths';
 import type { RouteId } from '$app/types';
+import { localizeHref } from '$lib/paraglide/runtime';
 
 /**
- * Navigate to a path with automatic base path resolution
+ * Navigate to a path with automatic base path resolution and locale
  * @param path - The path to navigate to (e.g., '/dashboard', '/users/123')
  * @param options - Optional goto options (replaceState, noScroll, etc.)
  */
 export function navigate(path: string, options?: Parameters<typeof goto>[1]) {
+    const localizedPath = localizeHref(path);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return goto(resolve(path as any), options);
+    return goto(resolve(localizedPath as any), options);
 }
 
 /**
- * Resolve a path with base path (for use in href attributes)
+ * Resolve a path with base path and locale (for use in href attributes)
  * @param path - The path to resolve
  */
 export function getPath(path: string) {
+    const localizedPath = localizeHref(path);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return resolve(path as any);
+    return resolve(localizedPath as any);
 }
 
 /**

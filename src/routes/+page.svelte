@@ -3,6 +3,7 @@
 	import { authState } from '$lib/auth.svelte'
 	import { BookOpen, Users, Star, Github, Flame, Rocket } from 'lucide-svelte'
 	import { getPath } from '$lib/utils/navigation'
+	import * as m from '$lib/paraglide/messages'
 </script>
 
 <svelte:head>
@@ -14,29 +15,29 @@
 <section class="py-20 px-4 text-center bg-background">
 	<div class="container mx-auto max-w-4xl">
 		<h1 class="text-4xl md:text-6xl font-bold tracking-tight mb-6 text-foreground">
-			Transform Your Learning 
-			<span class="text-primary">Journey</span>
+			{m.home_hero_title()} 
+			<span class="text-primary">{m.home_hero_titleHighlight()}</span>
 		</h1>
 		<p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-			Discover world-class courses taught by industry experts. Learn at your own pace with interactive lessons, quizzes, and real-world projects.
+			{m.home_hero_subtitle()}
 		</p>
 		<div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
 		{#if authState.user}
 			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
-					<a href={getPath('/dashboard')}>Go to Dashboard</a>
+					<a href={getPath('/dashboard')}>{m.home_hero_dashboard()}</a>
 				</Button>
 				<Button variant="outline" size="lg" class="text-lg px-8">
-					<a href={getPath('/courses')}>Browse Courses</a>
+					<a href={getPath('/courses')}>{m.home_hero_browseCourses()}</a>
 				</Button>
 			</div>
 		{:else}
 			<div class="flex flex-col sm:flex-row gap-4">
 				<Button size="lg" class="text-lg px-8">
-					<a href={getPath('/auth/login')}>Start Learning Today</a>
+					<a href={getPath('/auth/login')}>{m.home_hero_startLearning()}</a>
 				</Button>
 				<Button variant="outline" size="lg" class="text-lg px-8">
-					<a href={getPath('/courses')}>Explore Courses</a>
+					<a href={getPath('/courses')}>{m.home_hero_exploreCourses()}</a>
 				</Button>
 			</div>
 		{/if}
@@ -48,9 +49,9 @@
 <section class="py-20 px-4 bg-muted">
 	<div class="container mx-auto max-w-7xl">
 		<div class="text-center mb-16">
-			<h2 class="text-3xl font-bold text-foreground mb-4">Why Choose Open-EDU?</h2>
+			<h2 class="text-3xl font-bold text-foreground mb-4">{m.home_features_title()}</h2>
 			<p class="text-xl text-muted-foreground max-w-2xl mx-auto">
-				Experience learning like never before with our innovative platform designed for success
+				{m.home_features_subtitle()}
 			</p>
 		</div>
 		
@@ -60,9 +61,9 @@
 					<div class="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
 						<BookOpen class="h-6 w-6 text-primary" />
 					</div>
-					<CardTitle>Expert-Led Courses</CardTitle>
+					<CardTitle>{m.home_features_expertCourses()}</CardTitle>
 					<CardDescription>
-						Learn from industry professionals with years of real-world experience
+						{m.home_features_expertCoursesDesc()}
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -72,9 +73,9 @@
 					<div class="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mx-auto mb-4">
 						<Users class="h-6 w-6 text-secondary-foreground" />
 					</div>
-					<CardTitle>Interactive Learning</CardTitle>
+					<CardTitle>{m.home_features_interactive()}</CardTitle>
 					<CardDescription>
-						Engage with quizzes, projects, and peer discussions for deeper understanding
+						{m.home_features_interactiveDesc()}
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -84,9 +85,9 @@
 					<div class="w-12 h-12 bg-accent/10 rounded-lg flex items-center justify-center mx-auto mb-4">
 						<Star class="h-6 w-6 text-accent-foreground" />
 					</div>
-					<CardTitle>Learn at Your Pace</CardTitle>
+					<CardTitle>{m.home_features_flexiblePace()}</CardTitle>
 					<CardDescription>
-						Flexible scheduling that fits your lifestyle and learning preferences
+						{m.home_features_flexiblePaceDesc()}
 					</CardDescription>
 				</CardHeader>
 			</Card>
@@ -99,10 +100,10 @@
 	<div class="container mx-auto max-w-7xl">
 		<div class="text-center mb-12">
 			<h2 class="text-3xl md:text-4xl font-bold text-primary-foreground mb-3">
-				Built Different
+				{m.home_platform_title()}
 			</h2>
 			<p class="text-lg text-primary-foreground/80 max-w-2xl mx-auto">
-				Modern, open-source architecture designed for developers and educators
+				{m.home_platform_subtitle()}
 			</p>
 		</div>
 		
@@ -114,20 +115,20 @@
 						<Github class="w-8 h-8 text-primary-foreground" />
 					</div>
 				</div>
-				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
-					100% Open Source
-				</h3>
-				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
-					MIT licensed, community-driven development. Fork, customize, and deploy your own instance.
-				</p>
-				<div class="text-center">
-					<a href="https://github.com/koosty/open-edu" 
-					   target="_blank"
-					   rel="noopener noreferrer"
-					   class="inline-flex items-center text-primary-foreground/80 hover:text-primary-foreground text-sm font-medium transition-colors">
-						View on GitHub →
-					</a>
-				</div>
+			<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+				{m.home_platform_opensource()}
+			</h3>
+			<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+				{m.home_platform_opensourceDesc()}
+			</p>
+			<div class="text-center">
+				<a href="https://github.com/koosty/open-edu" 
+				   target="_blank"
+				   rel="noopener noreferrer"
+				   class="inline-flex items-center text-primary-foreground/80 hover:text-primary-foreground text-sm font-medium transition-colors">
+					{m.home_platform_viewGithub()}
+				</a>
+			</div>
 			</div>
 			
 			<!-- Feature 2: Firebase-Powered -->
@@ -137,17 +138,17 @@
 						<Flame class="w-8 h-8 text-primary-foreground" />
 					</div>
 				</div>
-				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
-					Firebase-Powered
-				</h3>
-				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
-					No backend needed. Real-time database, authentication, and hosting with serverless architecture.
-				</p>
-				<div class="text-center">
-					<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
-						Serverless & Scalable
-					</span>
-				</div>
+			<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+				{m.home_platform_firebase()}
+			</h3>
+			<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+				{m.home_platform_firebaseDesc()}
+			</p>
+			<div class="text-center">
+				<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
+					{m.home_platform_serverless()}
+				</span>
+			</div>
 			</div>
 			
 			<!-- Feature 3: Deploy Anywhere -->
@@ -157,17 +158,17 @@
 						<Rocket class="w-8 h-8 text-primary-foreground" />
 					</div>
 				</div>
-				<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
-					Deploy Anywhere
-				</h3>
-				<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
-					GitHub Pages, Vercel, Netlify, Cloudflare Pages. Global CDN-powered performance in minutes.
-				</p>
-				<div class="text-center">
-					<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
-						Deploy in &lt; 5 min
-					</span>
-				</div>
+			<h3 class="text-xl font-bold text-primary-foreground mb-3 text-center">
+				{m.home_platform_deploy()}
+			</h3>
+			<p class="text-primary-foreground/90 text-center mb-4 leading-relaxed">
+				{m.home_platform_deployDesc()}
+			</p>
+			<div class="text-center">
+				<span class="inline-flex items-center text-primary-foreground/80 text-sm font-medium">
+					{m.home_platform_deployTime()}
+				</span>
+			</div>
 			</div>
 		</div>
 	</div>
@@ -176,13 +177,13 @@
 <!-- CTA Section -->
 <section class="py-20 px-4 bg-background">
 	<div class="container mx-auto max-w-4xl text-center">
-		<h2 class="text-3xl font-bold text-foreground mb-4">Ready to Start Your Learning Journey?</h2>
+		<h2 class="text-3xl font-bold text-foreground mb-4">{m.home_cta_title()}</h2>
 		<p class="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-			Join thousands of learners who are already advancing their careers with Open-EDU
+			{m.home_cta_subtitle()}
 		</p>
 		{#if !authState.user}
 			<Button size="lg" class="text-lg px-8">
-				<a href={getPath('/auth/login')}>Sign Up Free Today</a>
+				<a href={getPath('/auth/login')}>{m.home_cta_signUp()}</a>
 			</Button>
 		{/if}
 	</div>

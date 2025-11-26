@@ -8,6 +8,7 @@
 	import { BookOpen, User, Clock, Award, CheckCircle } from 'lucide-svelte'
 	import { getPath, navigate } from '$lib/utils/navigation'
 	import { getErrorMessage } from '$lib/utils/errors'
+	import * as m from '$lib/paraglide/messages'
 	import type { Enrollment, UserProgress } from '$lib/types'
 	
 	// Extended enrollment type that includes course details
@@ -143,10 +144,14 @@
 			<!-- Welcome Section -->
 			<div class="mb-8">
 				<h1 class="text-3xl font-bold text-primary mb-2">
-					Welcome back{#if authState.user?.displayName}, {authState.user.displayName}{/if}!
+					{#if authState.user?.displayName}
+						{m.dashboard_titleWithName({ name: authState.user.displayName })}
+					{:else}
+						{m.dashboard_title()}
+					{/if}
 				</h1>
 				<p class="text-muted-foreground">
-					Here's your learning progress and recent activity.
+					{m.dashboard_subtitle()}
 				</p>
 			</div>
 
@@ -163,7 +168,7 @@
 			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
 				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-muted-foreground">Enrolled Courses</CardTitle>
+						<CardTitle class="text-sm font-medium text-muted-foreground">{m.dashboard_stats_enrolled()}</CardTitle>
 						<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
 							<BookOpen class="h-4 w-4 text-primary" />
 						</div>
@@ -171,14 +176,14 @@
 					<CardContent>
 						<div class="text-2xl font-bold text-foreground">{userStats.totalCourses}</div>
 						<p class="text-xs text-muted-foreground">
-							Total enrollments
+							{m.dashboard_stats_totalEnrollments()}
 						</p>
 					</CardContent>
 				</Card>
 
 				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-muted-foreground">Completed</CardTitle>
+						<CardTitle class="text-sm font-medium text-muted-foreground">{m.dashboard_stats_completed()}</CardTitle>
 						<div class="w-8 h-8 rounded-lg bg-secondary/10 flex items-center justify-center">
 							<Award class="h-4 w-4 text-secondary-foreground" />
 						</div>
@@ -186,14 +191,14 @@
 					<CardContent>
 						<div class="text-2xl font-bold text-foreground">{userStats.completedCourses}</div>
 						<p class="text-xs text-muted-foreground">
-							{userStats.totalCourses > 0 ? Math.round((userStats.completedCourses / userStats.totalCourses) * 100) : 0}% completion rate
+							{m.dashboard_stats_completionRate({ rate: userStats.totalCourses > 0 ? Math.round((userStats.completedCourses / userStats.totalCourses) * 100) : 0 })}
 						</p>
 					</CardContent>
 				</Card>
 
 				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-muted-foreground">Study Hours</CardTitle>
+						<CardTitle class="text-sm font-medium text-muted-foreground">{m.dashboard_stats_studyHours()}</CardTitle>
 						<div class="w-8 h-8 rounded-lg bg-accent/10 flex items-center justify-center">
 							<Clock class="h-4 w-4 text-accent-foreground" />
 						</div>
@@ -201,14 +206,14 @@
 					<CardContent>
 						<div class="text-2xl font-bold text-foreground">{userStats.totalStudyTime}</div>
 						<p class="text-xs text-muted-foreground">
-							Total time invested
+							{m.dashboard_stats_totalTime()}
 						</p>
 					</CardContent>
 				</Card>
 
 				<Card class="card-hover">
 					<CardHeader class="flex flex-row items-center justify-between space-y-0 pb-2">
-						<CardTitle class="text-sm font-medium text-muted-foreground">Current Streak</CardTitle>
+						<CardTitle class="text-sm font-medium text-muted-foreground">{m.dashboard_stats_streak()}</CardTitle>
 						<div class="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
 							<User class="h-4 w-4 text-primary" />
 						</div>
@@ -216,7 +221,7 @@
 					<CardContent>
 						<div class="text-2xl font-bold text-foreground">{userStats.currentStreak}</div>
 						<p class="text-xs text-muted-foreground">
-							{userStats.currentStreak === 1 ? 'day' : 'days'} in a row
+							{userStats.currentStreak === 1 ? m.dashboard_stats_day() : m.dashboard_stats_days({ count: userStats.currentStreak })}
 						</p>
 					</CardContent>
 				</Card>
@@ -226,9 +231,9 @@
 			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 				<Card class="card">
 					<CardHeader>
-						<CardTitle>Recent Courses</CardTitle>
+						<CardTitle>{m.dashboard_recentCourses()}</CardTitle>
 						<CardDescription>
-							Your enrolled courses and progress
+							{m.dashboard_recentCoursesDesc()}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>
@@ -247,7 +252,7 @@
 											<div class="flex-1">
 												<p class="text-sm font-medium text-foreground">{course.title}</p>
 												<div class="flex items-center space-x-2 mt-1">
-													<p class="text-xs text-muted-foreground font-medium">{course.progress}% complete</p>
+													<p class="text-xs text-muted-foreground font-medium">{m.dashboard_percentComplete({ percent: course.progress })}</p>
 													{#if course.category}
 														<span class="text-xs text-muted-foreground">•</span>
 														<span class="text-xs text-muted-foreground capitalize">{course.category}</span>
@@ -266,7 +271,7 @@
 											variant="outline"
 											onclick={() => continueCourse(course.courseId)}
 										>
-											{course.progress > 0 ? 'Continue' : 'Start'}
+											{course.progress > 0 ? m.dashboard_continue() : m.dashboard_start()}
 										</Button>
 									</div>
 								{/each}
@@ -274,9 +279,9 @@
 						{:else}
 							<div class="text-center py-8">
 								<BookOpen class="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-								<p class="text-sm font-medium text-foreground mb-2">No enrolled courses yet</p>
-								<p class="text-xs text-muted-foreground mb-4">Start your learning journey by browsing our course catalog</p>
-								<Button onclick={() => navigate('/courses')}>Browse Courses</Button>
+								<p class="text-sm font-medium text-foreground mb-2">{m.dashboard_noCourses()}</p>
+								<p class="text-xs text-muted-foreground mb-4">{m.dashboard_noCoursesDesc()}</p>
+								<Button onclick={() => navigate('/courses')}>{m.dashboard_browseCourses()}</Button>
 							</div>
 						{/if}
 					</CardContent>
@@ -284,9 +289,9 @@
 
 				<Card class="card">
 					<CardHeader>
-						<CardTitle>Quick Actions</CardTitle>
+						<CardTitle>{m.dashboard_quickActions()}</CardTitle>
 						<CardDescription>
-							Common tasks and shortcuts
+							{m.dashboard_quickActionsDesc()}
 						</CardDescription>
 					</CardHeader>
 					<CardContent>

@@ -8,6 +8,7 @@
 	import { navigate } from '$lib/utils/navigation'
 	import { browser } from '$app/environment'
 	import { Search, Users, Clock, Star } from 'lucide-svelte'
+	import * as m from '$lib/paraglide/messages'
 	
 	import { Button, Input, Card, CardContent, CardFooter, CardHeader } from '$lib/components/ui'
 	
@@ -438,10 +439,10 @@
 	<!-- Hero Section -->
 	<header class="mb-12 text-center">
 		<h1 class="text-4xl font-bold text-primary mb-4">
-			Explore Our Course Catalog
+			{m.courses_title()}
 		</h1>
 		<p class="text-lg text-muted-foreground max-w-2xl mx-auto">
-			Discover thousands of courses taught by industry experts. Learn new skills and advance your career.
+			{m.courses_subtitle()}
 		</p>
 	</header>
 
@@ -453,7 +454,7 @@
 				<Search class="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				<Input
 					type="text"
-					placeholder="Search courses..."
+					placeholder={m.courses_search_placeholder()}
 					bind:value={searchInput}
 					onkeydown={handleSearchKeydown}
 					oninput={handleSearchInput}
@@ -463,7 +464,7 @@
 				/>
 			</div>
 			<Button onclick={handleSearch} class="px-6" aria-label="Search courses">
-				Search
+				{m.courses_search_button()}
 			</Button>
 		</div>
 
@@ -478,11 +479,11 @@
 					aria-label="Filter by category"
 				>
 					{#if selectedCategories.length === 0}
-						Category
+						{m.courses_filter_category()}
 					{:else if selectedCategories.length === 1}
 						{selectedCategories[0]}
 					{:else}
-						Categories ({selectedCategories.length})
+						{m.courses_filter_categories({ count: selectedCategories.length })}
 					{/if}
 					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -527,11 +528,11 @@
 					aria-label="Filter by difficulty"
 				>
 					{#if selectedDifficulties.length === 0}
-						Difficulty
+						{m.courses_filter_difficulty()}
 					{:else if selectedDifficulties.length === 1}
 						{selectedDifficulties[0]}
 					{:else}
-						Difficulties ({selectedDifficulties.length})
+						{m.courses_filter_difficulties({ count: selectedDifficulties.length })}
 					{/if}
 					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -576,11 +577,11 @@
 					aria-label="Filter by course type"
 				>
 					{#if selectedLevels.length === 0}
-						Type
+						{m.courses_filter_type()}
 					{:else if selectedLevels.length === 1}
 						{selectedLevels[0] === 'free' ? 'Free' : 'Premium'}
 					{:else}
-						Types ({selectedLevels.length})
+						{m.courses_filter_types({ count: selectedLevels.length })}
 					{/if}
 					<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
 						<path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"></path>
@@ -619,7 +620,7 @@
 			<!-- Clear All Button -->
 			{#if hasActiveFilters()}
 				<Button variant="outline" onclick={clearFilters} class="interactive rounded-lg">
-					Clear all
+					{m.courses_filter_clearAll()}
 				</Button>
 			{/if}
 		</div>
@@ -708,7 +709,7 @@
 											</span>
 											{#if course.level === 'premium'}
 												<span class="px-2 py-1 bg-purple-500/10 text-purple-700 dark:text-purple-400 text-xs font-medium rounded-lg">
-													Premium
+													{m.courses_card_premium()}
 												</span>
 											{/if}
 										</div>
@@ -725,7 +726,7 @@
 										
 										<!-- Instructor -->
 										<p class="text-sm font-medium text-foreground mb-3">
-											Instructor: {course.instructor}
+											{m.courses_card_instructor({ name: course.instructor })}
 										</p>
 									</CardContent>
 									
@@ -764,7 +765,7 @@
 							class="px-8"
 							aria-label="Load more courses"
 						>
-							{loading ? 'Loading...' : 'Load More Courses'}
+							{loading ? 'Loading...' : m.courses_loadMore()}
 						</Button>
 					</div>
 				{/if}
@@ -776,12 +777,12 @@
 					<div class="mb-4">
 						<Search class="h-16 w-16 text-muted-foreground mx-auto" aria-hidden="true" />
 					</div>
-					<h2 class="text-lg font-semibold text-foreground mb-2">No courses found</h2>
+					<h2 class="text-lg font-semibold text-foreground mb-2">{m.courses_results_noResults()}</h2>
 					<p class="text-muted-foreground mb-4">
-						We couldn't find any courses matching your criteria. Try adjusting your filters or search terms.
+						{m.courses_results_noResultsDesc()}
 					</p>
 					<Button variant="outline" onclick={clearFilters} class="interactive rounded-lg">
-						Clear all filters
+						{m.courses_filter_clearAll()}
 					</Button>
 				</div>
 			</section>
