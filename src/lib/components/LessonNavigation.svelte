@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { Button } from '$lib/components/ui'
-	import type { Lesson } from '$lib/types'
 	import { 
 		ChevronLeft, 
 		ChevronRight, 
@@ -9,6 +8,9 @@
 		ArrowLeft, 
 		ArrowRight 
 	} from 'lucide-svelte'
+
+	// Navigation lesson type - only needs id and title for navigation
+	type NavigationLesson = { id: string; title: string }
 
 	// Props
 	const {
@@ -26,14 +28,14 @@
 		enableKeyboardShortcuts = true,
 		class: className = ''
 	} = $props<{
-		previousLesson?: Lesson | null
-		nextLesson?: Lesson | null
+		previousLesson?: NavigationLesson | null
+		nextLesson?: NavigationLesson | null
 		currentLessonIndex?: number
 		totalLessons?: number
 		isCompleted?: boolean
 		canNavigateNext?: boolean
 		completing?: boolean
-		onNavigate: (lesson: Lesson) => void
+		onNavigate: (lesson: NavigationLesson) => void
 		onComplete?: () => void
 		onCourseComplete?: () => void
 		showMarkComplete?: boolean

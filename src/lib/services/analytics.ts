@@ -25,7 +25,9 @@ import type {
 	AnalyticsFilters
 } from '$lib/types/analytics'
 import type { Course, UserProgress, User } from '$lib/types'
+import type { LessonMetadata } from '$lib/types/lesson'
 import { hasToDate } from '$lib/utils/firestore'
+import { LessonService } from '$lib/services/lessons'
 
 // Helper to convert Firestore timestamps
 function convertTimestamp(timestamp: unknown): string {
@@ -98,9 +100,25 @@ export class AnalyticsService {
 			}
 
 			const course = courseDoc.data() as Course
-			const lesson = course.lessons?.find((l) => l.id === lessonId)
-			if (!lesson) {
-				throw new Error('Lesson not found')
+			
+			// v1.6.0: Try to get lesson from separate collection first, fallback to legacy array
+			let lessonTitle = ''
+			try {
+				const lessonData = await LessonService.getLesson(lessonId)
+				if (lessonData) {
+					lessonTitle = lessonData.title
+				}
+			} catch {
+				// LessonService failed, will try fallback below
+			}
+			
+			if (!lessonTitle) {
+				// Fallback to legacy course.lessons array
+				const legacyLesson = course.lessons?.find((l) => l.id === lessonId)
+				if (!legacyLesson) {
+					throw new Error('Lesson not found')
+				}
+				lessonTitle = legacyLesson.title
 			}
 
 			// Get all progress records for this course
@@ -198,7 +216,7 @@ export class AnalyticsService {
 
 			return {
 				lessonId,
-				lessonTitle: lesson.title,
+				lessonTitle,
 				courseId,
 				totalViews,
 				uniqueStudents,
@@ -307,9 +325,15 @@ export class AnalyticsService {
 					? sessionDurations.reduce((sum, v) => sum + v, 0) / sessionDurations.length
 					: 0
 
+			// v1.6.0: Use lessonsMetadata for performance, fallback to legacy lessons array
+			const lessonsForAnalytics: Array<{ id: string; title: string; order: number }> = 
+				(course.lessonsMetadata && course.lessonsMetadata.length > 0)
+					? course.lessonsMetadata.map((m: LessonMetadata) => ({ id: m.id, title: m.title, order: m.order }))
+					: (course.lessons || []).map(l => ({ id: l.id, title: l.title, order: l.order }))
+
 			// Get lesson-level analytics (summary only for performance)
 			const lessonsAnalytics: LessonAnalyticsSummary[] = await Promise.all(
-				(course.lessons || []).map(async (lesson) => {
+				lessonsForAnalytics.map(async (lesson) => {
 					try {
 						const lessonData = await this.getLessonAnalytics(courseId, lesson.id)
 
@@ -410,7 +434,8 @@ export class AnalyticsService {
 				throw new Error('Course not found')
 			}
 			const course = courseDoc.data() as Course
-			const totalLessons = course.lessons?.length || 0
+			// v1.6.0: Use totalLessons metadata, fallback to lessonsMetadata length, then legacy array
+			const totalLessons = course.totalLessons ?? course.lessonsMetadata?.length ?? course.lessons?.length ?? 0
 
 			// Get all progress records
 			const progressQuery = query(

@@ -2,6 +2,7 @@
 	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
+	import { LessonService } from '$lib/services/lessons'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
@@ -96,7 +97,9 @@
 		}
 		
 		course = courseData
-			lessons = courseData.lessons || []
+			
+			// Load lessons from separate collection (v1.6.0 architecture)
+			lessons = await LessonService.getLessonsByCourse(courseId)
 			
 			// Populate form
 			form.title = courseData.title
@@ -135,7 +138,7 @@
 		success = false
 		
 		try {
-			// Process form data
+			// Process form data (course metadata only - lessons handled separately)
 			const updates: Partial<Course> = {
 				title: form.title.trim(),
 				description: form.description.trim(),
@@ -148,8 +151,7 @@
 				prerequisites: form.prerequisites.split('\n').map(prereq => prereq.trim()).filter(prereq => prereq.length > 0),
 				learningOutcomes: form.learningOutcomes.split('\n').map(outcome => outcome.trim()).filter(outcome => outcome.length > 0),
 				isPublished: form.isPublished,
-				isFeatured: form.isFeatured,
-				lessons: lessons
+				isFeatured: form.isFeatured
 			}
 			
 			// Add price info for premium courses
@@ -158,7 +160,22 @@
 				updates.currency = form.currency
 			}
 			
+			// Update course metadata
 			await CourseService.updateCourse(courseId, updates)
+			
+			// Batch update lessons with current order (v1.6.0 architecture)
+			// This syncs lesson order in lessons collection and updates course.lessonsMetadata
+			if (lessons.length > 0) {
+				await LessonService.batchUpdateLessons(courseId, lessons.map(l => ({
+					id: l.id,
+					order: l.order,
+					title: l.title,
+					duration: l.duration,
+					isRequired: l.isRequired,
+					videoUrl: l.videoUrl,
+					quiz: l.quiz
+				})))
+			}
 			
 			success = true
 			
@@ -203,10 +220,32 @@
 		error = null
 		
 		try {
+			// Delete lesson from separate collection (v1.6.0 architecture)
+			// This also updates course metadata and totalLessons count
+			await LessonService.deleteLesson(lessonToDelete.id)
+			
+			// Update local state
 			lessons = lessons.filter(l => l.id !== lessonToDelete!.id)
 			
-			// Update course with new lessons array
-			await CourseService.updateCourse(courseId, { lessons })
+			// Reorder remaining lessons
+			lessons = lessons.map((lesson, idx) => ({
+				...lesson,
+				order: idx + 1
+			}))
+			
+			// Sync updated order to database if there are remaining lessons
+			if (lessons.length > 0) {
+				await LessonService.batchUpdateLessons(courseId, lessons.map(l => ({
+					id: l.id,
+					order: l.order,
+					title: l.title,
+					duration: l.duration,
+					isRequired: l.isRequired,
+					videoUrl: l.videoUrl,
+					quiz: l.quiz
+				})))
+			}
+			
 			success = true
 			setTimeout(() => success = false, 2000)
 			

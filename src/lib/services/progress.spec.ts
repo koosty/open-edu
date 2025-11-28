@@ -723,7 +723,7 @@ describe("ProgressService", () => {
       expect(result.nextLesson).toEqual(
         expect.objectContaining({
           id: "lesson2", // Next uncompleted lesson
-          order: 2,
+          title: "Lesson 2",
         }),
       );
       expect(result.completionRate).toBe(33.3);

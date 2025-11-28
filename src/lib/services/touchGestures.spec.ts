@@ -4,7 +4,7 @@
  */
 
 import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest'
-import { TouchGestureManager, createTouchGesture, type SwipeEvent } from './touchGestures'
+import { TouchGestureManager, createTouchGesture } from './touchGestures'
 
 // Helper to create mock touch event
 function createTouchEvent(

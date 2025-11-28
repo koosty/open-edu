@@ -197,7 +197,28 @@ export {
   updateCourseSchema,
   createLessonSchema,
   updateLessonSchema,
+  // v1.6.0 metadata schemas
+  lessonMetadataSchema,
+  quizMetadataSchema,
 } from "$lib/validation/course";
+
+// v1.6.0: Full lesson document schema for separate lessons collection
+export const lessonDocumentSchema = z.object({
+  id: idSchema,
+  courseId: idSchema,
+  title: z.string().min(1).max(200),
+  description: z.string().max(500).optional(),
+  content: z.string().optional(),
+  order: z.number().min(0),
+  duration: z.number().min(1).max(600).optional(),
+  isRequired: z.boolean(),
+  videoUrl: z.string().url().nullable().optional(),
+  chapterId: idSchema.optional(),
+  createdAt: timestampSchema,
+  updatedAt: timestampSchema,
+});
+
+export type LessonDocument = z.infer<typeof lessonDocumentSchema>;
 
 // Export all type definitions
 export type User = z.infer<typeof userSchema>;
@@ -220,6 +241,7 @@ export const COLLECTION_SCHEMAS = {
   [COLLECTIONS.QUIZ_ATTEMPTS]: quizAttemptSchema,
   [COLLECTIONS.ACHIEVEMENTS]: achievementSchema,
   [COLLECTIONS.NOTIFICATIONS]: notificationSchema,
+  [COLLECTIONS.LESSONS]: lessonDocumentSchema, // v1.6.0: separate lessons collection
   // Note: COURSES schema is complex and handled separately via course.ts
 } as const;
 
@@ -232,6 +254,7 @@ export const SCHEMA_FIELDS = {
   [COLLECTIONS.QUIZ_ATTEMPTS]: Object.keys(quizAttemptSchema.shape),
   [COLLECTIONS.ACHIEVEMENTS]: Object.keys(achievementSchema.shape),
   [COLLECTIONS.NOTIFICATIONS]: Object.keys(notificationSchema.shape),
+  [COLLECTIONS.LESSONS]: Object.keys(lessonDocumentSchema.shape), // v1.6.0
 } as const;
 
 // Required field validation for rules
@@ -243,4 +266,5 @@ export const REQUIRED_FIELDS = {
   [COLLECTIONS.QUIZ_ATTEMPTS]: ["userId", "courseId", "lessonId", "quizId", "score"],
   [COLLECTIONS.ACHIEVEMENTS]: ["userId", "type", "title"],
   [COLLECTIONS.NOTIFICATIONS]: ["userId", "type", "title", "message"],
+  [COLLECTIONS.LESSONS]: ["id", "courseId", "title", "order", "isRequired"], // v1.6.0
 } as const;

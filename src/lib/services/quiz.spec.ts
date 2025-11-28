@@ -19,6 +19,19 @@ const mockWhere = vi.fn()
 const mockOrderBy = vi.fn()
 const mockServerTimestamp = vi.fn(() => new Date().toISOString())
 const mockArrayUnion = vi.fn((item) => [item])
+const mockIncrement = vi.fn((n) => n)
+
+// Mock batch operations
+const mockBatchSet = vi.fn()
+const mockBatchUpdate = vi.fn()
+const mockBatchDelete = vi.fn()
+const mockBatchCommit = vi.fn().mockResolvedValue(undefined)
+const mockWriteBatch = vi.fn(() => ({
+	set: mockBatchSet,
+	update: mockBatchUpdate,
+	delete: mockBatchDelete,
+	commit: mockBatchCommit
+}))
 
 // Mock Firebase before imports
 vi.mock('firebase/firestore', () => ({
@@ -35,6 +48,8 @@ vi.mock('firebase/firestore', () => ({
 	limit: vi.fn(),
 	serverTimestamp: () => mockServerTimestamp(),
 	arrayUnion: (args: any) => mockArrayUnion(args),
+	increment: (n: number) => mockIncrement(n),
+	writeBatch: () => mockWriteBatch(),
 	Timestamp: { now: () => ({ toDate: () => new Date() }) }
 }))
 
@@ -116,7 +131,7 @@ function createMockDocSnap(data: any, exists = true) {
 		exists: () => exists,
 		id: data?.id || 'mock-id',
 		data: () => {
-			const { id, ...rest } = data || {}
+			const { id: _id, ...rest } = data || {}
 			return rest
 		}
 	}
@@ -135,6 +150,7 @@ describe('Quiz Service', () => {
 		mockQuery.mockImplementation((...args) => args)
 		mockWhere.mockImplementation((...args) => ({ _where: args }))
 		mockOrderBy.mockImplementation((...args) => ({ _orderBy: args }))
+		mockDoc.mockReturnValue({ id: 'mock-doc-ref' })
 	})
 
 	afterEach(() => {
@@ -144,15 +160,17 @@ describe('Quiz Service', () => {
 	describe('Quiz CRUD Operations', () => {
 		it('should create a quiz', async () => {
 			const quizData = createMockQuiz()
-			const docRef = { id: 'new-quiz-id' }
 			
-			mockAddDoc.mockResolvedValue(docRef)
-			mockGetDoc.mockResolvedValue(createMockDocSnap({ ...quizData, id: docRef.id }))
+			// Mock getDoc for course lookup
+			mockGetDoc.mockResolvedValue(createMockDocSnap({ totalQuizzes: 0 }))
+			// Mock doc to return ref with id
+			mockDoc.mockReturnValue({ id: 'new-quiz-id' })
 			
 			const result = await createQuiz(quizData)
 			
-			expect(mockAddDoc).toHaveBeenCalled()
-			expect(result.id).toBe(docRef.id)
+			expect(mockBatchSet).toHaveBeenCalled()
+			expect(mockBatchCommit).toHaveBeenCalled()
+			expect(result.id).toBe('new-quiz-id')
 			expect(result.title).toBe(quizData.title)
 		})
 
@@ -175,17 +193,29 @@ describe('Quiz Service', () => {
 		})
 
 		it('should update quiz', async () => {
+			const mockQuiz = createMockQuiz()
 			const updates = { title: 'Updated Quiz Title' }
+			
+			// Mock getDoc to return existing quiz for the update check
+			mockGetDoc.mockResolvedValue(createMockDocSnap(mockQuiz))
 			
 			await updateQuiz('quiz-1', updates)
 			
-			expect(mockUpdateDoc).toHaveBeenCalled()
+			// With metadata fields, it uses batch; otherwise updateDoc
+			expect(mockBatchCommit).toHaveBeenCalled()
 		})
 
 		it('should delete quiz', async () => {
+			const mockQuiz = createMockQuiz()
+			
+			// Mock getDoc to return existing quiz and course
+			mockGetDoc.mockResolvedValue(createMockDocSnap(mockQuiz))
+			
 			await deleteQuiz('quiz-1')
 			
-			expect(mockDeleteDoc).toHaveBeenCalled()
+			// Delete uses batch when quiz has courseId
+			expect(mockBatchDelete).toHaveBeenCalled()
+			expect(mockBatchCommit).toHaveBeenCalled()
 		})
 
 		it('should publish quiz', async () => {

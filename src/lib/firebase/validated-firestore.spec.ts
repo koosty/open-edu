@@ -55,13 +55,13 @@ const TestCourseSchema = z.object({
 type TestCourse = z.infer<typeof TestCourseSchema>
 
 // Helper to create mock document snapshot
-function createMockDocSnap(data: any, exists: boolean = true) {
+function createMockDocSnap(data: any, exists = true) {
 	return {
 		exists: () => exists,
 		id: data?.id || 'doc-123',
 		data: () => {
 			if (!exists) return undefined
-			const { id, ...rest } = data || {}
+			const { id: _id, ...rest } = data || {}
 			return rest
 		}
 	}
@@ -73,7 +73,7 @@ function createMockQuerySnap(docs: any[]) {
 		docs: docs.map((data) => ({
 			id: data.id || 'doc-123',
 			data: () => {
-				const { id, ...rest } = data
+				const { id: _id, ...rest } = data
 				return rest
 			}
 		}))

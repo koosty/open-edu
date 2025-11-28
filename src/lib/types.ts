@@ -1,7 +1,10 @@
 // Import Quiz types from dedicated quiz module (v1.4.0)
 import type { Quiz, QuizQuestion, QuestionType } from './types/quiz';
+// Import v1.6.0 metadata types
+import type { LessonMetadata, QuizMetadata } from './types/lesson';
 
 export type { Quiz, QuizQuestion, QuestionType };
+export type { LessonMetadata, QuizMetadata };
 
 export interface User {
   id: string;
@@ -40,7 +43,7 @@ export interface Course {
   enrolled: number; // Total enrollment count
   rating: number;
   ratingCount: number; // Number of ratings
-  lessons: Lesson[];
+  lessons: Lesson[]; // Legacy: full lessons array (deprecated in v1.6.0)
   chapters?: Chapter[]; // Optional chapter organization
   tags: string[];
   isPublished: boolean;
@@ -53,6 +56,12 @@ export interface Course {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string;
+  
+  // v1.6.0 additions: lightweight metadata for course overview
+  lessonsMetadata?: LessonMetadata[]; // Lightweight lesson info for listing
+  quizzesMetadata?: QuizMetadata[]; // Lightweight quiz info for listing
+  totalLessons?: number; // Denormalized count for quick access
+  totalQuizzes?: number; // Denormalized count for quick access
 }
 
 export interface Lesson {
@@ -67,7 +76,7 @@ export interface Lesson {
   completed?: boolean;
   chapterId?: string; // Reference to parent chapter
   isRequired: boolean;
-  videoUrl?: string;
+  videoUrl?: string | null; // v1.6.0: Allow null for Firestore compatibility
   attachments?: LessonAttachment[];
   createdAt: string;
   updatedAt: string;

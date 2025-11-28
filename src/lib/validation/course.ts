@@ -1,5 +1,6 @@
-// Course validation schemas for Open-EDU v1.1.0
+// Course validation schemas for Open-EDU v1.6.0
 // Using Zod for runtime validation and type safety
+// v1.6.0: Added metadata schemas for optimized data architecture
 
 import { z } from "zod";
 
@@ -12,6 +13,30 @@ export const lessonAttachmentSchema = z.object({
   type: z.enum(["pdf", "image", "video", "audio", "document"]),
   size: z.number().positive("File size must be positive"),
   uploadedAt: z.string(),
+});
+
+// v1.6.0: Lesson metadata schema (lightweight, stored in course document)
+export const lessonMetadataSchema = z.object({
+  id: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  order: z.number().min(0),
+  type: z.enum(["content", "quiz", "video"]),
+  duration: z.number().default(0), // 0 = not specified
+  hasQuiz: z.boolean(),
+  isRequired: z.boolean(),
+});
+
+// v1.6.0: Quiz metadata schema (lightweight, stored in course document)
+export const quizMetadataSchema = z.object({
+  id: z.string(),
+  lessonId: z.string(),
+  title: z.string(),
+  description: z.string().optional(),
+  questionCount: z.number().min(0),
+  passingScore: z.number().min(0).max(100),
+  timeLimit: z.number().default(0), // 0 = no time limit
+  order: z.number().min(0),
 });
 
 // Question Option schema (used in multiple choice questions)
@@ -96,7 +121,7 @@ export const lessonSchema = z
     completed: z.boolean().optional(),
     chapterId: z.string().optional(),
     isRequired: z.boolean(),
-    videoUrl: z.string().url("Valid video URL required").optional(),
+    videoUrl: z.string().url("Valid video URL required").nullable().optional(),
     attachments: z.array(lessonAttachmentSchema).optional(),
     createdAt: z.string(),
     updatedAt: z.string(),
@@ -149,7 +174,18 @@ export const courseSchema = z
       .max(2000, "Description cannot exceed 2000 characters"),
     instructor: z.string().min(1, "Instructor name is required"),
     instructorId: z.string().min(1, "Instructor ID is required"),
-    thumbnail: z.string().url("Valid thumbnail URL required"),
+    thumbnail: z.string().transform((val) => {
+      // Use placeholder if empty or invalid URL
+      if (!val || val.trim() === '') {
+        return 'https://placehold.co/400x225/6366f1/white?text=Course'
+      }
+      try {
+        new URL(val)
+        return val
+      } catch {
+        return 'https://placehold.co/400x225/6366f1/white?text=Course'
+      }
+    }),
     coverImage: z.string().url("Valid cover image URL required").optional(),
     category: z.string().min(1, "Category is required"),
     difficulty: z.enum(["Beginner", "Intermediate", "Advanced"]),
@@ -179,6 +215,12 @@ export const courseSchema = z
     createdAt: z.string(),
     updatedAt: z.string(),
     publishedAt: z.string().optional(),
+    
+    // v1.6.0 additions: lightweight metadata for course overview
+    lessonsMetadata: z.array(lessonMetadataSchema).optional(),
+    quizzesMetadata: z.array(quizMetadataSchema).optional(),
+    totalLessons: z.number().min(0).optional(),
+    totalQuizzes: z.number().min(0).optional(),
   })
   .refine(
     (data) => {
@@ -317,6 +359,10 @@ export type UpdateChapter = z.infer<typeof updateChapterSchema>;
 export type Quiz = z.infer<typeof quizSchema>;
 export type QuizQuestion = z.infer<typeof quizQuestionSchema>;
 export type LessonAttachment = z.infer<typeof lessonAttachmentSchema>;
+
+// v1.6.0 metadata types
+export type LessonMetadata = z.infer<typeof lessonMetadataSchema>;
+export type QuizMetadata = z.infer<typeof quizMetadataSchema>;
 
 export type CourseFilter = z.infer<typeof courseFilterSchema>;
 export type CourseSort = z.infer<typeof courseSortSchema>;

@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://open-edu.dev/schemas/course-import.schema.json",
-  "title": "Open-EDU Course Import Schema",
-  "description": "Schema for importing courses into Open-EDU platform via JSON files",
+  "title": "Open-EDU Course Import Schema v1.6.0",
+  "description": "Schema for importing courses into Open-EDU platform. v1.6.0: Flattened quiz structure, new duration format (Xm/Xh)",
   "type": "object",
   "required": [
     "title",
@@ -41,9 +41,9 @@
     },
     "duration": {
       "type": "string",
-      "description": "Estimated course duration (human-readable format)",
-      "minLength": 1,
-      "examples": ["4 weeks", "20 hours", "3 months"]
+      "description": "Estimated course duration in Xm or Xh format",
+      "pattern": "^\\d+(\\.\\d+)?[mhMH]$",
+      "examples": ["40h", "2.5h", "90m"]
     },
     "thumbnail": {
       "type": "string",
@@ -122,7 +122,8 @@
   "definitions": {
     "lesson": {
       "type": "object",
-      "required": ["title", "type", "duration"],
+      "description": "A lesson or quiz. Quiz fields are flattened directly on the lesson object (no wrapper).",
+      "required": ["title", "duration"],
       "properties": {
         "title": {
           "type": "string",
@@ -137,75 +138,27 @@
         },
         "type": {
           "type": "string",
-          "description": "Lesson type",
+          "description": "Lesson type (optional - inferred from content/questions)",
           "enum": ["lesson", "quiz"]
         },
         "duration": {
           "type": "string",
-          "description": "Estimated duration (human-readable)",
-          "minLength": 1,
-          "examples": ["10 min", "1 hour"]
+          "description": "Estimated duration in Xm or Xh format",
+          "pattern": "^\\d+(\\.\\d+)?[mhMH]$",
+          "examples": ["30m", "1.5h", "45m"]
         },
         "content": {
           "type": "string",
-          "description": "Lesson content in Markdown format (required for lesson type)"
+          "description": "Lesson content in Markdown format (for content lessons)"
         },
         "videoUrl": {
           "type": "string",
           "description": "Optional video URL",
           "format": "uri"
         },
-        "quiz": {
-          "$ref": "#/definitions/quiz",
-          "description": "Quiz data (required for quiz type)"
-        }
-      },
-      "allOf": [
-        {
-          "if": {
-            "properties": { "type": { "const": "lesson" } }
-          },
-          "then": {
-            "required": ["content"]
-          }
-        },
-        {
-          "if": {
-            "properties": { "type": { "const": "quiz" } }
-          },
-          "then": {
-            "required": ["quiz"]
-          }
-        }
-      ]
-    },
-    "quiz": {
-      "type": "object",
-      "required": ["title", "passingScore", "questions"],
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "Quiz title"
-        },
-        "description": {
-          "type": "string",
-          "description": "Quiz description"
-        },
-        "passingScore": {
-          "type": "number",
-          "description": "Passing score percentage",
-          "minimum": 0,
-          "maximum": 100,
-          "default": 70
-        },
-        "timeLimit": {
-          "type": "number",
-          "description": "Time limit in seconds",
-          "minimum": 1
-        },
         "questions": {
           "type": "array",
-          "description": "Quiz questions",
+          "description": "Quiz questions (for quiz lessons)",
           "minItems": 1,
           "items": {
             "oneOf": [
@@ -217,7 +170,82 @@
               { "$ref": "#/definitions/matchingQuestion" }
             ]
           }
+        },
+        "instructions": {
+          "type": "string",
+          "description": "Quiz instructions shown before starting"
+        },
+        "passingScore": {
+          "type": "number",
+          "description": "Passing score percentage (0-100)",
+          "minimum": 0,
+          "maximum": 100,
+          "default": 70
+        },
+        "timeLimit": {
+          "type": "number",
+          "description": "Time limit in seconds",
+          "minimum": 1
+        },
+        "allowMultipleAttempts": {
+          "type": "boolean",
+          "description": "Allow students to retake the quiz",
+          "default": true
+        },
+        "maxAttempts": {
+          "type": "number",
+          "description": "Maximum number of attempts (if allowMultipleAttempts is true)",
+          "minimum": 1
+        },
+        "showCorrectAnswers": {
+          "type": "boolean",
+          "description": "Show correct answers after submission",
+          "default": true
+        },
+        "showExplanations": {
+          "type": "boolean",
+          "description": "Show answer explanations after submission",
+          "default": true
+        },
+        "randomizeQuestions": {
+          "type": "boolean",
+          "description": "Randomize question order",
+          "default": false
+        },
+        "randomizeOptions": {
+          "type": "boolean",
+          "description": "Randomize option order for multiple choice questions",
+          "default": false
+        },
+        "allowReview": {
+          "type": "boolean",
+          "description": "Allow students to review their answers",
+          "default": true
         }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "type": { "const": "lesson" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["content"]
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": "quiz" } },
+            "required": ["type"]
+          },
+          "then": {
+            "required": ["questions"]
+          }
+        }
+      ],
+      "not": {
+        "required": ["content", "questions"],
+        "description": "A lesson cannot have both content and questions"
       }
     },
     "multipleChoiceQuestion": {

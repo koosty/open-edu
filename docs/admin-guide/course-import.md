@@ -55,9 +55,11 @@ title: "Your Course Title"                    # String, required
 description: "Course description"             # String, required
 category: "Programming"                       # String, required
 difficulty: "Beginner"                        # "Beginner" | "Intermediate" | "Advanced"
-duration: "8 weeks"                           # String, required
+duration: "40h"                               # Format: Xm or Xh (e.g., "40h", "2.5h", "90m")
 level: "free"                                 # "free" | "premium"
 ```
+
+> **v1.6.0 Breaking Change**: Duration format changed from "8 weeks" to "40h". Use `Xm` for minutes or `Xh` for hours. Examples: `"30m"`, `"2h"`, `"1.5h"`
 
 ### Optional Fields
 
@@ -82,7 +84,7 @@ Each course must have at least one lesson in the `lessons` array:
 lessons:
   - title: "Lesson Title"
     type: "lesson"
-    duration: "20 min"
+    duration: "20m"                              # Format: Xm or Xh
     content: |
       # Lesson Content in Markdown
       
@@ -94,20 +96,29 @@ lessons:
       - And more!
 ```
 
-#### Quiz Lesson
+#### Quiz Lesson (v1.6.0 - Flattened Structure)
+
+> **v1.6.0 Breaking Change**: Quiz fields are now directly on the lesson object. The nested `quiz:` wrapper has been removed.
 
 ```yaml
 lessons:
   - title: "Quiz Title"
     type: "quiz"
-    duration: "15 min"
-    quiz:
-      title: "Quiz Name"
-      description: "Quiz description"
-      passingScore: 70                        # Percentage (0-100)
-      timeLimit: 900                          # Seconds (optional)
-      questions:
-        # See question types below
+    duration: "15m"                              # Format: Xm or Xh
+    # Quiz fields are now directly on the lesson (no wrapper)
+    description: "Test your understanding"       # Optional
+    instructions: "Read each question carefully" # Optional
+    passingScore: 70                             # Percentage (0-100)
+    timeLimit: 900                               # Seconds (optional)
+    allowMultipleAttempts: true                  # Default: true
+    maxAttempts: 3                               # Optional
+    showCorrectAnswers: true                     # Default: true
+    showExplanations: true                       # Default: true
+    randomizeQuestions: false                    # Default: false
+    randomizeOptions: false                      # Default: false
+    allowReview: true                            # Default: true
+    questions:
+      # See question types below
 ```
 
 ## Question Types
@@ -362,5 +373,159 @@ After importing a course:
 
 ---
 
+## Technical Details (v1.6.0)
+
+### Data Architecture
+
+As of v1.6.0, Open-EDU uses a separate collection architecture for improved scalability:
+
+| Data | Storage Location | Benefit |
+|------|------------------|---------|
+| Course metadata | `courses/{courseId}` | Fast course listings |
+| Lesson content | `lessons/{lessonId}` | 100+ lessons per course |
+| Quiz content | `quizzes/{quizId}` | Independent quiz management |
+
+When you import a course:
+
+1. **Course document** is created with:
+   - Course metadata (title, description, etc.)
+   - `lessonsMetadata[]` - lightweight lesson info for listings
+   - `quizzesMetadata[]` - lightweight quiz info for course overview
+   - `totalLessons` and `totalQuizzes` counts
+
+2. **Lesson documents** are created in the `lessons` collection with:
+   - Full lesson content
+   - Reference to parent course (`courseId`)
+   - Order and metadata
+
+3. **Quiz documents** are created in the `quizzes` collection with:
+   - Full quiz content and questions
+   - References to course and lesson
+
+This architecture allows:
+- **Courses with 100+ lessons** (no 1MB document limit)
+- **Efficient reads** (load only what's needed)
+- **Concurrent editing** (multiple instructors)
+- **Fast course overviews** (single read operation)
+
+### Import Limits
+
+| Limit | Value | Notes |
+|-------|-------|-------|
+| Max lessons per course | Unlimited | Was ~40 in v1.5.0 |
+| Max file size | 10MB | JSON/YAML input file |
+| Max lesson content | ~900KB | Per lesson (Firestore limit) |
+| Max questions per quiz | 500 | Practical limit |
+
+---
+
+## Migrating from v1.5.0 to v1.6.0
+
+If you have existing course import files in the old format, you need to update them:
+
+### 1. Duration Format Change
+
+**Old format (v1.5.0 and earlier):**
+```yaml
+duration: "8 weeks"
+duration: "30 min"
+duration: "2 hours"
+```
+
+**New format (v1.6.0):**
+```yaml
+duration: "40h"     # 40 hours
+duration: "30m"     # 30 minutes
+duration: "2h"      # 2 hours
+```
+
+### 2. Quiz Structure Change (Flattened)
+
+**Old format (v1.5.0) - nested quiz object:**
+```yaml
+lessons:
+  - title: "Assessment"
+    type: "quiz"
+    duration: "15 min"
+    quiz:
+      title: "Module 1 Quiz"
+      description: "Test your knowledge"
+      passingScore: 70
+      timeLimit: 900
+      questions:
+        - id: "q1"
+          type: "multiple-choice"
+          question: "What is 2+2?"
+          options: ["3", "4", "5"]
+          correctAnswer: 1
+          points: 10
+          explanation: "Basic math"
+```
+
+**New format (v1.6.0) - flattened:**
+```yaml
+lessons:
+  - title: "Assessment"
+    type: "quiz"
+    duration: "15m"
+    # Quiz fields directly on lesson (no wrapper)
+    description: "Test your knowledge"
+    passingScore: 70
+    timeLimit: 900
+    questions:
+      - id: "q1"
+        type: "multiple-choice"
+        question: "What is 2+2?"
+        options: ["3", "4", "5"]
+        correctAnswer: 1
+        points: 10
+        explanation: "Basic math"
+```
+
+### Key Changes Summary
+
+| Aspect | v1.5.0 (Old) | v1.6.0 (New) |
+|--------|--------------|--------------|
+| Duration | `"30 min"`, `"2 hours"` | `"30m"`, `"2h"` |
+| Quiz structure | Nested under `quiz:` | Flattened on lesson |
+| Quiz title | `quiz.title` | Uses lesson `title` |
+| Quiz description | `quiz.description` | `description` on lesson |
+| Quiz settings | Under `quiz:` | Directly on lesson |
+
+### Migration Script (Optional)
+
+You can manually update your files or use a script:
+
+```javascript
+// Example migration helper
+function migrateLesson(lesson) {
+  // Update duration format
+  lesson.duration = convertDuration(lesson.duration);
+  
+  // Flatten quiz structure
+  if (lesson.quiz) {
+    const { title, ...quizFields } = lesson.quiz;
+    // Move quiz fields to lesson level
+    Object.assign(lesson, quizFields);
+    delete lesson.quiz;
+  }
+  
+  return lesson;
+}
+
+function convertDuration(duration) {
+  const match = duration.match(/(\d+(?:\.\d+)?)\s*(min|hour|h|m)/i);
+  if (match) {
+    const value = parseFloat(match[1]);
+    const unit = match[2].toLowerCase();
+    if (unit.startsWith('h')) return `${value}h`;
+    if (unit.startsWith('m')) return `${value}m`;
+  }
+  return duration;
+}
+```
+
+---
+
 **Last Updated**: November 2025  
-**Version**: 1.5.0
+**Version**: 1.6.0

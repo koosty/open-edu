@@ -1,6 +1,7 @@
 /**
  * Quiz Service
  * Handles all quiz-related operations including CRUD, attempts, and scoring
+ * v1.6.0: Added quiz metadata sync to course document
  */
 
 import {
@@ -15,7 +16,9 @@ import {
 	where,
 	orderBy,
 	serverTimestamp,
-	arrayUnion
+	arrayUnion,
+	increment,
+	writeBatch
 } from 'firebase/firestore'
 import { db } from '$lib/firebase'
 import { COLLECTIONS } from '$lib/firebase/collections'
@@ -26,6 +29,8 @@ import type {
 	QuizStatistics
 } from '$lib/types/quiz'
 import type { Lesson } from '$lib/types'
+import type { QuizMetadata } from '$lib/types/lesson'
+import { buildQuizMetadata } from '$lib/types/lesson'
 
 // ============================================
 // Quiz CRUD Operations
@@ -33,9 +38,14 @@ import type { Lesson } from '$lib/types'
 
 /**
  * Create a new quiz
+ * v1.6.0: Uses batch write to atomically create quiz and update course metadata
  */
 export async function createQuiz(quizData: Omit<Quiz, 'id' | 'createdAt' | 'updatedAt'>): Promise<Quiz> {
-	const quizRef = collection(db, COLLECTIONS.QUIZZES)
+	const batch = writeBatch(db)
+	
+	// Create the quiz document
+	const quizRef = doc(collection(db, COLLECTIONS.QUIZZES))
+	const now = new Date().toISOString()
 	
 	const newQuiz = {
 		...quizData,
@@ -43,19 +53,52 @@ export async function createQuiz(quizData: Omit<Quiz, 'id' | 'createdAt' | 'upda
 		updatedAt: serverTimestamp()
 	}
 	
-	const docRef = await addDoc(quizRef, newQuiz)
+	batch.set(quizRef, newQuiz)
 	
-	const createdQuiz = await getDoc(docRef)
-	return {
-		id: createdQuiz.id,
-		...createdQuiz.data() as Omit<Quiz, 'id'>
+	// Update course with quiz metadata if courseId is provided
+	if (quizData.courseId) {
+		const courseRef = doc(db, COLLECTIONS.COURSES, quizData.courseId)
+		
+		// Get current quiz count to determine order
+		const courseSnap = await getDoc(courseRef)
+		const courseData = courseSnap.data()
+		const currentQuizCount = courseData?.totalQuizzes || 0
+		
+		// Build quiz metadata
+		const quizMetadata = buildQuizMetadata(
+			{
+				id: quizRef.id,
+				lessonId: quizData.lessonId,
+				title: quizData.title,
+				questions: quizData.questions,
+				passingScore: quizData.passingScore,
+				timeLimit: quizData.timeLimit
+			},
+			currentQuizCount + 1
+		)
+		
+		batch.update(courseRef, {
+			quizzesMetadata: arrayUnion(quizMetadata),
+			totalQuizzes: increment(1),
+			updatedAt: serverTimestamp()
+		})
 	}
+	
+	await batch.commit()
+	
+	return {
+		...quizData,
+		id: quizRef.id,
+		createdAt: now,
+		updatedAt: now
+	} as Quiz
 }
 
 /**
  * Create a new quiz with an associated lesson
  * This is the preferred method for creating quizzes as it ensures 
  * the lesson and quiz are properly linked and the lesson type is set correctly
+ * v1.6.0: Uses batch write to atomically create quiz, lesson, and update course metadata
  */
 export async function createQuizWithLesson(
 	courseId: string,
@@ -68,6 +111,8 @@ export async function createQuizWithLesson(
 	},
 	quizData: Omit<Quiz, 'id' | 'createdAt' | 'updatedAt' | 'lessonId' | 'courseId'>
 ): Promise<{ quiz: Quiz; lesson: Lesson }> {
+	const batch = writeBatch(db)
+	
 	// Get the course to determine the next lesson order
 	const courseRef = doc(db, COLLECTIONS.COURSES, courseId)
 	const courseSnap = await getDoc(courseRef)
@@ -78,9 +123,11 @@ export async function createQuizWithLesson(
 	
 	const courseData = courseSnap.data()
 	const existingLessons = courseData.lessons || []
+	const currentQuizCount = courseData.totalQuizzes || 0
 	
 	// Generate lesson ID
 	const lessonId = `lesson-${Date.now()}`
+	const now = new Date().toISOString()
 	
 	// Create lesson object
 	// Note: Only include duration if it's actually provided (Firestore doesn't support undefined)
@@ -92,12 +139,12 @@ export async function createQuizWithLesson(
 		order: lessonData.order ?? existingLessons.length + 1,
 		...(lessonData.duration !== undefined && { duration: lessonData.duration }),
 		isRequired: lessonData.isRequired ?? true,
-		createdAt: new Date().toISOString(),
-		updatedAt: new Date().toISOString()
+		createdAt: now,
+		updatedAt: now
 	}
 	
-	// Create quiz with reference to the new lesson
-	const quizRef = collection(db, COLLECTIONS.QUIZZES)
+	// Create quiz document reference
+	const quizRef = doc(collection(db, COLLECTIONS.QUIZZES))
 	const newQuiz = {
 		...quizData,
 		courseId,
@@ -106,17 +153,14 @@ export async function createQuizWithLesson(
 		updatedAt: serverTimestamp()
 	}
 	
-	const quizDocRef = await addDoc(quizRef, newQuiz)
+	batch.set(quizRef, newQuiz)
 	
-	// Get the created quiz data
-	const createdQuizSnap = await getDoc(quizDocRef)
-	const quizDataRaw = createdQuizSnap.data()
-	
-	// Convert timestamps to ISO strings for the lesson
-	const now = new Date().toISOString()
+	// Build the created quiz object for return
 	const createdQuiz: Quiz = {
-		id: createdQuizSnap.id,
-		...quizDataRaw as Omit<Quiz, 'id'>,
+		id: quizRef.id,
+		...quizData,
+		courseId,
+		lessonId,
 		createdAt: now,
 		updatedAt: now
 	}
@@ -128,11 +172,28 @@ export async function createQuizWithLesson(
 		quiz: createdQuiz
 	}
 	
-	// Add lesson to course
-	await updateDoc(courseRef, {
+	// Build quiz metadata for course document
+	const quizMetadata = buildQuizMetadata(
+		{
+			id: quizRef.id,
+			lessonId,
+			title: quizData.title,
+			questions: quizData.questions,
+			passingScore: quizData.passingScore,
+			timeLimit: quizData.timeLimit
+		},
+		currentQuizCount + 1
+	)
+	
+	// Update course with lesson and quiz metadata
+	batch.update(courseRef, {
 		lessons: arrayUnion(lessonWithQuiz),
+		quizzesMetadata: arrayUnion(quizMetadata),
+		totalQuizzes: increment(1),
 		updatedAt: serverTimestamp()
 	})
+	
+	await batch.commit()
 	
 	return {
 		quiz: createdQuiz,
@@ -195,10 +256,76 @@ export async function getQuizzesByCourse(courseId: string): Promise<Quiz[]> {
 
 /**
  * Update quiz
+ * v1.6.0: Syncs metadata changes to course document if relevant fields changed
  */
 export async function updateQuiz(quizId: string, updates: Partial<Quiz>): Promise<void> {
 	const quizRef = doc(db, COLLECTIONS.QUIZZES, quizId)
 	
+	// Check if we need to update course metadata
+	const metadataFields = ['title', 'questions', 'passingScore', 'timeLimit']
+	const needsMetadataSync = metadataFields.some(field => field in updates)
+	
+	if (needsMetadataSync) {
+		// Get the current quiz to find courseId and build updated metadata
+		const quizSnap = await getDoc(quizRef)
+		if (!quizSnap.exists()) {
+			throw new Error('Quiz not found')
+		}
+		
+		const currentQuiz = { id: quizSnap.id, ...quizSnap.data() } as Quiz
+		
+		if (currentQuiz.courseId) {
+			const batch = writeBatch(db)
+			
+			// Update the quiz document
+			batch.update(quizRef, {
+				...updates,
+				updatedAt: serverTimestamp()
+			})
+			
+			// Get course to find and update existing metadata
+			const courseRef = doc(db, COLLECTIONS.COURSES, currentQuiz.courseId)
+			const courseSnap = await getDoc(courseRef)
+			
+			if (courseSnap.exists()) {
+				const courseData = courseSnap.data()
+				const quizzesMetadata = (courseData.quizzesMetadata || []) as QuizMetadata[]
+				
+				// Find existing metadata entry
+				const existingIndex = quizzesMetadata.findIndex(q => q.id === quizId)
+				
+				if (existingIndex >= 0) {
+					// Build updated metadata
+					const mergedQuiz = { ...currentQuiz, ...updates }
+					const updatedMetadata = buildQuizMetadata(
+						{
+							id: quizId,
+							lessonId: mergedQuiz.lessonId,
+							title: mergedQuiz.title,
+							questions: mergedQuiz.questions,
+							passingScore: mergedQuiz.passingScore,
+							timeLimit: mergedQuiz.timeLimit
+						},
+						quizzesMetadata[existingIndex].order
+					)
+					
+					// Replace the metadata entry
+					const newQuizzesMetadata = [...quizzesMetadata]
+					newQuizzesMetadata[existingIndex] = updatedMetadata
+					
+					batch.update(courseRef, {
+						quizzesMetadata: newQuizzesMetadata,
+						updatedAt: serverTimestamp()
+					})
+				}
+			}
+			
+			await batch.commit()
+			return
+		}
+	}
+	
+	// Simple update without metadata sync
 	await updateDoc(quizRef, {
 		...updates,
 		updatedAt: serverTimestamp()
@@ -207,10 +334,55 @@ export async function updateQuiz(quizId: string, updates: Partial<Quiz>): Promis
 
 /**
  * Delete quiz
+ * v1.6.0: Also removes quiz metadata from course document and decrements count
  */
 export async function deleteQuiz(quizId: string): Promise<void> {
 	const quizRef = doc(db, COLLECTIONS.QUIZZES, quizId)
-	await deleteDoc(quizRef)
+	
+	// Get the quiz to find courseId
+	const quizSnap = await getDoc(quizRef)
+	
+	if (!quizSnap.exists()) {
+		throw new Error('Quiz not found')
+	}
+	
+	const quizData = quizSnap.data() as Quiz
+	
+	if (quizData.courseId) {
+		const batch = writeBatch(db)
+		
+		// Delete the quiz document
+		batch.delete(quizRef)
+		
+		// Update course: remove metadata and decrement count
+		const courseRef = doc(db, COLLECTIONS.COURSES, quizData.courseId)
+		const courseSnap = await getDoc(courseRef)
+		
+		if (courseSnap.exists()) {
+			const courseData = courseSnap.data()
+			const quizzesMetadata = (courseData.quizzesMetadata || []) as QuizMetadata[]
+			
+			// Filter out the deleted quiz metadata
+			const updatedMetadata = quizzesMetadata.filter(q => q.id !== quizId)
+			
+			// Reorder remaining quizzes
+			const reorderedMetadata = updatedMetadata.map((q, index) => ({
+				...q,
+				order: index + 1
+			}))
+			
+			batch.update(courseRef, {
+				quizzesMetadata: reorderedMetadata,
+				totalQuizzes: increment(-1),
+				updatedAt: serverTimestamp()
+			})
+		}
+		
+		await batch.commit()
+	} else {
+		// Simple delete without metadata sync
+		await deleteDoc(quizRef)
+	}
 }
 
 /**
@@ -651,4 +823,53 @@ export async function getCourseQuizAttempts(courseId: string): Promise<QuizAttem
 		id: doc.id,
 		...doc.data() as Omit<QuizAttempt, 'id'>
 	}))
+}
+
+/**
+ * Batch update quizzes - used for reordering
+ * Updates quiz order fields and syncs course quizzesMetadata
+ * v1.6.0: Added for quiz reordering feature
+ * 
+ * @param courseId - The course ID
+ * @param quizzes - Array of quizzes with updated order fields
+ */
+export async function batchUpdateQuizzes(
+	courseId: string,
+	quizzes: Array<{ id: string; order: number; lessonId: string; title: string; questions: Quiz['questions']; passingScore: number; timeLimit?: number }>
+): Promise<void> {
+	const batch = writeBatch(db)
+	
+	// Update each quiz document's order
+	quizzes.forEach((quiz) => {
+		const quizRef = doc(db, COLLECTIONS.QUIZZES, quiz.id)
+		batch.update(quizRef, {
+			order: quiz.order,
+			updatedAt: serverTimestamp()
+		})
+	})
+	
+	// Rebuild full quizzesMetadata array for course
+	const quizzesMetadata: QuizMetadata[] = quizzes.map((quiz) => 
+		buildQuizMetadata(
+			{
+				id: quiz.id,
+				lessonId: quiz.lessonId,
+				title: quiz.title,
+				questions: quiz.questions,
+				passingScore: quiz.passingScore,
+				timeLimit: quiz.timeLimit
+			},
+			quiz.order
+		)
+	)
+	
+	// Update course with new metadata array
+	const courseRef = doc(db, COLLECTIONS.COURSES, courseId)
+	batch.update(courseRef, {
+		quizzesMetadata,
+		totalQuizzes: quizzes.length,
+		updatedAt: serverTimestamp()
+	})
+	
+	await batch.commit()
 }

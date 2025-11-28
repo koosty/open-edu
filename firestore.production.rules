@@ -94,6 +94,35 @@ service cloud.firestore {
         isOwner(request.resource.data.userId);
     }
 
+    // Lessons collection (v1.6.0 - separate collection for scalability)
+    match /lessons/{lessonId} {
+      // Admins can do anything (separate rule to avoid get() calls)
+      allow read, update, delete: if isAdmin();
+      
+      // Anyone can read lessons if parent course is published
+      allow read: if get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.isPublished == true;
+      
+      // Authenticated users can read any lesson (for enrolled students)
+      allow read: if isAuthenticated();
+      
+      // Instructors can create lessons for their courses
+      // Note: During batch import, the course may not exist yet, so we check if:
+      // 1. The course exists and user is the instructor, OR
+      // 2. User is an instructor (for batch course+lesson creation)
+      allow create: if isInstructor() && (
+        // Course exists and user is instructor
+        (exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId)) &&
+         request.auth.uid == get(/databases/$(database)/documents/courses/$(request.resource.data.courseId)).data.instructorId)
+        ||
+        // Course doesn't exist yet (batch import) - allow instructors to create
+        !exists(/databases/$(database)/documents/courses/$(request.resource.data.courseId))
+      );
+      
+      // Only course instructor can update lessons
+      allow update: if isAuthenticated() && 
+        request.auth.uid == get(/databases/$(database)/documents/courses/$(resource.data.courseId)).data.instructorId;
+    }
+
     // Quizzes collection
     match /quizzes/{quizId} {
       // Admins can do anything (separate rule to avoid get() calls)

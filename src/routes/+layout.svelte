@@ -212,23 +212,23 @@
 					<h3 class="text-sm font-semibold text-foreground">{m.footer_platform()}</h3>
 					<ul class="space-y-1 text-sm">
 						<li><a href={getPath('/courses')} class="text-muted-foreground hover:text-primary hover:underline">{m.footer_browseCourses()}</a></li>
-						<li><a href="https://github.com/koostyy/open-edu#readme" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_about()}</a></li>
-						<li><a href="https://github.com/koostyy/open-edu#pricing" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_pricing()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu#readme" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_about()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu#pricing" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_pricing()}</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-foreground">{m.footer_support()}</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="https://github.com/koostyy/open-edu/wiki" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_help()}</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/issues/new" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_contact()}</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/discussions" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_community()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu/wiki" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_help()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu/issues/new" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_contact()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu/discussions" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_community()}</a></li>
 					</ul>
 				</div>
 				<div class="space-y-3">
 					<h3 class="text-sm font-semibold text-foreground">{m.footer_legal()}</h3>
 					<ul class="space-y-1 text-sm">
-						<li><a href="https://github.com/koostyy/open-edu/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_privacy()}</a></li>
-						<li><a href="https://github.com/koostyy/open-edu/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_terms()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu/blob/main/PRIVACY.md" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_privacy()}</a></li>
+						<li><a href="https://github.com/koosty/open-edu/blob/main/LICENSE" target="_blank" rel="noopener noreferrer" class="text-muted-foreground hover:text-primary hover:underline">{m.footer_terms()}</a></li>
 					</ul>
 				</div>
 			</div>

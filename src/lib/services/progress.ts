@@ -152,7 +152,8 @@ export class ProgressService {
       }
 
       const course = courseSnap.data() as Course;
-      const totalLessons = course.lessons?.length || 0;
+      // v1.6.0: Use totalLessons from metadata, fall back to lessons array length
+      const totalLessons = course.totalLessons ?? course.lessonsMetadata?.length ?? course.lessons?.length ?? 0;
       const completedLessons = progress.completedLessons.length + 1;
       const newProgressPercentage =
         totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
@@ -306,19 +307,26 @@ export class ProgressService {
       let nextLesson: Lesson | null = null;
       let completionRate = 0;
 
-      if (progress && course?.lessons) {
+      if (progress && course) {
+        // v1.6.0: Use totalLessons from metadata, fall back to lessons array length
+        const totalLessons = course.totalLessons ?? course.lessonsMetadata?.length ?? course.lessons?.length ?? 0;
+        
         // Calculate completion rate
         completionRate =
-          (progress.completedLessons.length / course.lessons.length) * 100;
+          totalLessons > 0 ? (progress.completedLessons.length / totalLessons) * 100 : 0;
 
-        // Find next uncompleted lesson
-        const sortedLessons = [...course.lessons].sort(
-          (a, b) => a.order - b.order,
-        );
-        nextLesson =
-          sortedLessons.find(
+        // Find next uncompleted lesson using lessonsMetadata or legacy lessons
+        const lessonsForNav = course.lessonsMetadata ?? course.lessons ?? [];
+        if (lessonsForNav.length > 0) {
+          const sortedLessons = [...lessonsForNav].sort(
+            (a, b) => a.order - b.order,
+          );
+          const nextLessonMeta = sortedLessons.find(
             (lesson) => !progress.completedLessons.includes(lesson.id),
-          ) || null;
+          );
+          // Return minimal lesson info for navigation
+          nextLesson = nextLessonMeta ? { id: nextLessonMeta.id, title: nextLessonMeta.title } as Lesson : null;
+        }
       }
 
       return {

@@ -3,6 +3,34 @@
  * Type-safe error handling helpers for Open-EDU
  */
 
+// Track which deprecation warnings have been shown (to avoid spam)
+const shownDeprecationWarnings = new Set<string>()
+
+/**
+ * Log a deprecation warning (only once per key)
+ * Used during v1.6.0 migration to warn about legacy `course.lessons` usage
+ * @param key - Unique identifier for this warning (shown only once)
+ * @param message - The deprecation message
+ */
+export function deprecationWarning(key: string, message: string): void {
+	if (shownDeprecationWarnings.has(key)) return
+	shownDeprecationWarnings.add(key)
+	console.warn(`[DEPRECATED] ${message}`)
+}
+
+/**
+ * @deprecated Use LessonService.getLessonsByCourse() instead
+ * Warn when accessing course.lessons array (v1.6.0 migration)
+ */
+export function warnLegacyLessonsAccess(source: string): void {
+	deprecationWarning(
+		`lessons-array-${source}`,
+		`Accessing course.lessons array from "${source}". ` +
+		`Use LessonService.getLessonsByCourse() instead. ` +
+		`The course.lessons array will be removed in v2.0.0.`
+	)
+}
+
 /**
  * Extract error message from unknown error type
  */

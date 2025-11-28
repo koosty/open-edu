@@ -3,12 +3,14 @@
 	import { onDestroy, untrack } from 'svelte'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
+	import { LessonService } from '$lib/services/lessons'
 	import { EnrollmentService } from '$lib/services/enrollment'
 	import { ProgressService } from '$lib/services/progress'
 	import { authState } from '$lib/auth.svelte'
 	import { Button, Skeleton } from '$lib/components/ui'
 	import { Card, CardContent } from '$lib/components/ui'
-	import type { Course, Lesson, UserProgress } from '$lib/types'
+	import type { Course, UserProgress, LessonMetadata } from '$lib/types'
+	import type { Lesson } from '$lib/types/lesson'
 	import LessonSkeleton from '$lib/components/LessonSkeleton.svelte'
 	import MarkdownRenderer from '$lib/components/MarkdownRenderer.svelte'
 	import TableOfContents from '$lib/components/TableOfContents.svelte'
@@ -108,13 +110,40 @@
 		isCompleted || !currentLesson?.quiz
 	)
 	const isQuizLesson = $derived(!!currentLesson?.quiz)
-	// Sorted lessons to prevent mutation in template
+	
+	// v1.6.0: Use lessonsMetadata for sidebar, fall back to legacy lessons array
+	const lessonsForSidebar = $derived.by<LessonMetadata[]>(() => {
+		if (course?.lessonsMetadata && course.lessonsMetadata.length > 0) {
+			return course.lessonsMetadata
+		}
+		// Fallback: convert legacy lessons to metadata format for sidebar
+		if (course?.lessons) {
+			return course.lessons.map(lesson => ({
+				id: lesson.id,
+				title: lesson.title,
+				description: lesson.description,
+				order: lesson.order,
+				type: lesson.videoUrl ? 'video' as const : (lesson.quiz ? 'quiz' as const : 'content' as const),
+				duration: lesson.duration ?? 0,
+				hasQuiz: !!lesson.quiz,
+				isRequired: lesson.isRequired
+			}))
+		}
+		return []
+	})
+	
+	// Sorted lessons for navigation sidebar
 	const sortedLessons = $derived(
-		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
+		[...lessonsForSidebar].sort((a, b) => a.order - b.order)
+	)
+	
+	// Total lesson count
+	const totalLessonCount = $derived(
+		course?.totalLessons ?? course?.lessonsMetadata?.length ?? course?.lessons?.length ?? 0
 	)
 	
 	/**
-	 * Filtered lessons based on search query
+	 * Filtered lessons based on search query (for sidebar)
 	 */
 	const filteredLessons = $derived.by(() => {
 		if (!sidebarSearchQuery.trim()) {
@@ -124,8 +153,8 @@
 		const query = sidebarSearchQuery.toLowerCase()
 		return sortedLessons.filter(lesson =>
 			lesson.title.toLowerCase().includes(query) ||
-			lesson.description?.toLowerCase().includes(query) ||
-			(lesson.quiz && 'quiz'.includes(query))
+			(lesson.hasQuiz && 'quiz'.includes(query)) ||
+			(lesson.type === 'video' && 'video'.includes(query))
 		)
 	})
 
@@ -221,9 +250,10 @@
 				return
 			}
 
-			// Load course and lesson data
-			const [courseData, progressData] = await Promise.all([
+			// Load course, lesson (from separate collection), and progress in parallel
+			const [courseData, lessonData, progressData] = await Promise.all([
 				CourseService.getCourse(courseId),
+				LessonService.getLesson(lessonId),
 				ProgressService.getCourseProgress(authState.user!.id, courseId)
 			])
 
@@ -232,32 +262,46 @@
 				return
 			}
 
+			if (!lessonData) {
+				// Fallback: try to get lesson from legacy course.lessons array
+				const legacyLesson = courseData.lessons?.find(l => l.id === lessonId)
+				if (!legacyLesson) {
+					error = 'Lesson not found'
+					return
+				}
+				// Convert legacy lesson format
+				currentLesson = {
+					...legacyLesson,
+					courseId: courseId,
+					createdAt: legacyLesson.createdAt || new Date().toISOString(),
+					updatedAt: legacyLesson.updatedAt || new Date().toISOString()
+				} as Lesson
+			} else {
+				currentLesson = lessonData
+			}
+
 			course = courseData
 			progress = progressData
 
-			// Find current lesson
-			const lesson = courseData.lessons?.find(l => l.id === lessonId)
-			if (!lesson) {
-				error = 'Lesson not found'
-				return
-			}
-
-			currentLesson = lesson
-
-			// Find lesson navigation - Reset first to ensure clean state
+			// Find lesson navigation using metadata or legacy lessons
 			previousLesson = null
 			nextLesson = null
 			
-			if (courseData.lessons) {
-				const sortedLessons = [...courseData.lessons].sort((a, b) => a.order - b.order)
-				currentLessonIndex = sortedLessons.findIndex(l => l.id === lessonId)
+			// Use lessonsMetadata if available, otherwise fall back to legacy lessons
+			const lessonsForNav = sortedLessons
+			if (lessonsForNav.length > 0) {
+				currentLessonIndex = lessonsForNav.findIndex(l => l.id === lessonId)
 				
 				if (currentLessonIndex > 0) {
-					previousLesson = sortedLessons[currentLessonIndex - 1]
+					const prevMeta = lessonsForNav[currentLessonIndex - 1]
+					// For navigation we just need id and title from metadata
+					previousLesson = { id: prevMeta.id, title: prevMeta.title } as Lesson
 				}
 				
-				if (currentLessonIndex < sortedLessons.length - 1) {
-					nextLesson = sortedLessons[currentLessonIndex + 1]
+				if (currentLessonIndex < lessonsForNav.length - 1) {
+					const nextMeta = lessonsForNav[currentLessonIndex + 1]
+					previousLesson = previousLesson // keep previous
+					nextLesson = { id: nextMeta.id, title: nextMeta.title } as Lesson
 				}
 			}
 
@@ -265,7 +309,7 @@
 		await ProgressService.startLesson(authState.user!.id, courseId, lessonId)
 		
 		// Load quiz data if this lesson has a quiz
-		if (lesson.quiz) {
+		if (currentLesson?.quiz) {
 			await loadQuizData()
 		}
 
@@ -642,7 +686,7 @@
 		}
 	}
 
-	function handleNavigateToLesson(lesson: Lesson) {
+	function handleNavigateToLesson(lesson: { id: string }) {
 		showMobileSidebar = false // Close mobile sidebar on navigation
 		navigate(`/courses/${courseId}/learn/${lesson.id}`)
 	}
@@ -712,7 +756,7 @@
 	lessonTitle={currentLesson?.title || ''}
 	isLastLesson={!nextLesson}
 	nextLessonTitle={nextLesson?.title || ''}
-	courseProgress={course?.lessons ? (progress?.completedLessons.length || 0) / course.lessons.length * 100 : 0}
+	courseProgress={totalLessonCount > 0 ? (progress?.completedLessons.length || 0) / totalLessonCount * 100 : 0}
 	onContinue={handleCelebrationContinue}
 	onClose={handleCelebrationClose}
 />
@@ -782,9 +826,9 @@
 					Back to Course
 				</Button>
 				<h1 class="font-bold text-lg text-foreground">{course?.title}</h1>
-				{#if course?.lessons}
+				{#if totalLessonCount > 0}
 					<span class="text-muted-foreground">
-						{progress?.completedLessons.length || 0} of {course.lessons.length} lessons completed
+						{progress?.completedLessons.length || 0} of {totalLessonCount} lessons completed
 					</span>
 				{/if}
 				
@@ -792,7 +836,7 @@
 				<div class="mt-3 h-2 bg-muted rounded-full overflow-hidden">
 					<div 
 						class="h-full bg-gradient-to-r from-primary-500 to-secondary-500 transition-all duration-500 rounded-full"
-						style="width: {Math.round(((progress?.completedLessons.length || 0) / (course?.lessons?.length || 1)) * 100)}%"
+						style="width: {Math.round(((progress?.completedLessons.length || 0) / (totalLessonCount || 1)) * 100)}%"
 					></div>
 				</div>
 				</div>
@@ -825,7 +869,7 @@
 						{/if}
 					</div>
 				</div>
-				{#if course?.lessons}
+				{#if sortedLessons.length > 0}
 					{#if filteredLessons.length > 0}
 					<nav class="space-y-1.5">
 						{#each filteredLessons as lesson, index (lesson.id)}
@@ -840,7 +884,7 @@
 									<div class="flex-1 min-w-0">
 										<p class="font-medium text-sm truncate {lesson.id === lessonId ? 'text-primary' : 'text-foreground'}">{lesson.title}</p>
 										<div class="flex items-center gap-2 text-xs text-muted-foreground">
-											<span class="capitalize">{lesson.quiz ? 'Quiz' : 'Lesson'}</span>
+											<span class="capitalize">{lesson.hasQuiz ? 'Quiz' : lesson.type === 'video' ? 'Video' : 'Lesson'}</span>
 											{#if lesson.duration}
 												<span>• {lesson.duration} min</span>
 											{/if}
@@ -1151,7 +1195,7 @@
 						{previousLesson}
 						{nextLesson}
 						currentLessonIndex={currentLessonIndex}
-						totalLessons={sortedLessons.length}
+						totalLessons={totalLessonCount}
 						{isCompleted}
 						{canNavigateNext}
 						{completing}

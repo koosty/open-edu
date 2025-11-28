@@ -2,6 +2,7 @@
 	import { page } from '$app/state'
 	import { navigate } from '$lib/utils/navigation'
 	import { CourseService } from '$lib/services/courses'
+	import { LessonService } from '$lib/services/lessons'
 	import { authState } from '$lib/auth.svelte'
 	import { canManageCourses } from '$lib/utils/admin'
 	import { Button, Input, Textarea, Checkbox, Label } from '$lib/components/ui'
@@ -73,8 +74,8 @@
 			course = courseData
 			
 			if (!isNewLesson) {
-				// Find existing lesson
-				const existingLesson = courseData.lessons?.find(l => l.id === lessonId)
+				// Get lesson from lessons collection (v1.6.0 architecture)
+				const existingLesson = await LessonService.getLesson(lessonId)
 				
 				if (!existingLesson) {
 					error = 'Lesson not found'
@@ -92,8 +93,9 @@
 				form.isRequired = existingLesson.isRequired
 				form.videoUrl = existingLesson.videoUrl || ''
 			} else {
-				// Set default order for new lesson
-				form.order = (courseData.lessons?.length || 0) + 1
+				// Get lesson count for new lesson order (v1.6.0 architecture)
+				const lessonCount = await LessonService.getLessonCount(courseId)
+				form.order = lessonCount + 1
 			}
 			
 		} catch (err: unknown) {
@@ -117,37 +119,30 @@
 		success = false
 		
 		try {
-			const lessonData: Lesson = {
-				id: isNewLesson ? `lesson-${Date.now()}` : lessonId,
-				courseId: courseId,
-				title: form.title.trim(),
-				description: form.description.trim(),
-				content: form.content.trim(),
-				duration: form.duration,
-				order: form.order,
-				isRequired: form.isRequired,
-				videoUrl: form.videoUrl.trim() || undefined,
-				createdAt: isNewLesson ? new Date().toISOString() : (lesson?.createdAt || new Date().toISOString()),
-				updatedAt: new Date().toISOString()
-		}
-		
-		let updatedLessons: Lesson[]
-		
-		if (isNewLesson) {
-			// Add new lesson
-			updatedLessons = [...(course.lessons || []), lessonData]
-		} else {
-			// Update existing lesson
-			updatedLessons = (course.lessons || []).map(l => 
-				l.id === lessonId ? lessonData : l
-			)
-		}
-		
-		// Sort by order
-		updatedLessons = updatedLessons.sort((a, b) => a.order - b.order)
-		
-		// Update course with new lessons
-		await CourseService.updateCourse(courseId, { lessons: updatedLessons })
+			if (isNewLesson) {
+				// Create new lesson using LessonService (v1.6.0 architecture)
+				await LessonService.createLesson({
+					courseId: courseId,
+					title: form.title.trim(),
+					description: form.description.trim(),
+					content: form.content.trim(),
+					duration: form.duration,
+					order: form.order,
+					isRequired: form.isRequired,
+					videoUrl: form.videoUrl.trim() || undefined,
+				})
+			} else {
+				// Update existing lesson using LessonService (v1.6.0 architecture)
+				await LessonService.updateLesson(lessonId, {
+					title: form.title.trim(),
+					description: form.description.trim(),
+					content: form.content.trim(),
+					duration: form.duration,
+					order: form.order,
+					isRequired: form.isRequired,
+					videoUrl: form.videoUrl.trim() || undefined,
+				})
+			}
 			
 			success = true
 			
@@ -156,9 +151,9 @@
 				navigate(`/admin/courses/${courseId}`)
 			}, 1500)
 			
-	} catch (err: unknown) {
-		error = err instanceof Error ? err.message : `Failed to ${isNewLesson ? 'create' : 'update'} lesson`
-		console.error('❌ Error saving lesson:', err)
+		} catch (err: unknown) {
+			error = err instanceof Error ? err.message : `Failed to ${isNewLesson ? 'create' : 'update'} lesson`
+			console.error('❌ Error saving lesson:', err)
 			console.error('Full error:', err)
 		} finally {
 			submitting = false
@@ -347,6 +342,7 @@
 										min="1"
 										required
 									/>
+								<p class="text-xs text-muted-foreground mt-1">Estimated time to complete this lesson</p>
 								</div>
 
 							<div>

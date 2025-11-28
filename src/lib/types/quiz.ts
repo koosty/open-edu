@@ -27,6 +27,9 @@ export interface Quiz {
 	randomizeOptions: boolean // Randomize option order
 	allowReview: boolean // Allow reviewing quiz after completion
 	
+	// Ordering (v1.6.0)
+	order?: number // Quiz order within course for display purposes
+	
 	// Metadata
 	isPublished: boolean
 	createdBy?: string // Instructor user ID (optional for backward compatibility)

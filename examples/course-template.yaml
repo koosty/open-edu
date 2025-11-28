@@ -1,13 +1,17 @@
 ---
 # yaml-language-server: $schema=../schemas/course-import.schema.json
-# Course Import Template - YAML Format
+# Course Import Template - YAML Format (v1.6.0)
 # This file demonstrates how to create a course with lessons and quizzes
+#
+# v1.6.0 Changes:
+# - Duration format: Use Xm (minutes) or Xh (hours) - e.g., "30m", "2h", "1.5h"
+# - Quiz structure: Quiz fields are flattened directly on lesson (no wrapper)
 
 title: "Introduction to Python Programming"
 description: "Learn Python from scratch with hands-on examples and projects. Master the fundamentals and build real-world applications."
 category: "Programming"
 difficulty: "Beginner"
-duration: "10 weeks"
+duration: "40h"  # v1.6.0: New format - Xm or Xh
 thumbnail: "https://via.placeholder.com/400x225/3776ab/white?text=Python+Course"
 level: "premium"
 price: 49.99
@@ -42,7 +46,7 @@ lessons:
   # Regular lesson with Markdown content
   - title: "Getting Started with Python"
     type: "lesson"
-    duration: "20 min"
+    duration: "20m"  # v1.6.0: New format
     content: |
       # Getting Started with Python
 
@@ -79,93 +83,100 @@ lessons:
       - Functions
       - And much more!
 
-  # Quiz lesson with various question types
+  # Quiz lesson - v1.6.0 flattened structure (no quiz: wrapper)
   - title: "Python Basics Quiz"
     type: "quiz"
-    duration: "15 min"
-    quiz:
-      title: "Python Fundamentals Assessment"
-      description: "Test your understanding of Python basics"
-      passingScore: 70
-      timeLimit: 900  # 15 minutes in seconds
+    duration: "15m"  # v1.6.0: New format
+    # Quiz fields are now directly on the lesson (v1.6.0 - no wrapper)
+    description: "Test your understanding of Python basics"
+    instructions: "Read each question carefully. You have 15 minutes to complete this quiz."
+    passingScore: 70
+    timeLimit: 900  # 15 minutes in seconds
+    allowMultipleAttempts: true
+    maxAttempts: 3
+    showCorrectAnswers: true
+    showExplanations: true
+    randomizeQuestions: false
+    randomizeOptions: false
+    allowReview: true
 
-      questions:
-        # Multiple choice question
-        - id: "q1"
-          type: "multiple-choice"
-          question: "What is the correct file extension for Python files?"
-          options:
-            - ".py"
-            - ".python"
-            - ".pt"
-            - ".pyt"
-          correctAnswer: 0
-          points: 10
-          explanation: "Python files use the .py extension"
+    questions:
+      # Multiple choice question
+      - id: "q1"
+        type: "multiple-choice"
+        question: "What is the correct file extension for Python files?"
+        options:
+          - ".py"
+          - ".python"
+          - ".pt"
+          - ".pyt"
+        correctAnswer: 0
+        points: 10
+        explanation: "Python files use the .py extension"
 
-        # True/False question
-        - id: "q2"
-          type: "true-false"
-          question: "Python is a compiled language"
-          correctAnswer: false
-          points: 5
-          explanation: "Python is an interpreted language, not compiled"
+      # True/False question
+      - id: "q2"
+        type: "true-false"
+        question: "Python is a compiled language"
+        correctAnswer: false
+        points: 5
+        explanation: "Python is an interpreted language, not compiled"
 
-        # Multiple select (checkboxes)
-        - id: "q3"
-          type: "multiple-select"
-          question: "Which of these are valid Python data types?"
-          options:
-            - "int"
-            - "string"
-            - "list"
-            - "array"
-          correctAnswers: [0, 1, 2]
-          points: 15
-          explanation: "int, string (str), and list are built-in Python types. array requires importing a module."
+      # Multiple select (checkboxes)
+      - id: "q3"
+        type: "multiple-select"
+        question: "Which of these are valid Python data types?"
+        options:
+          - "int"
+          - "string"
+          - "list"
+          - "array"
+        correctAnswers: [0, 1, 2]
+        points: 15
+        explanation: "int, string (str), and list are built-in Python types. array requires importing a module."
 
-        # Fill in the blank
-        - id: "q4"
-          type: "fill-blank"
-          question: "The keyword to define a function in Python is ___"
-          correctAnswer: "def"
-          caseSensitive: false
-          points: 10
-          explanation: "The 'def' keyword is used to define functions in Python"
+      # Fill in the blank
+      - id: "q4"
+        type: "fill-blank"
+        question: "The keyword to define a function in Python is ___"
+        correctAnswer: "def"
+        caseSensitive: false
+        points: 10
+        explanation: "The 'def' keyword is used to define functions in Python"
 
-        # Ordering question
-        - id: "q5"
-          type: "ordering"
-          question: "Order these Python operations from highest to lowest precedence:"
-          items:
-            - "Exponentiation (**)"
-            - "Multiplication (*)"
-            - "Addition (+)"
-            - "Comparison (==)"
-          correctOrder: [0, 1, 2, 3]
-          points: 20
-          explanation: "Python follows PEMDAS order: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction, Comparisons"
+      # Ordering question
+      - id: "q5"
+        type: "ordering"
+        question: "Order these Python operations from highest to lowest precedence:"
+        items:
+          - "Exponentiation (**)"
+          - "Multiplication (*)"
+          - "Addition (+)"
+          - "Comparison (==)"
+        correctOrder: [0, 1, 2, 3]
+        points: 20
+        explanation: "Python follows PEMDAS order: Parentheses, Exponents, Multiplication/Division, Addition/Subtraction, Comparisons"
 
-        # Matching question
-        - id: "q6"
-          type: "matching"
-          question: "Match the Python built-in function with its purpose:"
-          pairs:
-            - left: "print()"
-              right: "Output to console"
-            - left: "len()"
-              right: "Get length"
-            - left: "type()"
-              right: "Get data type"
-            - left: "input()"
-              right: "Get user input"
-          points: 20
-          explanation: "These are fundamental Python built-in functions you'll use frequently"
+      # Matching question
+      - id: "q6"
+        type: "matching"
+        question: "Match the Python built-in function with its purpose:"
+        pairs:
+          - left: "print()"
+            right: "Output to console"
+          - left: "len()"
+            right: "Get length"
+          - left: "type()"
+            right: "Get data type"
+          - left: "input()"
+            right: "Get user input"
+        points: 20
+        explanation: "These are fundamental Python built-in functions you'll use frequently"
 
   # Another regular lesson
   - title: "Variables and Data Types"
     type: "lesson"
-    duration: "25 min"
+    duration: "25m"  # v1.6.0: New format
     content: |
       # Variables and Data Types
 
@@ -243,7 +254,7 @@ lessons:
   # Another lesson
   - title: "Control Flow: If Statements"
     type: "lesson"
-    duration: "20 min"
+    duration: "20m"  # v1.6.0: New format
     content: |
       # Control Flow: If Statements
 

@@ -26,6 +26,14 @@
 	let error = $state<string | null>(null)
 	let success = $state<string | null>(null)
 	
+	// Order tracking state (v1.6.0)
+	let originalOrder = $state<string[]>([])
+	let hasOrderChanged = $derived(
+		quizzes.length > 0 && 
+		JSON.stringify(quizzes.map(q => q.id)) !== JSON.stringify(originalOrder)
+	)
+	let savingOrder = $state(false)
+	
 	// Bulk operations state
 	const selectedQuizIds = new SvelteSet<string>()
 	let bulkActionInProgress = $state(false)
@@ -67,7 +75,12 @@
 			}
 			
 			course = courseData
-			quizzes = quizzesData
+			
+			// Sort quizzes by order field (v1.6.0)
+			quizzes = quizzesData.sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+			
+			// Track original order for change detection
+			originalOrder = quizzes.map(q => q.id)
 			
 			// Load statistics for each quiz
 			loadingStats = true
@@ -105,6 +118,54 @@
 		} catch (err) {
 			error = getErrorMessage(err)
 			setTimeout(() => error = null, 5000)
+		}
+	}
+	
+	// Reorder quiz in memory (v1.6.0)
+	function handleReorderQuiz(index: number, direction: 'up' | 'down') {
+		if (direction === 'up' && index === 0) return
+		if (direction === 'down' && index === quizzes.length - 1) return
+		
+		const newIndex = direction === 'up' ? index - 1 : index + 1
+		const temp = quizzes[index]
+		quizzes[index] = quizzes[newIndex]
+		quizzes[newIndex] = temp
+		
+		// Update order numbers
+		quizzes = quizzes.map((quiz, idx) => ({
+			...quiz,
+			order: idx + 1
+		}))
+	}
+	
+	// Save quiz order to database (v1.6.0)
+	async function saveQuizOrder() {
+		if (!hasOrderChanged || savingOrder) return
+		
+		savingOrder = true
+		error = null
+		
+		try {
+			await QuizService.batchUpdateQuizzes(courseId, quizzes.map(q => ({
+				id: q.id,
+				order: q.order ?? 0,
+				lessonId: q.lessonId,
+				title: q.title,
+				questions: q.questions,
+				passingScore: q.passingScore,
+				timeLimit: q.timeLimit
+			})))
+			
+			// Update original order to match current
+			originalOrder = quizzes.map(q => q.id)
+			
+			success = 'Quiz order saved successfully'
+			setTimeout(() => success = null, 3000)
+		} catch (err) {
+			error = getErrorMessage(err)
+			setTimeout(() => error = null, 5000)
+		} finally {
+			savingOrder = false
 		}
 	}
 	
@@ -379,6 +440,26 @@
 							>
 								Back to Course
 							</Button>
+							{#if hasOrderChanged}
+								<Button 
+									variant="secondary"
+									onclick={saveQuizOrder}
+									disabled={savingOrder}
+								>
+									{#if savingOrder}
+										<svg class="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+											<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+											<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+										</svg>
+										Saving...
+									{:else}
+										<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+											<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+										</svg>
+										Save Order
+									{/if}
+								</Button>
+							{/if}
 							<Button onclick={handleCreateQuiz}>
 								<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -524,11 +605,35 @@
 						
 						<!-- Quiz List -->
 						<div class="space-y-4">
-							{#each quizzes as quiz (quiz.id)}
+							{#each quizzes as quiz, index (quiz.id)}
 								{@const stats = quizStats.get(quiz.id)}
 								<Card>
 									<CardContent class="p-6">
 										<div class="flex items-start gap-4">
+											<!-- Reorder Buttons (v1.6.0) -->
+											<div class="flex flex-col gap-1">
+												<button
+													onclick={() => handleReorderQuiz(index, 'up')}
+													disabled={index === 0}
+													class="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+													aria-label="Move up"
+												>
+													<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+													</svg>
+												</button>
+												<button
+													onclick={() => handleReorderQuiz(index, 'down')}
+													disabled={index === quizzes.length - 1}
+													class="p-1 hover:bg-muted rounded disabled:opacity-30 disabled:cursor-not-allowed"
+													aria-label="Move down"
+												>
+													<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+														<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+													</svg>
+												</button>
+											</div>
+											
 											<!-- Checkbox -->
 											<input
 												type="checkbox"
@@ -540,6 +645,7 @@
 											<!-- Quiz Info -->
 											<div class="flex-1">
 												<div class="flex items-center gap-3 mb-2">
+													<span class="text-xs font-medium text-muted-foreground bg-muted px-2 py-0.5 rounded">{quiz.order ?? index + 1}</span>
 													<h3 class="text-xl font-semibold">{quiz.title}</h3>
 													
 													<!-- Status Badge -->

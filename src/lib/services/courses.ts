@@ -1,5 +1,6 @@
-// Course service for Open-EDU v1.1.0
+// Course service for Open-EDU v1.6.0
 // Handles CRUD operations, queries, and Firebase integration
+// v1.6.0: Added metadata management for lessons and quizzes
 
 import {
   collection,
@@ -17,7 +18,9 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "$lib/firebase";
-import type { Course } from "$lib/types";
+import type { Course, Lesson } from "$lib/types";
+import type { LessonMetadata, QuizMetadata } from "$lib/types/lesson";
+import { buildLessonMetadata, buildQuizMetadata } from "$lib/types/lesson";
 import {
   courseSchema,
   createCourseSchema,
@@ -31,7 +34,7 @@ import { convertTimestamps } from "$lib/utils/firestore";
 import type { QueryConstraint, DocumentReference } from "firebase/firestore";
 import type { CourseImportData, QuizQuestionImportData } from "$lib/validation/course-import";
 import { parseDurationToMinutes } from "$lib/utils/course-import";
-import type { Lesson, Quiz, QuizQuestion } from "$lib/types";
+import type { Quiz, QuizQuestion } from "$lib/types";
 import type { QuestionOption } from "$lib/types/quiz";
 
 // Course CRUD Operations
@@ -207,6 +210,7 @@ export class CourseService {
 
   /**
    * Create a new course
+   * v1.6.0: Initializes lessonsMetadata, quizzesMetadata, and count fields
    */
   static async createCourse(
     courseData: Omit<Course, 'id' | 'enrolled' | 'rating' | 'ratingCount' | 'lessons' | 'chapters' | 'createdAt' | 'updatedAt'>,
@@ -219,7 +223,7 @@ export class CourseService {
         instructorId,
       });
 
-      // Prepare course document
+      // Prepare course document with v1.6.0 metadata fields
       const courseDoc = {
         ...validatedData,
         id: "", // Will be set by Firestore
@@ -228,6 +232,11 @@ export class CourseService {
         ratingCount: 0,
         lessons: [],
         chapters: [],
+        // v1.6.0: Initialize metadata arrays and counts
+        lessonsMetadata: [],
+        quizzesMetadata: [],
+        totalLessons: 0,
+        totalQuizzes: 0,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       };
@@ -290,8 +299,10 @@ export class CourseService {
   /**
    * Delete a course and all related data (cascading delete)
    * Deletes in separate batches to avoid Firestore limits (500 ops/batch, 10 reads in security rules)
+   * v1.6.0: Now also deletes lessons from the separate lessons collection
    * Deletes:
    * - Course document
+   * - All lessons (from separate collection - v1.6.0)
    * - All enrollments
    * - All course progress records
    * - All quizzes associated with course lessons
@@ -327,7 +338,16 @@ export class CourseService {
 
       console.log(`Starting deletion of course ${courseId}...`);
 
-      // 1. Delete all enrollments for this course
+      // 1. Delete all lessons from separate collection (v1.6.0)
+      const lessonsQuery = query(
+        collection(db, COLLECTIONS.LESSONS),
+        where("courseId", "==", courseId),
+      );
+      const lessonsSnap = await getDocs(lessonsQuery);
+      const lessonRefs = lessonsSnap.docs.map(d => d.ref);
+      totalDeleteCount += await deleteBatch(lessonRefs, "lessons");
+
+      // 2. Delete all enrollments for this course
       const enrollmentsQuery = query(
         collection(db, COLLECTIONS.ENROLLMENTS),
         where("courseId", "==", courseId),
@@ -336,7 +356,7 @@ export class CourseService {
       const enrollmentRefs = enrollmentsSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(enrollmentRefs, "enrollments");
 
-      // 2. Delete all course progress records
+      // 3. Delete all course progress records
       const progressQuery = query(
         collection(db, COLLECTIONS.COURSE_PROGRESS),
         where("courseId", "==", courseId),
@@ -345,7 +365,7 @@ export class CourseService {
       const progressRefs = progressSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(progressRefs, "progress records");
 
-      // 3. Delete all quizzes for this course and collect quiz IDs
+      // 4. Delete all quizzes for this course and collect quiz IDs
       const quizzesQuery = query(
         collection(db, COLLECTIONS.QUIZZES),
         where("courseId", "==", courseId),
@@ -355,7 +375,7 @@ export class CourseService {
       const quizRefs = quizzesSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(quizRefs, "quizzes");
 
-      // 4. Delete all quiz attempts for those quizzes
+      // 5. Delete all quiz attempts for those quizzes
       if (quizIds.length > 0) {
         // Firestore 'in' query has a limit of 30 items
         const chunkSize = 30;
@@ -371,7 +391,7 @@ export class CourseService {
         }
       }
 
-      // 5. Delete notes for this course
+      // 6. Delete notes for this course
       const notesQuery = query(
         collection(db, "notes"),
         where("courseId", "==", courseId),
@@ -380,7 +400,7 @@ export class CourseService {
       const noteRefs = notesSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(noteRefs, "notes");
 
-      // 6. Delete bookmarks for this course
+      // 7. Delete bookmarks for this course
       const bookmarksQuery = query(
         collection(db, "bookmarks"),
         where("courseId", "==", courseId),
@@ -389,7 +409,7 @@ export class CourseService {
       const bookmarkRefs = bookmarksSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(bookmarkRefs, "bookmarks");
 
-      // 7. Delete highlights for this course
+      // 8. Delete highlights for this course
       const highlightsQuery = query(
         collection(db, "highlights"),
         where("courseId", "==", courseId),
@@ -398,7 +418,7 @@ export class CourseService {
       const highlightRefs = highlightsSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(highlightRefs, "highlights");
 
-      // 8. Delete reading positions for this course
+      // 9. Delete reading positions for this course
       const readingPositionsQuery = query(
         collection(db, "readingPositions"),
         where("courseId", "==", courseId),
@@ -407,7 +427,7 @@ export class CourseService {
       const positionRefs = readingPositionsSnap.docs.map(d => d.ref);
       totalDeleteCount += await deleteBatch(positionRefs, "reading positions");
 
-      // 9. Finally, delete the course document itself
+      // 10. Finally, delete the course document itself
       const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
       await deleteDoc(courseRef);
       totalDeleteCount++;
@@ -545,12 +565,14 @@ export class CourseService {
 
   /**
    * Get course statistics
+   * v1.6.0: Uses totalLessons and totalQuizzes from course metadata when available
    */
   static async getCourseStats(courseId: string): Promise<{
     enrollmentCount: number;
     completionRate: number;
     averageProgress: number;
     totalLessons: number;
+    totalQuizzes: number;
   }> {
     try {
       // Get course details
@@ -589,11 +611,16 @@ export class CourseService {
       const completionRate =
         enrollmentCount > 0 ? (completedCount / enrollmentCount) * 100 : 0;
 
+      // v1.6.0: Use denormalized counts when available, fallback to array length
+      const totalLessons = course.totalLessons ?? course.lessons.length;
+      const totalQuizzes = course.totalQuizzes ?? (course.quizzesMetadata?.length ?? 0);
+
       return {
         enrollmentCount,
         completionRate,
         averageProgress,
-        totalLessons: course.lessons.length,
+        totalLessons,
+        totalQuizzes,
       };
     } catch (error) {
       console.error("Error getting course stats:", error);
@@ -639,6 +666,7 @@ export class CourseService {
   /**
    * Import a course from JSON/YAML data with lessons and quizzes
    * Uses batched writes for better atomicity - all operations succeed or all fail
+   * v1.6.0: Also creates lessonsMetadata, quizzesMetadata, and count fields
    */
   static async importCourse(
     data: CourseImportData,
@@ -666,73 +694,61 @@ export class CourseService {
           completed: false,
           createdAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          description: lesson.description,
-          content: lesson.content,
-          videoUrl: lesson.videoUrl,
+          description: lesson.description ?? '',
+          content: lesson.content ?? '',
+          videoUrl: lesson.videoUrl ?? null,
         };
 
         return lessonDoc;
       });
 
-      // Prepare course document
-      type CourseDoc = Omit<Course, 'id' | 'createdAt' | 'updatedAt'> & {
-        createdAt: ReturnType<typeof serverTimestamp>;
-        updatedAt: ReturnType<typeof serverTimestamp>;
-      };
-      
-      const courseDoc: CourseDoc = {
-        title: data.title,
-        description: data.description,
-        instructor: instructorName,
-        instructorId: instructorId,
-        thumbnail: data.thumbnail ?? '',
-        category: data.category,
-        difficulty: data.difficulty,
-        duration: data.duration,
-        enrolled: 0,
-        rating: 0,
-        ratingCount: 0,
-        lessons: lessons,
-        chapters: [],
-        tags: data.tags ?? [],
-        isPublished: data.isPublished ?? false,
-        isFeatured: data.isFeatured ?? false,
-        currency: data.currency ?? 'USD',
-        level: data.level,
-        price: data.price,
-        prerequisites: data.prerequisites ?? [],
-        learningOutcomes: data.learningOutcomes ?? [],
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-
       // Create course reference with auto-generated ID
       const courseRef = doc(collection(db, COLLECTIONS.COURSES));
       courseId = courseRef.id;
-
-      // Update lessons with courseId (courseId is guaranteed to be non-null here)
       const finalCourseId: string = courseId;
       
+      // Update lessons with courseId
       const lessonsWithCourseId = lessons.map((lesson): LessonDoc => ({
         ...lesson,
         courseId: finalCourseId,
       }));
 
-      // Add course document with ID and updated lessons to batch
-      batch.set(courseRef, {
-        ...courseDoc,
-        id: finalCourseId,
-        lessons: lessonsWithCourseId,
+      // v1.6.0: Build lessonsMetadata array
+      // Quiz detection: check type field or presence of questions array
+      const lessonsMetadata: LessonMetadata[] = lessonsWithCourseId.map((lesson, index) => {
+        const lessonData = data.lessons[index];
+        const isQuizLesson = lessonData.type === 'quiz' || !!lessonData.questions;
+        return {
+          id: lesson.id,
+          title: lesson.title,
+          ...(lesson.description && { description: lesson.description }), // Only include if defined
+          order: lesson.order,
+          type: lesson.videoUrl ? 'video' : (isQuizLesson ? 'quiz' : 'content'),
+          duration: lesson.duration ?? 0, // Default to 0 if not specified
+          hasQuiz: isQuizLesson,
+          isRequired: lesson.isRequired,
+        };
       });
 
-      // Create quiz documents in the same batch
+      // v1.6.0: Track quiz metadata as we create quizzes
+      const quizzesMetadata: QuizMetadata[] = [];
+      let quizOrder = 0;
+
+      // Create quiz documents and collect metadata
+      // v1.6.0: Quiz fields are flattened directly on lesson (no wrapper)
       for (let i = 0; i < data.lessons.length; i++) {
         const lessonData = data.lessons[i];
         const lessonDoc = lessonsWithCourseId[i];
 
-        if (lessonData.quiz) {
+        // v1.6.0: Detect quiz by type or presence of questions array (flattened structure)
+        const isQuizLesson = lessonData.type === 'quiz' || (lessonData.questions && lessonData.questions.length > 0);
+
+        if (isQuizLesson && lessonData.questions && lessonData.questions.length > 0) {
+          quizOrder++;
+          
           // Transform quiz questions to match Quiz type
-          const transformedQuestions = lessonData.quiz.questions.map((q: QuizQuestionImportData, qIndex: number): QuizQuestion => {
+          // v1.6.0: Questions are directly on lessonData, not lessonData.quiz
+          const transformedQuestions = lessonData.questions.map((q: QuizQuestionImportData, qIndex: number): QuizQuestion => {
             // Map import question type to internal type format
             const questionType: QuizQuestion['type'] = 
               q.type === 'multiple-choice' ? 'multiple_choice'
@@ -746,7 +762,7 @@ export class CourseService {
               id: q.id,
               type: questionType,
               question: q.question,
-              points: q.points,
+              points: q.points ?? 1,
               order: qIndex,
             };
 
@@ -763,7 +779,7 @@ export class CourseService {
                 ...baseQuestion,
                 options,
                 correctAnswer: `opt-${q.correctAnswer}`,
-                explanation: q.explanation,
+                explanation: q.explanation ?? '',
               };
             } else if (q.type === 'multiple-select') {
               const options: QuestionOption[] = q.options.map((optText, optIndex) => ({
@@ -775,20 +791,20 @@ export class CourseService {
                 ...baseQuestion,
                 options,
                 correctAnswer: q.correctAnswers.map(idx => `opt-${idx}`),
-                explanation: q.explanation,
+                explanation: q.explanation ?? '',
               };
             } else if (q.type === 'true-false') {
               transformedQuestion = {
                 ...baseQuestion,
                 correctAnswer: q.correctAnswer,
-                explanation: q.explanation,
+                explanation: q.explanation ?? '',
               };
             } else if (q.type === 'fill-blank') {
               transformedQuestion = {
                 ...baseQuestion,
                 correctAnswer: q.correctAnswer,
-                caseSensitive: q.caseSensitive,
-                explanation: q.explanation,
+                caseSensitive: q.caseSensitive ?? false,
+                explanation: q.explanation ?? '',
               };
             } else if (q.type === 'ordering') {
               const options: QuestionOption[] = q.items.map((item, idx) => ({
@@ -800,13 +816,13 @@ export class CourseService {
                 ...baseQuestion,
                 options,
                 correctAnswer: q.correctOrder.join(','), // Convert to string for storage
-                explanation: q.explanation,
+                explanation: q.explanation ?? '',
               };
             } else if (q.type === 'matching') {
               transformedQuestion = {
                 ...baseQuestion,
                 correctAnswer: JSON.stringify(q.pairs), // Serialize matching pairs
-                explanation: q.explanation,
+                explanation: q.explanation ?? '',
               };
             } else {
               // Fallback for unknown types
@@ -819,42 +835,116 @@ export class CourseService {
             return transformedQuestion;
           });
 
+          // Create quiz reference
+          const quizRef = doc(collection(db, COLLECTIONS.QUIZZES));
+
           // Build quiz data object
           type QuizDoc = Omit<Quiz, 'id' | 'createdAt' | 'updatedAt'> & {
             createdAt: ReturnType<typeof serverTimestamp>;
             updatedAt: ReturnType<typeof serverTimestamp>;
           };
           
+          // Build quiz data, excluding undefined optional fields (Firestore doesn't accept undefined)
+          // v1.6.0: Quiz fields are flattened - use lesson title/description, settings from lesson
           const quizData: QuizDoc = {
             lessonId: lessonDoc.id,
             courseId: finalCourseId,
-            title: lessonData.quiz.title,
-            description: lessonData.quiz.description,
-            instructions: lessonData.quiz.instructions,
+            title: lessonData.title, // Use lesson title (no duplicate)
+            description: lessonData.description ?? '',
+            instructions: lessonData.instructions ?? '',
             questions: transformedQuestions,
-            timeLimit: lessonData.quiz.timeLimit,
-            passingScore: lessonData.quiz.passingScore ?? 70,
-            allowMultipleAttempts: lessonData.quiz.allowMultipleAttempts ?? true,
-            maxAttempts: lessonData.quiz.maxAttempts,
-            showCorrectAnswers: lessonData.quiz.showCorrectAnswers ?? true,
-            showExplanations: lessonData.quiz.showExplanations ?? true,
-            randomizeQuestions: lessonData.quiz.randomizeQuestions ?? false,
-            randomizeOptions: lessonData.quiz.randomizeOptions ?? false,
-            allowReview: lessonData.quiz.allowReview ?? true,
+            passingScore: lessonData.passingScore ?? 70,
+            allowMultipleAttempts: lessonData.allowMultipleAttempts ?? true,
+            showCorrectAnswers: lessonData.showCorrectAnswers ?? true,
+            showExplanations: lessonData.showExplanations ?? true,
+            randomizeQuestions: lessonData.randomizeQuestions ?? false,
+            randomizeOptions: lessonData.randomizeOptions ?? false,
+            allowReview: lessonData.allowReview ?? true,
             isPublished: data.isPublished ?? false,
             createdBy: instructorId,
             createdAt: serverTimestamp(),
             updatedAt: serverTimestamp(),
+            // Only include optional fields if they have values
+            ...(lessonData.timeLimit !== undefined && { timeLimit: lessonData.timeLimit }),
+            ...(lessonData.maxAttempts !== undefined && { maxAttempts: lessonData.maxAttempts }),
           };
 
-          // Create quiz reference and add to batch
-          const quizRef = doc(collection(db, COLLECTIONS.QUIZZES));
+          // Add quiz to batch
           batch.set(quizRef, {
             ...quizData,
             id: quizRef.id,
           });
+
+          // v1.6.0: Build quiz metadata
+          quizzesMetadata.push(buildQuizMetadata(
+            {
+              id: quizRef.id,
+              lessonId: lessonDoc.id,
+              title: lessonData.title, // Use lesson title
+              description: lessonData.description,
+              questions: transformedQuestions,
+              passingScore: lessonData.passingScore ?? 70,
+              timeLimit: lessonData.timeLimit,
+            },
+            quizOrder
+          ));
         }
       }
+
+      // Prepare course document with v1.6.0 metadata
+      type CourseDoc = Omit<Course, 'id' | 'createdAt' | 'updatedAt'> & {
+        createdAt: ReturnType<typeof serverTimestamp>;
+        updatedAt: ReturnType<typeof serverTimestamp>;
+      };
+      
+      // Build course document with reasonable defaults for all fields
+      const courseDoc: CourseDoc = {
+        title: data.title,
+        description: data.description,
+        instructor: instructorName,
+        instructorId: instructorId,
+        thumbnail: data.thumbnail || 'https://placehold.co/400x225/6366f1/white?text=Course',
+        category: data.category,
+        difficulty: data.difficulty,
+        duration: data.duration,
+        enrolled: 0,
+        rating: 0,
+        ratingCount: 0,
+        // v1.6.0: No longer store full lessons array - use lessonsMetadata instead
+        lessons: [],
+        chapters: [],
+        tags: data.tags ?? [],
+        isPublished: data.isPublished ?? false,
+        isFeatured: data.isFeatured ?? false,
+        currency: data.currency ?? 'USD',
+        level: data.level,
+        price: data.price ?? 0, // Default to 0 for free courses
+        prerequisites: data.prerequisites ?? [],
+        learningOutcomes: data.learningOutcomes ?? [],
+        // v1.6.0: Add metadata fields (lightweight, no content)
+        lessonsMetadata,
+        quizzesMetadata,
+        totalLessons: lessonsWithCourseId.length,
+        totalQuizzes: quizzesMetadata.length,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // v1.6.0: Write each lesson to the separate lessons collection
+      for (const lesson of lessonsWithCourseId) {
+        const lessonRef = doc(db, COLLECTIONS.LESSONS, lesson.id);
+        batch.set(lessonRef, {
+          ...lesson,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+      }
+
+      // Add course document with ID to batch
+      batch.set(courseRef, {
+        ...courseDoc,
+        id: finalCourseId,
+      });
 
       // Commit all operations atomically
       await batch.commit();
@@ -862,6 +952,185 @@ export class CourseService {
       return finalCourseId;
     } catch (error) {
       console.error("Error importing course:", error);
+      throw error;
+    }
+  }
+
+  // ============================================
+  // v1.6.0 Metadata Helper Methods
+  // ============================================
+
+  /**
+   * Rebuild lessons metadata from the lessons array
+   * Useful for migration or when metadata gets out of sync
+   */
+  static async rebuildLessonsMetadata(courseId: string): Promise<void> {
+    try {
+      const course = await this.getCourse(courseId);
+      if (!course) throw new Error("Course not found");
+
+      const lessonsMetadata: LessonMetadata[] = course.lessons.map(lesson => 
+        buildLessonMetadata(lesson)
+      );
+
+      await updateDoc(doc(db, COLLECTIONS.COURSES, courseId), {
+        lessonsMetadata,
+        totalLessons: lessonsMetadata.length,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error rebuilding lessons metadata:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Rebuild quizzes metadata from the quizzes collection
+   * Useful for migration or when metadata gets out of sync
+   */
+  static async rebuildQuizzesMetadata(courseId: string): Promise<void> {
+    try {
+      // Query all quizzes for this course
+      const quizzesQuery = query(
+        collection(db, COLLECTIONS.QUIZZES),
+        where("courseId", "==", courseId),
+        orderBy("createdAt", "asc"),
+      );
+      const quizzesSnap = await getDocs(quizzesQuery);
+      
+      const quizzesMetadata: QuizMetadata[] = quizzesSnap.docs.map((doc, index) => {
+        const quiz = doc.data() as Quiz;
+        return buildQuizMetadata(
+          {
+            id: doc.id,
+            lessonId: quiz.lessonId,
+            title: quiz.title,
+            questions: quiz.questions,
+            passingScore: quiz.passingScore,
+            timeLimit: quiz.timeLimit,
+          },
+          index + 1
+        );
+      });
+
+      await updateDoc(doc(db, COLLECTIONS.COURSES, courseId), {
+        quizzesMetadata,
+        totalQuizzes: quizzesMetadata.length,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error rebuilding quizzes metadata:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Rebuild all metadata (lessons + quizzes) for a course
+   * v1.6.0: Use this for migration or data repair
+   */
+  static async rebuildAllMetadata(courseId: string): Promise<void> {
+    await this.rebuildLessonsMetadata(courseId);
+    await this.rebuildQuizzesMetadata(courseId);
+  }
+
+  /**
+   * Get course overview (metadata only, no full lesson content)
+   * v1.6.0: Optimized for course listing pages
+   */
+  static async getCourseOverview(courseId: string): Promise<{
+    course: Course;
+    lessonsMetadata: LessonMetadata[];
+    quizzesMetadata: QuizMetadata[];
+    totalLessons: number;
+    totalQuizzes: number;
+  } | null> {
+    try {
+      const course = await this.getCourse(courseId);
+      if (!course) return null;
+
+      return {
+        course,
+        lessonsMetadata: course.lessonsMetadata ?? [],
+        quizzesMetadata: course.quizzesMetadata ?? [],
+        totalLessons: course.totalLessons ?? course.lessons.length,
+        totalQuizzes: course.totalQuizzes ?? 0,
+      };
+    } catch (error) {
+      console.error("Error getting course overview:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a single lesson's metadata in the course document
+   * v1.6.0: Called when lesson title, order, duration, etc. changes
+   */
+  static async updateLessonMetadata(
+    courseId: string,
+    lessonId: string,
+    updates: Partial<LessonMetadata>
+  ): Promise<void> {
+    try {
+      const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
+      const courseSnap = await getDoc(courseRef);
+      
+      if (!courseSnap.exists()) {
+        throw new Error("Course not found");
+      }
+
+      const courseData = courseSnap.data();
+      const lessonsMetadata = (courseData.lessonsMetadata || []) as LessonMetadata[];
+      
+      const index = lessonsMetadata.findIndex(m => m.id === lessonId);
+      if (index === -1) {
+        throw new Error("Lesson metadata not found");
+      }
+
+      lessonsMetadata[index] = { ...lessonsMetadata[index], ...updates };
+
+      await updateDoc(courseRef, {
+        lessonsMetadata,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error updating lesson metadata:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Update a single quiz's metadata in the course document
+   * v1.6.0: Called when quiz title, question count, etc. changes
+   */
+  static async updateQuizMetadata(
+    courseId: string,
+    quizId: string,
+    updates: Partial<QuizMetadata>
+  ): Promise<void> {
+    try {
+      const courseRef = doc(db, COLLECTIONS.COURSES, courseId);
+      const courseSnap = await getDoc(courseRef);
+      
+      if (!courseSnap.exists()) {
+        throw new Error("Course not found");
+      }
+
+      const courseData = courseSnap.data();
+      const quizzesMetadata = (courseData.quizzesMetadata || []) as QuizMetadata[];
+      
+      const index = quizzesMetadata.findIndex(m => m.id === quizId);
+      if (index === -1) {
+        throw new Error("Quiz metadata not found");
+      }
+
+      quizzesMetadata[index] = { ...quizzesMetadata[index], ...updates };
+
+      await updateDoc(courseRef, {
+        quizzesMetadata,
+        updatedAt: serverTimestamp(),
+      });
+    } catch (error) {
+      console.error("Error updating quiz metadata:", error);
       throw error;
     }
   }
@@ -881,4 +1150,11 @@ export const {
   getCourseStats,
   updateCourseRating,
   importCourse,
+  // v1.6.0 metadata helpers
+  rebuildLessonsMetadata,
+  rebuildQuizzesMetadata,
+  rebuildAllMetadata,
+  getCourseOverview,
+  updateLessonMetadata,
+  updateQuizMetadata,
 } = CourseService;

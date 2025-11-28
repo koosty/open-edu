@@ -415,13 +415,13 @@ describe("CourseService", () => {
       // Verify batch was created
       expect(mockWriteBatch).toHaveBeenCalled();
 
-      // Verify all related data was queried
-      expect(mockFirestore.getDocs).toHaveBeenCalledTimes(8);
+      // Verify all related data was queried (enrollments, progress, quizzes, attempts, notes, positions, lessons + course doc)
+      expect(mockFirestore.getDocs).toHaveBeenCalledTimes(9);
 
       // Verify batch commit was called
       expect(mockBatch.commit).toHaveBeenCalled();
 
-      // Verify deletions were added to batch (2 enrollments + 1 progress + 2 quizzes + 2 attempts + 1 note + 1 position + 1 course = 10)
+      // Verify deletions were added to batch (2 enrollments + 1 progress + 2 quizzes + 2 attempts + 1 note + 1 position + 2 lessons + 1 course = 12)
       expect(mockBatch.delete).toHaveBeenCalled();
     });
 

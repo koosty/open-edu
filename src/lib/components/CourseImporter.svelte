@@ -134,14 +134,14 @@
 						<span class="font-semibold">{preview.lessons.length}</span>
 					</div>
 				
-				{#if preview.lessons.some(l => l.quiz)}
-					<div class="flex items-center justify-between text-sm">
-						<span class="text-muted-foreground">Quizzes</span>
-						<span class="font-semibold text-blue-600">
-							{preview.lessons.filter(l => l.quiz).length}
-						</span>
-					</div>
-				{/if}
+			{#if preview.lessons.some(l => l.questions)}
+				<div class="flex items-center justify-between text-sm">
+					<span class="text-muted-foreground">Quizzes</span>
+					<span class="font-semibold text-blue-600">
+						{preview.lessons.filter(l => l.questions).length}
+					</span>
+				</div>
+			{/if}
 
 					{#if preview.level === 'premium' && preview.price}
 						<div class="flex items-center justify-between text-sm">
@@ -241,6 +241,7 @@
 		<div class="text-xs text-muted-foreground space-y-1 pt-2">
 			<p><strong>Tip:</strong> YAML format is more human-friendly for long content and markdown.</p>
 			<p><strong>Note:</strong> All lessons and quizzes will be imported with the course.</p>
+			<p><strong>Duration format:</strong> Use <code class="bg-muted px-1 rounded">30m</code> for minutes or <code class="bg-muted px-1 rounded">2h</code> for hours (e.g., <code class="bg-muted px-1 rounded">1.5h</code> = 90 min).</p>
 		</div>
 	</CardContent>
 </Card>

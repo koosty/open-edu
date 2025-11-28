@@ -321,7 +321,7 @@
 												
 												<div class="flex items-center gap-4 text-sm text-muted-foreground">
 													<span>{course.enrolled} students</span>
-													<span>{course.lessons?.length || 0} lessons</span>
+													<span>{course.totalLessons ?? course.lessons?.length ?? 0} lessons</span>
 													{#if course.rating > 0}
 														<span>⭐ {course.rating.toFixed(1)}</span>
 													{/if}

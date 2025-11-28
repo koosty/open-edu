@@ -8,7 +8,7 @@
 	import { Button } from '$lib/components/ui'
 	import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui'
 	import { User, Clock, Users, Star, Edit } from 'lucide-svelte'
-	import type { Course, Enrollment } from '$lib/types'
+	import type { Course, Enrollment, LessonMetadata } from '$lib/types'
 	import Loading from '$lib/components/Loading.svelte'
 	import DynamicBreadcrumb from '$lib/components/DynamicBreadcrumb.svelte'
 
@@ -27,17 +27,45 @@
 		course.isPublished && 
 		!isEnrolled
 	)
-	const canStartLearning = $derived(
-		authState.user && 
-		isEnrolled && 
-		course?.lessons && course.lessons.length > 0
-	)
 	const canEditCourse = $derived(
 		authState.user && canManageCourses(authState.user)
 	)
-	// Sorted lessons to prevent mutation in template
+	
+	// v1.6.0: Use lessonsMetadata for listing, fall back to legacy lessons array
+	const lessonsForDisplay = $derived.by<LessonMetadata[]>(() => {
+		if (course?.lessonsMetadata && course.lessonsMetadata.length > 0) {
+			return course.lessonsMetadata
+		}
+		// Fallback: convert legacy lessons to metadata format
+		if (course?.lessons) {
+			return course.lessons.map(lesson => ({
+				id: lesson.id,
+				title: lesson.title,
+				description: lesson.description,
+				order: lesson.order,
+				type: lesson.videoUrl ? 'video' as const : (lesson.quiz ? 'quiz' as const : 'content' as const),
+				duration: lesson.duration ?? 0,
+				hasQuiz: !!lesson.quiz,
+				isRequired: lesson.isRequired
+			}))
+		}
+		return []
+	})
+	
+	// Sorted lessons metadata for display
 	const sortedLessons = $derived(
-		course?.lessons ? [...course.lessons].sort((a, b) => a.order - b.order) : []
+		[...lessonsForDisplay].sort((a, b) => a.order - b.order)
+	)
+	
+	// Lesson count: prefer totalLessons, fall back to metadata/lessons length
+	const lessonCount = $derived(
+		course?.totalLessons ?? course?.lessonsMetadata?.length ?? course?.lessons?.length ?? 0
+	)
+	
+	const canStartLearning = $derived(
+		authState.user && 
+		isEnrolled && 
+		lessonCount > 0
 	)
 
 	// Load course data reactively when auth is initialized
@@ -123,10 +151,10 @@
 	}
 
 	function handleStartLearning() {
-		if (!course || !course.lessons?.length) return
+		if (!course || lessonCount === 0) return
 		
-		// Find the first lesson
-		const firstLesson = course.lessons.find(lesson => lesson.order === 1) || course.lessons[0]
+		// Find the first lesson from metadata
+		const firstLesson = sortedLessons.find(lesson => lesson.order === 1) || sortedLessons[0]
 		if (firstLesson) {
 			navigate(`/courses/${courseId}/learn/${firstLesson.id}`)
 		}
@@ -328,12 +356,12 @@
 				{/if}
 
 				<!-- Course Curriculum -->
-				{#if course.lessons?.length}
+				{#if lessonCount > 0}
 					<Card class="mb-8">
 						<CardHeader>
 							<CardTitle>Course Curriculum</CardTitle>
 							<CardDescription>
-								{course.lessons.length} lesson{course.lessons.length !== 1 ? 's' : ''}
+								{lessonCount} lesson{lessonCount !== 1 ? 's' : ''}
 							</CardDescription>
 						</CardHeader>
 						<CardContent>
@@ -341,17 +369,17 @@
 							{#each sortedLessons as lesson (lesson.id)}
 								<Card class="overflow-hidden hover:shadow-md transition-shadow">
 									<CardContent class="p-4">
-										<div class="flex items-center gap-3">
+										<div class="flex items-start gap-3">
 											<!-- Lesson Number Badge -->
-											<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-primary shrink-0">
+											<div class="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-sm font-semibold text-primary shrink-0 mt-0.5">
 												{lesson.order || sortedLessons.indexOf(lesson) + 1}
 											</div>
 											
 											<!-- Lesson Info -->
 											<div class="flex-1 min-w-0">
-												<h4 class="font-semibold text-foreground mb-1">{lesson.title}</h4>
+												<h4 class="font-semibold text-foreground">{lesson.title}</h4>
 												{#if lesson.description}
-													<p class="text-sm text-muted-foreground line-clamp-2">{lesson.description}</p>
+													<p class="text-sm text-muted-foreground mt-1 line-clamp-2">{lesson.description}</p>
 												{/if}
 											</div>
 											
@@ -366,7 +394,7 @@
 													</div>
 												{/if}
 												<div class="px-2 py-1 bg-secondary/10 text-secondary-foreground rounded-md capitalize font-medium">
-													{lesson.quiz ? 'Quiz' : 'Lesson'}
+													{lesson.type === 'quiz' || lesson.hasQuiz ? 'Quiz' : lesson.type === 'video' ? 'Video' : 'Lesson'}
 												</div>
 												{#if lesson.isRequired}
 													<div class="px-2 py-1 bg-destructive/10 text-destructive rounded-md font-semibold">
@@ -402,7 +430,7 @@
 						</div>
 						<div class="flex justify-between items-center">
 							<span class="text-muted-foreground">Lessons:</span>
-							<span class="font-medium text-foreground">{course.lessons?.length || 0}</span>
+							<span class="font-medium text-foreground">{lessonCount}</span>
 						</div>
 						<div class="flex justify-between items-center">
 							<span class="text-muted-foreground">Enrolled:</span>
@@ -460,13 +488,3 @@
 		{/if}
 	</div>
 {/if}
-
-<style>
-	.line-clamp-2 {
-		display: -webkit-box;
-		-webkit-line-clamp: 2;
-		line-clamp: 2;
-		-webkit-box-orient: vertical;
-		overflow: hidden;
-	}
-</style>

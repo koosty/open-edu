@@ -1,9 +1,18 @@
 /**
  * Course Import Validation Schema
  * Validates course data from JSON/YAML files for bulk import
+ * 
+ * v1.6.0: Flattened quiz structure - quiz fields directly on lesson, no wrapper
+ * Duration format: Xm (minutes) or Xh (hours) - e.g., "30m", "2h", "1.5h"
  */
 
 import { z } from 'zod'
+
+// Duration regex pattern: Xm or Xh (with optional decimal)
+// Valid: 30m, 2h, 1.5h, 90m
+// Invalid: 30, 2 hours, 30 min
+const durationPattern = /^\d+(\.\d+)?[mh]$/i
+const durationSchema = z.string().regex(durationPattern, 'Duration must be in format: Xm or Xh (e.g., "30m", "2h", "1.5h")')
 
 // Matching pair schema
 const matchingPairSchema = z.object({
@@ -73,45 +82,59 @@ const quizQuestionImportSchema = z.discriminatedUnion('type', [
 	})
 ])
 
-// Quiz schema for import
-const quizImportSchema = z.object({
-	title: z.string().min(1, 'Quiz title is required'),
-	description: z.string().optional(),
-	instructions: z.string().optional(),
-	questions: z.array(quizQuestionImportSchema).min(1, 'Quiz must have at least one question'),
-	timeLimit: z.number().positive('Time limit must be positive').optional(),
-	passingScore: z.number().min(0).max(100).default(70),
-	allowMultipleAttempts: z.boolean().default(true),
-	maxAttempts: z.number().positive().optional(),
-	showCorrectAnswers: z.boolean().default(true),
-	showExplanations: z.boolean().default(true),
-	randomizeQuestions: z.boolean().default(false),
-	randomizeOptions: z.boolean().default(false),
-	allowReview: z.boolean().default(true)
-})
+// Lesson type enum - matches JSON schema
+const lessonTypeSchema = z.enum(['lesson', 'quiz'])
 
 // Lesson schema for import - user-friendly format
+// v1.6.0: Quiz fields are flattened directly onto lesson (no wrapper)
 const lessonImportSchema = z
 	.object({
 		title: z.string().min(1, 'Lesson title is required').max(200, 'Title cannot exceed 200 characters'),
 		description: z.string().max(500, 'Description cannot exceed 500 characters').optional(),
-		duration: z.string().min(1, 'Duration is required'), // String format: "10 min", "1 hour"
+		type: lessonTypeSchema.optional(), // Optional - inferred from content/questions
+		duration: durationSchema, // Format: "30m", "2h", "1.5h"
+		
+		// Lesson-specific fields
 		content: z.string().optional(),
 		videoUrl: z.string().url('Valid video URL required').optional(),
-		quiz: quizImportSchema.optional()
+		
+		// Quiz-specific fields (flattened - no wrapper)
+		questions: z.array(quizQuestionImportSchema).optional(),
+		instructions: z.string().optional(),
+		timeLimit: z.number().positive('Time limit must be positive').optional(),
+		passingScore: z.number().min(0).max(100).default(70),
+		allowMultipleAttempts: z.boolean().default(true),
+		maxAttempts: z.number().positive().optional(),
+		showCorrectAnswers: z.boolean().default(true),
+		showExplanations: z.boolean().default(true),
+		randomizeQuestions: z.boolean().default(false),
+		randomizeOptions: z.boolean().default(false),
+		allowReview: z.boolean().default(true)
 	})
 	.refine(
 		(data) => {
-			// Validate lesson has either content OR quiz, but doesn't need both
-			// A lesson with quiz data is a quiz lesson, a lesson with content is a regular lesson
-			if (data.quiz && data.content) {
-				return false // Can't have both
+			// Can't have both content AND questions
+			if (data.questions && data.content) {
+				return false
 			}
-			return true // Can have one or neither (quiz can be added later)
+			return true
 		},
 		{
-			message: 'Lesson cannot have both content and inline quiz data',
-			path: ['content', 'quiz']
+			message: 'Lesson cannot have both content and questions',
+			path: ['content']
+		}
+	)
+	.refine(
+		(data) => {
+			// If type is 'quiz', must have questions
+			if (data.type === 'quiz' && (!data.questions || data.questions.length === 0)) {
+				return false
+			}
+			return true
+		},
+		{
+			message: 'Quiz lessons must have at least one question',
+			path: ['questions']
 		}
 	)
 
@@ -126,7 +149,7 @@ export const courseImportSchema = z
 			.max(2000, 'Description cannot exceed 2000 characters'),
 		category: z.string().min(1, 'Category is required'),
 		difficulty: z.enum(['Beginner', 'Intermediate', 'Advanced']),
-		duration: z.string().min(1, 'Duration is required'),
+		duration: durationSchema, // Format: "40h", "2h"
 		thumbnail: z.string().url('Valid thumbnail URL required').optional(),
 
 		// Settings
@@ -174,5 +197,17 @@ export const courseImportSchema = z
 // Type exports
 export type CourseImportData = z.infer<typeof courseImportSchema>
 export type LessonImportData = z.infer<typeof lessonImportSchema>
-export type QuizImportData = z.infer<typeof quizImportSchema>
 export type QuizQuestionImportData = z.infer<typeof quizQuestionImportSchema>
+
+// Duration validation helper for UI
+export const DURATION_PATTERN = durationPattern
+export const DURATION_ERROR_MESSAGE = 'Duration must be in format: Xm or Xh (e.g., "30m", "2h", "1.5h")'
+
+/**
+ * Validate duration format
+ * @param duration - Duration string to validate
+ * @returns true if valid, false otherwise
+ */
+export function isValidDuration(duration: string): boolean {
+	return durationPattern.test(duration)
+}

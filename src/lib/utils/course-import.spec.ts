@@ -9,13 +9,13 @@ describe('Course Import Utils', () => {
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
 						title: 'Lesson 1',
 						type: 'lesson',
-						duration: '10 min',
+						duration: '10m',
 						content: '# Test Content'
 					}
 				]
@@ -35,12 +35,12 @@ title: "Test Course"
 description: "Test Description"
 category: "Programming"
 difficulty: "Beginner"
-duration: "4 weeks"
+duration: "40h"
 level: "free"
 lessons:
   - title: "Lesson 1"
     type: "lesson"
-    duration: "10 min"
+    duration: "10m"
     content: "# Test Content"
 `
 
@@ -58,12 +58,12 @@ title: "Test Course"
 description: "Test Description"
 category: "Programming"
 difficulty: "Beginner"
-duration: "4 weeks"
+duration: "40h"
 level: "free"
 lessons:
   - title: "Lesson 1"
     type: "lesson"
-    duration: "10 min"
+    duration: "10m"
     content: "# Test Content"
 `
 
@@ -113,13 +113,13 @@ invalid: yaml: structure: here
 			description: 'Test Description',
 			category: 'Programming',
 			difficulty: 'Expert', // Invalid
-			duration: '4 weeks',
+			duration: '40h',
 			level: 'free',
 			lessons: [
 				{
 					title: 'Lesson 1',
 					type: 'lesson',
-					duration: '10 min',
+					duration: '10m',
 					content: '# Test'
 				}
 			]
@@ -137,29 +137,28 @@ invalid: yaml: structure: here
 				instructor: 'Test Instructor',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
+						// v1.6.0: Flattened quiz structure - fields directly on lesson
 						title: 'Quiz Lesson',
-						duration: '15 min',
-						quiz: {
-							title: 'Test Quiz',
-							description: 'Quiz description',
-							passingScore: 70,
-							timeLimit: 600,
-							questions: [
-								{
-									id: 'q1',
-									type: 'multiple-choice',
-									question: 'What is 2+2?',
-									options: ['3', '4', '5'],
-									correctAnswer: 1,
-									points: 10,
-									explanation: 'Basic math'
-								}
-							]
-						}
+						type: 'quiz',
+						duration: '15m',
+						description: 'Quiz description',
+						passingScore: 70,
+						timeLimit: 600,
+						questions: [
+							{
+								id: 'q1',
+								type: 'multiple-choice',
+								question: 'What is 2+2?',
+								options: ['3', '4', '5'],
+								correctAnswer: 1,
+								points: 10,
+								explanation: 'Basic math'
+							}
+						]
 					}
 				]
 			})
@@ -167,8 +166,9 @@ invalid: yaml: structure: here
 			const file = new File([jsonContent], 'course.json', { type: 'application/json' })
 			const result = await parseCourseFile(file)
 
-			expect(result.data.lessons[0].quiz).toBeDefined()
-			expect(result.data.lessons[0].quiz?.questions).toHaveLength(1)
+			// v1.6.0: Questions are directly on lesson, not nested under quiz
+			expect(result.data.lessons[0].questions).toBeDefined()
+			expect(result.data.lessons[0].questions).toHaveLength(1)
 		})
 
 		it('should parse all question types', async () => {
@@ -177,75 +177,73 @@ invalid: yaml: structure: here
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
+						// v1.6.0: Flattened quiz structure
 						title: 'Quiz Lesson',
 						type: 'quiz',
-						duration: '15 min',
-						quiz: {
-							title: 'Test Quiz',
-							description: 'Quiz description',
-							passingScore: 70,
-							questions: [
-								{
-									id: 'q1',
-									type: 'multiple-choice',
-									question: 'MC Question',
-									options: ['A', 'B'],
-									correctAnswer: 0,
-									points: 10,
-									explanation: 'Explanation'
-								},
-								{
-									id: 'q2',
-									type: 'true-false',
-									question: 'TF Question',
-									correctAnswer: true,
-									points: 5,
-									explanation: 'Explanation'
-								},
-								{
-									id: 'q3',
-									type: 'multiple-select',
-									question: 'MS Question',
-									options: ['A', 'B', 'C'],
-									correctAnswers: [0, 2],
-									points: 15,
-									explanation: 'Explanation'
-								},
-								{
-									id: 'q4',
-									type: 'fill-blank',
-									question: 'FB Question',
-									correctAnswer: 'answer',
-									caseSensitive: false,
-									points: 10,
-									explanation: 'Explanation'
-								},
-								{
-									id: 'q5',
-									type: 'ordering',
-									question: 'Order Question',
-									items: ['A', 'B', 'C'],
-									correctOrder: [0, 1, 2],
-									points: 20,
-									explanation: 'Explanation'
-								},
-								{
-									id: 'q6',
-									type: 'matching',
-									question: 'Match Question',
-									pairs: [
-										{ left: 'A', right: '1' },
-										{ left: 'B', right: '2' }
-									],
-									points: 20,
-									explanation: 'Explanation'
-								}
-							]
-						}
+						duration: '15m',
+						description: 'Quiz description',
+						passingScore: 70,
+						questions: [
+							{
+								id: 'q1',
+								type: 'multiple-choice',
+								question: 'MC Question',
+								options: ['A', 'B'],
+								correctAnswer: 0,
+								points: 10,
+								explanation: 'Explanation'
+							},
+							{
+								id: 'q2',
+								type: 'true-false',
+								question: 'TF Question',
+								correctAnswer: true,
+								points: 5,
+								explanation: 'Explanation'
+							},
+							{
+								id: 'q3',
+								type: 'multiple-select',
+								question: 'MS Question',
+								options: ['A', 'B', 'C'],
+								correctAnswers: [0, 2],
+								points: 15,
+								explanation: 'Explanation'
+							},
+							{
+								id: 'q4',
+								type: 'fill-blank',
+								question: 'FB Question',
+								correctAnswer: 'answer',
+								caseSensitive: false,
+								points: 10,
+								explanation: 'Explanation'
+							},
+							{
+								id: 'q5',
+								type: 'ordering',
+								question: 'Order Question',
+								items: ['A', 'B', 'C'],
+								correctOrder: [0, 1, 2],
+								points: 20,
+								explanation: 'Explanation'
+							},
+							{
+								id: 'q6',
+								type: 'matching',
+								question: 'Match Question',
+								pairs: [
+									{ left: 'A', right: '1' },
+									{ left: 'B', right: '2' }
+								],
+								points: 20,
+								explanation: 'Explanation'
+							}
+						]
 					}
 				]
 			})
@@ -253,7 +251,8 @@ invalid: yaml: structure: here
 			const file = new File([jsonContent], 'course.json', { type: 'application/json' })
 			const result = await parseCourseFile(file)
 
-			const questions = result.data.lessons[0].quiz?.questions || []
+			// v1.6.0: Questions are directly on lesson
+			const questions = result.data.lessons[0].questions || []
 			expect(questions).toHaveLength(6)
 			expect(questions[0].type).toBe('multiple-choice')
 			expect(questions[1].type).toBe('true-false')
@@ -269,7 +268,7 @@ invalid: yaml: structure: here
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				thumbnail: 'https://example.com/image.jpg',
 				tags: ['tag1', 'tag2'],
@@ -281,7 +280,7 @@ invalid: yaml: structure: here
 					{
 						title: 'Lesson 1',
 						type: 'lesson',
-						duration: '10 min',
+						duration: '10m',
 						content: '# Test'
 					}
 				]
@@ -304,7 +303,7 @@ invalid: yaml: structure: here
 			description: 'Test Description',
 			category: 'Programming',
 			difficulty: 'Beginner',
-			duration: '4 weeks',
+			duration: '40h',
 			level: 'free',
 			lessons: [] // Empty
 		})
@@ -337,11 +336,11 @@ invalid: yaml: structure: here
 			const jsonTemplate = generateCourseTemplate('json')
 			const parsed = JSON.parse(jsonTemplate)
 
-			// Find lesson with quiz (second lesson which has quiz data)
-			const quizLesson = parsed.lessons.find((l: any) => l.quiz !== undefined)
+			// v1.6.0: Find lesson with questions (flattened structure - no quiz wrapper)
+			const quizLesson = parsed.lessons.find((l: any) => l.questions !== undefined)
 			expect(quizLesson).toBeDefined()
 
-			const questions = quizLesson.quiz.questions
+			const questions = quizLesson.questions
 			const questionTypes = questions.map((q: any) => q.type)
 
 			expect(questionTypes).toContain('multiple-choice')
@@ -433,13 +432,13 @@ invalid: yaml: structure: here
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
 						title: 'Lesson 1',
 						type: 'lesson',
-						duration: '10 min',
+						duration: '10m',
 						content: '# Test'
 					}
 				]
@@ -450,63 +449,56 @@ invalid: yaml: structure: here
 			await expect(parseCourseFile(file)).rejects.toThrow()
 		})
 
-		it('should provide helpful error for lesson with both content and quiz', async () => {
+		it('should provide helpful error for lesson with both content and questions', async () => {
+			// v1.6.0: Can't have both content AND questions on same lesson
 			const jsonContent = JSON.stringify({
 				title: 'Test Course',
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
 						title: 'Lesson 1',
-						duration: '10 min',
+						duration: '10m',
 						content: '# Test Content',
-						quiz: {
-							title: 'Test Quiz',
-							description: 'Quiz description',
-							passingScore: 70,
-							questions: [
-								{
-									id: 'q1',
-									type: 'multiple-choice',
-									question: 'Test?',
-									options: ['A', 'B'],
-									correctAnswer: 0,
-									points: 10,
-									explanation: 'Explanation'
-								}
-							]
-						}
+						questions: [
+							{
+								id: 'q1',
+								type: 'multiple-choice',
+								question: 'Test?',
+								options: ['A', 'B'],
+								correctAnswer: 0,
+								points: 10,
+								explanation: 'Explanation'
+							}
+						]
 					}
 				]
 			})
 
 			const file = new File([jsonContent], 'course.json', { type: 'application/json' })
 
-			await expect(parseCourseFile(file)).rejects.toThrow('cannot have both content and inline quiz')
+			await expect(parseCourseFile(file)).rejects.toThrow('cannot have both content and questions')
 		})
 
 		it('should provide helpful error for quiz without questions', async () => {
+			// v1.6.0: Flattened quiz structure
 			const jsonContent = JSON.stringify({
 				title: 'Test Course',
 				description: 'Test Description',
 				category: 'Programming',
 				difficulty: 'Beginner',
-				duration: '4 weeks',
+				duration: '40h',
 				level: 'free',
 				lessons: [
 					{
 						title: 'Quiz Lesson',
 						type: 'quiz',
-						duration: '15 min',
-						quiz: {
-							title: 'Test Quiz',
-							description: 'Quiz description',
-							passingScore: 70,
-							questions: [] // Empty
-						}
+						duration: '15m',
+						passingScore: 70,
+						questions: [] // Empty
 					}
 				]
 			})
@@ -518,36 +510,32 @@ invalid: yaml: structure: here
 	})
 
 	describe('parseDurationToMinutes', () => {
-		it('should parse minutes correctly', () => {
-			expect(parseDurationToMinutes('10 min')).toBe(10)
-			expect(parseDurationToMinutes('30 minutes')).toBe(30)
-			expect(parseDurationToMinutes('5 minute')).toBe(5)
+		// v1.6.0: New format - Xm (minutes) or Xh (hours)
+		it('should parse minutes correctly (new format)', () => {
+			expect(parseDurationToMinutes('10m')).toBe(10)
+			expect(parseDurationToMinutes('30m')).toBe(30)
+			expect(parseDurationToMinutes('5m')).toBe(5)
 		})
 
-		it('should parse hours correctly', () => {
-			expect(parseDurationToMinutes('1 hour')).toBe(60)
-			expect(parseDurationToMinutes('2 hours')).toBe(120)
-			expect(parseDurationToMinutes('1.5 hours')).toBe(90)
-			expect(parseDurationToMinutes('0.5 hr')).toBe(30)
-		})
-
-		it('should parse seconds correctly', () => {
-			expect(parseDurationToMinutes('60 seconds')).toBe(1)
-			expect(parseDurationToMinutes('120 sec')).toBe(2)
+		it('should parse hours correctly (new format)', () => {
+			expect(parseDurationToMinutes('1h')).toBe(60)
+			expect(parseDurationToMinutes('2h')).toBe(120)
+			expect(parseDurationToMinutes('1.5h')).toBe(90)
+			expect(parseDurationToMinutes('0.5h')).toBe(30)
 		})
 
 		it('should handle case insensitivity', () => {
-			expect(parseDurationToMinutes('10 MIN')).toBe(10)
-			expect(parseDurationToMinutes('1 HOUR')).toBe(60)
-			expect(parseDurationToMinutes('30 Minutes')).toBe(30)
+			expect(parseDurationToMinutes('10M')).toBe(10)
+			expect(parseDurationToMinutes('1H')).toBe(60)
+			expect(parseDurationToMinutes('30m')).toBe(30)
 		})
 
 		it('should handle extra whitespace', () => {
-			expect(parseDurationToMinutes('  10  min  ')).toBe(10)
-			expect(parseDurationToMinutes('1   hour')).toBe(60)
+			expect(parseDurationToMinutes('  10m  ')).toBe(10)
+			expect(parseDurationToMinutes(' 1h ')).toBe(60)
 		})
 
-		it('should extract number if no unit provided', () => {
+		it('should extract number if no unit provided (fallback)', () => {
 			expect(parseDurationToMinutes('15')).toBe(15)
 			expect(parseDurationToMinutes('45.5')).toBe(46)
 		})
@@ -559,8 +547,8 @@ invalid: yaml: structure: here
 		})
 
 		it('should handle decimal values', () => {
-			expect(parseDurationToMinutes('1.5 min')).toBe(2)
-			expect(parseDurationToMinutes('2.5 hours')).toBe(150)
+			expect(parseDurationToMinutes('1.5m')).toBe(2)
+			expect(parseDurationToMinutes('2.5h')).toBe(150)
 		})
 	})
 })
